@@ -1,0 +1,12 @@
+QCA I2S2 platform module
+
+Required properties:
+- compatible : "qca,ipq40xx-pcm-i2s2"
+- reg : Physical base address and length of the device's registers.
+
+Example:
+
+i2s2platform: qca-pcm-i2s2@770d000 {
+	compatible = "qca,ipq40xx-pcm-i2s1";
+	reg = <0x770d000 0x1000>;
+};

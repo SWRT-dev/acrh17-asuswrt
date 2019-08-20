@@ -1,0 +1,14 @@
+QCA Global Counter
+------------------------------------------------
+
+Required properties :
+- compatible : "qcom,qca-gcnt"
+
+- reg : shall contain base register location and length
+
+Example:
+
+	counter {
+		compatible = "qcom,qca-gcnt";
+		reg = <0x004a1000 0x4>;
+	};

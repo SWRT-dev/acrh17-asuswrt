@@ -1,0 +1,75 @@
+menu "Qualcomm MSM specific device drivers"
+	depends on ARCH_QCOM
+
+config SPS
+	bool "SPS support"
+	select GENERIC_ALLOCATOR
+	help
+	  The SPS (Smart Peripheral Switch) is a DMA engine.
+	  It can move data in the following modes:
+		1. Peripheral-to-Peripheral.
+		2. Peripheral-to-Memory.
+		3. Memory-to-Memory.
+
+config USB_BAM
+	boolean "USB BAM Driver"
+	depends on SPS && USB_GADGET
+	help
+	  Enabling this option adds USB BAM Driver.
+	  USB BAM driver was added to supports SPS Peripheral-to-Peripheral
+	  transfers between the USB and other peripheral.
+
+config SPS_SUPPORT_BAMDMA
+	bool "SPS support BAM DMA"
+	depends on SPS
+	default n
+	help
+	  The BAM-DMA is used for Memory-to-Memory transfers.
+	  The main use cases is RPC between processors.
+	  The BAM-DMA hardware has 2 registers sets:
+		1. A BAM HW like all the peripherals.
+		2. A DMA channel configuration (i.e. channel priority).
+
+config SPS_SUPPORT_NDP_BAM
+	bool "SPS support NDP BAM"
+	depends on SPS
+	default n
+	help
+	  No-Data-Path BAM is used to improve BAM performance.
+
+config MSM_BUS_SCALING
+	bool "Bus scaling driver"
+	default n
+	help
+	  This option enables bus scaling on MSM devices.  Bus scaling
+	  allows devices to request the clocks be set to rates sufficient
+	  for the active devices needs without keeping the clocks at max
+	  frequency when a slower speed is sufficient.
+
+config BUS_TOPOLOGY_ADHOC
+	bool "ad-hoc bus scaling topology"
+	default n
+	help
+	  This option enables a driver that can handle adhoc bus topologies.
+	  Adhoc bus topology driver allows one to many connections and maintains
+	  directionality of connections by explicitly listing device connections
+	  thus avoiding illegal routes.
+
+config BOOTCONFIG_PARTITION
+	tristate "BOOTCONFIG Partition support"
+	help
+	  Say Y here if you would like to use hard disks under Linux which
+	  were partitioned using MTD/EFI.
+
+config I2C_MSM_PROF_DBG
+	tristate "I2C_MSM_PROF_DBG"
+	depends on ARCH_MSM && I2C_MSM_V2
+	help
+	This option enables the enhanced logging, profiling and debugfs
+	support to the i2c-msm-v2 driver. If you say yes to this option,
+	you can change the deugging level to adjust the amount of debugging
+	information as needed at run time using debugfs.
+
+	This module can also be dynamically linked as a shared kernel object.
+endmenu
+

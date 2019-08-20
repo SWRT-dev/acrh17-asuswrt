@@ -1,0 +1,232 @@
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq40xx-ap.dk04.1.dtsi"
+#include "qcom-ipq40xx-audio.dtsi"
+
+/ {
+	model = "Qualcomm Technologies, Inc. IPQ40xx/AP-DK04.1-C2";
+
+	soc {
+		pinctrl@0x01000000 {
+			audio_gpio_pins: audio_gpio_pinmux {
+				mux_1 {
+					pins = "gpio58", "gpio60", "gpio61", "gpio62";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_2 {
+					pins = "gpio54";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_3 {
+					pins = "gpio52", "gpio57";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_4 {
+					pins = "gpio55";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_5 {
+					pins = "gpio56";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_6 {
+					pins = "gpio53", "gpio59";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_7 {
+					pins = "gpio63";
+					function = "gpio";
+					output-high;
+				};
+
+				mux_8 {
+					pins = "gpio48", "gpio49", "gpio50", "gpio51";
+					function = "gpio";
+					output-high;
+				};
+			};
+
+			audio_pins: audio_pinmux {
+				mux_1 {
+					pins = "gpio58", "gpio60", "gpio61", "gpio62";
+					function = "audio0";
+				};
+
+				mux_2 {
+					pins = "gpio54";
+					function = "audio_spdifout";
+				};
+
+				mux_3 {
+					pins = "gpio52", "gpio57";
+					function = "audio1";
+				};
+
+				mux_4 {
+					pins = "gpio55";
+					function = "audio_td2";
+				};
+
+				mux_5 {
+					pins = "gpio56";
+					function = "audio_td3";
+				};
+
+				mux_6 {
+					pins = "gpio53", "gpio59";
+					function = "audio2";
+				};
+
+				mux_7 {
+					pins = "gpio63";
+					function = "audio_td1";
+				};
+
+				mux_8 {
+					pins = "gpio48", "gpio49", "gpio50", "gpio51";
+					function = "aud_pin";
+				};
+			};
+
+			pwm_pins: pwm_pinmux {
+				mux_1 {
+					/* function is audio_pwm0 */
+					pins = "gpio64";
+					function = "audio1";
+				};
+
+				mux_2 {
+					/* function is audio_pwm1 */
+					pins = "gpio65";
+					function = "audio2";
+				};
+
+				mux_3 {
+					/* function is audio_pwm2 */
+					pins = "gpio66";
+					function = "audio_pwm0";
+				};
+			};
+
+		};
+
+		mdio@90000 {
+			status = "ok";
+			pinctrl-0 = <&mdio_pins>;
+			pinctrl-names = "default";
+			phy-reset-gpio = <&tlmm 67 0>;
+			bias-disable;
+		};
+
+		adcc: clock-controller@7700038 {
+			status = "ok";
+		};
+
+		/* Enable Audio Interfaces */
+		i2s: ipq40xx-pcm-i2s@0 {
+			status = "ok";
+		};
+
+		tdm: tdm@0 {
+			status = "ok";
+		};
+
+		spdif: spdif@0 {
+			status = "ok";
+		};
+
+		i2splatform: qca-pcm-i2s@7709000 {
+			status = "ok";
+		};
+
+		tdmplatform: qca-pcm-tdm@7709000 {
+			status = "ok";
+		};
+
+		i2s1platform: qca-pcm-i2s1@770b000 {
+			status = "ok";
+		};
+
+		i2s1: ipq40xx-pcm-i2s1@0 {
+			status = "ok";
+		};
+
+		i2s2platform: qca-pcm-i2s2@770d000 {
+			status = "ok";
+		};
+
+		i2s2: ipq40xx-pcm-i2s2@0 {
+			status = "ok";
+		};
+
+		spdifplatform: qca-pcm-spdif@7707000 {
+			status = "ok";
+		};
+
+		sound: sound@0 {
+			status = "ok";
+			pinctrl-0 = <&audio_gpio_pins>;
+			pinctrl-1 = <&audio_pins>;
+			pinctrl-names = "default", "audio";
+		};
+
+		i2c_0: i2c@78b7000 { /* BLSP1 QUP2 */
+			status = "ok";
+
+			qca_codec: qca_codec@12 {
+				status = "ok";
+			};
+		};
+
+		/* Enable VOIP Interfaces */
+		pcm: pcm@7704000 {
+			status = "ok";
+		};
+
+		pcm_lb: pcm_lb@0 {
+			status = "ok";
+		};
+
+		pwm {
+			pinctrl-0 = <&pwm_pins>;
+			pinctrl-names = "default";
+			used-pwm-indices = <1>, <1>, <1>, <0>;
+			status = "ok";
+		};
+
+		serial@78b0000 {
+			status = "disabled";
+		};
+
+		uart1:uart@78b0000 {
+			status = "ok";
+		};
+
+	};
+};

@@ -1,0 +1,31 @@
+* MSM Kernel Thermal Mitigation (KTM)
+
+Required properties:
+- compatible : "qcom,msm-thermal"
+- qcom,sensor-id : Temperature sensor ID to poll.
+- qcom,poll-ms : Poll interval in milliseconds.
+- qcom,limit-temp : Threshold temperature for mitigation
+		to kick in.
+- qcom,temp-hysteresis : Difference in temperature required
+		to stop mitigation after threshold is hit.
+- qcom,freq-step : No.of steps to skip to get to lower or
+		higher frequencies in the frequency table.
+- qcom,core-limit-temp : Threshold temperature to disable cores.
+- qcom,core-temp-hysteresis : Difference in temperature required
+		to enable the core back once it is shut down.
+- qcom,core-control-mask : Core control mask value.
+
+Example:
+
+qcom,msm-thermal {
+	compatible = "qcom,msm-thermal";
+	qcom,sensor-id = <0>;
+	qcom,poll-ms = <250>;
+	qcom,limit-temp = <105>;
+	qcom,temp-hysteresis = <10>;
+	qcom,freq-step = <2>;
+	qcom,core-limit-temp = <115>;
+	qcom,core-temp-hysteresis = <10>;
+	qcom,core-control-mask = <0xe>;
+};
+~

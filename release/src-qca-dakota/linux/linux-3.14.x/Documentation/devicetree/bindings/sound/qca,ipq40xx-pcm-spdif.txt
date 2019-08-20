@@ -1,0 +1,19 @@
+qca,ipq40xx-pcm-spdif
+
+SPDIF platform driver for IPQ40xx
+
+Required properties:
+
+  - compatible : "qca,ipq40xx-pcm-spdif"
+  - reg : <0x7707000 0x1000>
+  - status: disabled/ok
+
+Example:
+
+spdifplatform: qca-pcm-spdif@7707000 {
+	compatible = "qca,ipq40xx-pcm-spdif";
+	reg = <0x7707000 0x1000>;
+	status = "disabled";
+};
+
+

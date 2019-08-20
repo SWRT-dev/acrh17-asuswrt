@@ -1,0 +1,11 @@
+--- pcddr_AP.DK04.1-C1_128M16.xml	2016-12-08 01:11:50.000000000 +0800
++++ pcddr_AP.DK04.1-C1_128M16.xml	2016-11-29 16:18:59.338579796 +0800
+@@ -156,7 +156,7 @@
+           220
+         </props>
+         <props name="RESERVED_0" type="DALPROP_ATTR_TYPE_UINT32">
+-          0
++          1
+         </props>
+         <props name="RESERVED_1" type="DALPROP_ATTR_TYPE_UINT32">
+           0

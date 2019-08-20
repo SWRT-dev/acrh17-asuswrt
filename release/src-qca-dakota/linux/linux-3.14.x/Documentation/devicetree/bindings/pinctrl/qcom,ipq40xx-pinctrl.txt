@@ -1,0 +1,116 @@
+Qualcomm Atheros IPQ40xx TLMM block
+
+Required properties:
+- compatible: "qcom,ipq40xx-pinctrl"
+- reg: Should be the base address and length of the TLMM block.
+- interrupts: Should be the parent IRQ of the TLMM block.
+- interrupt-controller: Marks the device node as an interrupt controller.
+- #interrupt-cells: Should be two.
+- gpio-controller: Marks the device node as a GPIO controller.
+- #gpio-cells : Should be two.
+                The first cell is the gpio pin number and the
+                second cell is used for optional parameters.
+
+Please refer to ../gpio/gpio.txt and ../interrupt-controller/interrupts.txt for
+a general description of GPIO and interrupt bindings.
+
+Please refer to pinctrl-bindings.txt in this directory for details of the
+common pinctrl bindings used by client devices, including the meaning of the
+phrase "pin configuration node".
+
+The pin configuration nodes act as a container for an abitrary number of
+subnodes. Each of these subnodes represents some desired configuration for a
+pin, a group, or a list of pins or groups. This configuration can include the
+mux function to select on those pin(s)/group(s), and various pin configuration
+parameters, such as pull-up, drive strength, etc.
+
+The name of each subnode is not important; all subnodes should be enumerated
+and processed purely based on their content.
+
+Each subnode only affects those parameters that are explicitly listed. In
+other words, a subnode that lists a mux function but no pin configuration
+parameters implies no information about any pin configuration parameters.
+Similarly, a pin subnode that describes a pullup parameter implies no
+information about e.g. the mux function.
+
+
+The following generic properties as defined in pinctrl-bindings.txt are valid
+to specify in a pin configuration subnode:
+ pins, function, bias-disable, bias-pull-down, bias-pull,up, drive-strength.
+
+Non-empty subnodes must specify the 'pins' property.
+Note that not all properties are valid for all pins.
+
+
+Valid values for qcom,pins are:
+  gpio0-gpio70
+    Supports mux, bias and drive-strength
+
+    sdio_cd, sdio_clk, sdio_cmd, sdio_data1, sdio_data1, sdio_data1, sdio_data1,
+    sdio_data5, sdio_data6, sdio_data7
+
+Valid values for qcom,function are:
+smart0, jtag, audio0, mdio0, wcss0_dbg18, wcss1_dbg18, qdss_tracedata_a, mdc,
+wcss0_dbg19, wcss1_dbg19, blsp_uart1, wifi0_uart, wifi1_uart, smart1,
+wcss0_dbg20, wcss1_dbg20, wifi0_uart0, wifi1_uart0, wcss0_dbg21, wcss1_dbg21,
+blsp_i2c0, wcss0_dbg22, wcss1_dbg22, wcss0_dbg23, wcss1_dbg23, blsp_i2c1,
+wcss0_dbg24, wcss1_dbg24, wcss0_dbg25, wcss1_dbg25, pcie_rst, wcss0_dbg26,
+wcss1_dbg26, pcie_clk0, wcss0_dbg27, wcss1_dbg27, led0, blsp_uart0, led1,
+chip_irq0, wifi0_uart1, wifi1_uart1, wcss0_dbg28, wcss1_dbg28, chip_rst,
+audio_spdifout, sdio1, rgmii2, sdio2, rgmii3, sdio3, rgmii_rx, sdio_clk,
+wcss0_dbg29, wcss1_dbg29, wcss0_dbg16, wcss1_dbg16, audio1, wcss0_dbg17,
+wcss1_dbg17, sdio_cd, rgmii0, sdio0, rgmii1, rgmii_txc, audio_td1, sdio_cmd,
+audio_td2, sdio4, audio_td3, sdio5, audio_pwm0, sdio6, audio_pwm1, sdio7,
+rgmii_rxc, audio_pwm2, rgmii_tx, audio_pwm3, wcss0_dbg30, wcss1_dbg30,
+wcss0_dbg31, wcss1_dbg31, rmii00, led2, rmii01, wifi0_wci, wifi1_wci,
+rmii0_tx, rmii0_rx, pcie_clk1, led3, pcie_wakeup, rmii0_refclk,
+wifi0_rfsilient0, wifi1_rfsilient0, smart2, led4, wifi0_cal, wifi1_cal,
+wifi_wci0, rmii0_dv, wifi_wci1, rmii1_refclk, blsp_spi1, led5, rmii10,
+blsp_spi0, led6, rmii11, led7, rmii1_dv, led8, rmii1_tx, aud_pin, led9,
+rmii1_rx, led10, wifi0_rfsilient1, wifi1_rfsilient1, led11, qpic_pad,
+qdss_cti_trig_in_a0, mdio1, audio2, dbg_out, wcss0_dbg, wcss1_dbg, atest_char3,
+pmu0, wcss0_dbg0, wcss1_dbg0, atest_char2, pmu1, wcss0_dbg1, wcss1_dbg1,
+atest_char1, wcss0_dbg2, wcss1_dbg2, qpic_pad4, atest_char0, wcss0_dbg3,
+wcss1_dbg3, qpic_pad5, smart3, wcss0_dbg14, wcss1_dbg14, qpic_pad6,
+wcss0_dbg15, wcss1_dbg15, qdss_tracectl_a, qpic_pad7, atest_char, wcss0_dbg4,
+wcss1_dbg4, qdss_traceclk_a, qpic_pad8, wcss0_dbg5, wcss1_dbg5,
+qdss_cti_trig_out_a0, wcss0_dbg6, wcss1_dbg6, qdss_cti_trig_out_b0, chip_irq1,
+qpic_pad0, wcss0_dbg7, wcss1_dbg7, qdss_cti_trig_in_b0, qpic_pad1, wcss0_dbg8,
+wcss1_dbg8, qpic_pad2, wcss0_dbg9, wcss1_dbg9, qpic_pad3, wcss0_dbg10,
+wcss1_dbg10, wcss0_dbg11, wcss1_dbg11, wcss0_dbg12, wcss1_dbg12, wcss0_dbg13,
+wcss1_dbg13
+
+Example:
+
+	msmgpio: pinctrl@1000000 {
+		compatible = "qcom,ipq40xx-pinctrl";
+		reg = <0x1000000 0x300000>;
+
+		gpio-controller;
+		#gpio-cells = <2>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		interrupts = <0 208 0>;
+
+		pinctrl-names = "default";
+		pinctrl-0 = <&blsp_uart1>;
+
+		blsp_uart1_default: blsp_uart1_default {
+			mux {
+				qcom,pins = "gpio4", "gpio5";
+				qcom,function = "blsp_uart1";
+			};
+
+			tx {
+				qcom,pins = "gpio4";
+				drive-strength = <4>;
+				bias-disable;
+			};
+
+			rx {
+				qcom,pins = "gpio5";
+				drive-strength = <2>;
+				bias-pull-up;
+			};
+		};
+	};

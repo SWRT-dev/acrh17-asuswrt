@@ -1,0 +1,247 @@
+Qualcomm Resource Power Manager (RPM)
+
+This driver is used to interface with the Resource Power Manager (RPM) found in
+various Qualcomm platforms. The RPM allows each component in the system to vote
+for state of the system resources, such as clocks, regulators and bus
+frequencies.
+
+- compatible:
+	Usage: required
+	Value type: <string>
+	Definition: must be one of:
+		    "qcom,rpm-apq8064"
+		    "qcom,rpm-msm8660"
+		    "qcom,rpm-msm8960"
+		    "qcom,rpm-ipq8064"
+
+- reg:
+	Usage: required
+	Value type: <prop-encoded-array>
+	Definition: base address and size of the RPM's message ram
+
+- interrupts:
+	Usage: required
+	Value type: <prop-encoded-array>
+	Definition: three entries specifying the RPM's:
+		    1. acknowledgement interrupt
+		    2. error interrupt
+		    3. wakeup interrupt
+
+- interrupt-names:
+	Usage: required
+	Value type: <string-array>
+	Definition: must be the three strings "ack", "err" and "wakeup", in order
+
+- #address-cells:
+	Usage: required
+	Value type: <u32>
+	Definition: must be 1
+
+- #size-cells:
+	Usage: required
+	Value type: <u32>
+	Definition: must be 0
+
+- qcom,ipc:
+	Usage: required
+	Value type: <prop-encoded-array>
+
+	Definition: three entries specifying the outgoing ipc bit used for
+		    signaling the RPM:
+		    - phandle to a syscon node representing the apcs registers
+		    - u32 representing offset to the register within the syscon
+		    - u32 representing the ipc bit within the register
+
+
+= SUBDEVICES
+
+The RPM exposes resources to its subnodes. The below bindings specify the set
+of valid subnodes that can operate on these resources.
+
+== Switch-mode Power Supply regulator
+
+- compatible:
+	Usage: required
+	Value type: <string>
+	Definition: must be one of:
+		    "qcom,rpm-pm8058-smps"
+		    "qcom,rpm-pm8901-ftsmps"
+		    "qcom,rpm-pm8921-smps"
+		    "qcom,rpm-pm8921-ftsmps"
+
+- reg:
+	Usage: required
+	Value type: <u32>
+	Definition: resource as defined in <dt-bindings/mfd/qcom-rpm.h>
+		    must be one of:
+		    QCOM_RPM_PM8058_SMPS0 - QCOM_RPM_PM8058_SMPS4,
+		    QCOM_RPM_PM8821_SMPS1 - QCOM_RPM_PM8821_SMPS2,
+		    QCOM_RPM_PM8901_SMPS0 - QCOM_RPM_PM8901_SMPS4,
+		    QCOM_RPM_PM8921_SMPS1 - QCOM_RPM_PM8921_SMPS8
+
+- bias-pull-down:
+	Usage: optional
+	Value type: <empty>
+	Definition: enable pull down of the regulator when inactive
+
+- qcom,switch-mode-frequency:
+	Usage: required
+	Value type: <u32>
+	Definition: Frequency (Hz) of the switch-mode power supply;
+		    must be one of:
+		    19200000, 9600000, 6400000, 4800000, 3840000, 3200000,
+		    2740000, 2400000, 2130000, 1920000, 1750000, 1600000,
+		    1480000, 1370000, 1280000, 1200000
+
+- qcom,force-mode:
+	Usage: optional (default if no other qcom,force-mode is specified)
+	Value type: <u32>
+	Defintion: indicates that the regulator should be forced to a
+		   particular mode, valid values are:
+		   QCOM_RPM_FORCE_MODE_NONE - do not force any mode
+		   QCOM_RPM_FORCE_MODE_LPM - force into low power mode
+		   QCOM_RPM_FORCE_MODE_HPM - force into high power mode
+		   QCOM_RPM_FORCE_MODE_AUTO - allow regulator to automatically
+					      select its own mode based on
+					      realtime current draw, only for:
+					      qcom,rpm-pm8921-smps,
+					      qcom,rpm-pm8921-ftsmps
+
+- qcom,power-mode-hysteretic:
+	Usage: optional
+	Value type: <empty>
+	Definition: select that the power supply should operate in hysteretic
+		    mode, instead of the default pwm mode
+
+Standard regulator bindings are used inside switch mode power supply subnodes.
+Check Documentation/devicetree/bindings/regulator/regulator.txt for more
+details.
+
+== Low-dropout regulator
+
+- compatible:
+	Usage: required
+	Value type: <string>
+	Definition: must be one of:
+		    "qcom,rpm-pm8058-pldo"
+		    "qcom,rpm-pm8058-nldo"
+		    "qcom,rpm-pm8901-pldo"
+		    "qcom,rpm-pm8901-nldo"
+		    "qcom,rpm-pm8921-pldo"
+		    "qcom,rpm-pm8921-nldo"
+		    "qcom,rpm-pm8921-nldo1200"
+
+- reg:
+	Usage: required
+	Value type: <u32>
+	Definition: resource as defined in <dt-bindings/mfd/qcom-rpm.h>
+		    must be one of:
+		    QCOM_RPM_PM8058_LDO0 - QCOM_RPM_PM8058_LDO25,
+		    QCOM_RPM_PM8821_LDO1,
+		    QCOM_RPM_PM8901_LDO0 - QCOM_RPM_PM8901_LDO6,
+		    QCOM_RPM_PM8921_LDO1 - QCOM_RPM_PM8921_LDO29
+
+- bias-pull-down:
+	Usage: optional
+	Value type: <empty>
+	Definition: enable pull down of the regulator when inactive
+
+- qcom,force-mode:
+	Usage: optional
+	Value type: <u32>
+	Defintion: indicates that the regulator should not be forced to any
+		   particular mode, valid values are:
+		   QCOM_RPM_FORCE_MODE_NONE - do not force any mode
+		   QCOM_RPM_FORCE_MODE_LPM - force into low power mode
+		   QCOM_RPM_FORCE_MODE_HPM - force into high power mode
+		   QCOM_RPM_FORCE_MODE_BYPASS - set regulator to use bypass
+						mode, i.e.  to act as a switch
+						and not regulate, only for:
+						qcom,rpm-pm8921-pldo,
+						qcom,rpm-pm8921-nldo,
+						qcom,rpm-pm8921-nldo1200
+
+Standard regulator bindings are used inside switch low-dropout regulator
+subnodes.  Check Documentation/devicetree/bindings/regulator/regulator.txt for
+more details.
+
+== Negative Charge Pump
+
+- compatible:
+	Usage: required
+	Value type: <string>
+	Definition: must be one of:
+		    "qcom,rpm-pm8058-ncp"
+		    "qcom,rpm-pm8921-ncp"
+
+- reg:
+	Usage: required
+	Value type: <u32>
+	Definition: resource as defined in <dt-bindings/mfd/qcom-rpm.h>
+		    must be one of:
+		    QCOM_RPM_PM8058_NCP,
+		    QCOM_RPM_PM8921_NCP
+
+- qcom,switch-mode-frequency:
+	Usage: required
+	Value type: <u32>
+	Definition: Frequency (Hz) of the swith mode power supply;
+		    must be one of:
+		    19200000, 9600000, 6400000, 4800000, 3840000, 3200000,
+		    2740000, 2400000, 2130000, 1920000, 1750000, 1600000,
+		    1480000, 1370000, 1280000, 1200000
+
+Standard regulator bindings are used inside negative charge pump regulator
+subnodes.  Check Documentation/devicetree/bindings/regulator/regulator.txt for
+more details.
+
+== Switch
+
+- compatible:
+	Usage: required
+	Value type: <string>
+	Definition: must be one of:
+		    "qcom,rpm-pm8058-switch"
+		    "qcom,rpm-pm8901-switch"
+		    "qcom,rpm-pm8921-switch"
+
+- reg:
+	Usage: required
+	Value type: <u32>
+	Definition: resource as defined in <dt-bindings/mfd/qcom/qcom-rpm.h>
+		    must be one of:
+		    QCOM_RPM_PM8058_LVS0 - QCOM_RPM_PM8058_LVS1,
+		    QCOM_RPM_PM8901_LVS0 - QCOM_RPM_PM8901_LVS3,
+		    QCOM_RPM_PM8901_MVS,
+		    QCOM_RPM_PM8921_LVS1 - QCOM_RPM_PM8921_LVS7,
+		    QCOM_RPM_PM8921_MVS
+
+= EXAMPLE
+
+	#include <dt-bindings/mfd/qcom-rpm.h>
+
+	rpm@108000 {
+		compatible = "qcom,rpm-msm8960";
+		reg = <0x108000 0x1000>;
+		qcom,ipc = <&apcs 0x8 2>;
+
+		interrupts = <0 19 0>, <0 21 0>, <0 22 0>;
+		interrupt-names = "ack", "err", "wakeup";
+
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		pm8921_smps1: pm8921-smps1 {
+			compatible = "qcom,rpm-pm8921-smps";
+			reg = <QCOM_RPM_PM8921_SMPS1>;
+
+			regulator-min-microvolt = <1225000>;
+			regulator-max-microvolt = <1225000>;
+			regulator-always-on;
+
+			bias-pull-down;
+
+			qcom,switch-mode-frequency = <3200000>;
+		};
+	};
+

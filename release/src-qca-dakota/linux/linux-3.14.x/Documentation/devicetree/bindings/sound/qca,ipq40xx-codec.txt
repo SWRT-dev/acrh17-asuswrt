@@ -1,0 +1,12 @@
+QCA CODEC Module
+
+Required properties:
+- compatible : "qca,ipq40xx-codec"
+- reg : Chip Address of the codec
+
+Example:
+
+qca_codec: qca_codec@10 {
+	compatible = "qca,ipq40xx-codec";
+	reg = <0x10>;
+};

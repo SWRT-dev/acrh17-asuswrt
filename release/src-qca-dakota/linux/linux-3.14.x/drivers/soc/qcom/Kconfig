@@ -1,0 +1,124 @@
+#
+# QCOM Soc drivers
+#
+config QCOM_GSBI
+        tristate "QCOM General Serial Bus Interface"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable GSBI support.  The GSBI provides control
+          functions for connecting the underlying serial UART, SPI, and I2C
+          devices to the output pins.
+
+config QCOM_SCM
+        bool
+
+config QCOM_TCSR
+        tristate "QCOM Top Control and Status Registers"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable TCSR support.  The TCSR provides control
+          functions for various peripherals.
+
+config QCOM_RESTART_REASON
+        bool "Write restart reason on reboot"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable writing restart reason. This adds a reboot handler
+          to write the restart reason command to distinguish between normal and
+          abnormal reboots. This also registers for panic notification so that
+          magic cookies can be set for download mode.
+          If unsure, say N
+
+config QCA_SCM_RESTART_REASON
+        bool "Write restart reason on reboot"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable writing scm restart reason. This adds a reboot
+          handler to invoke trusted software to disable software debug and
+          magic cookie. This also registers for panic notification so that
+          magic cookies can be set for download mode.
+          If unsure, say N
+
+
+config QCOM_DLOAD_MODE
+        bool "Enable download mode on crashes"
+        depends on ARCH_QCOM
+        default n
+        help
+          This makes the SoC enter download mode when it resets
+          due to a kernel panic. Note that this doesn't by itself
+          make the kernel reboot on a kernel panic - that must be
+          enabled via another mechanism.
+          If unsure, say N
+
+config QCOM_DLOAD_MODE_APPSBL
+        bool "Application bootloader based download mode handling"
+        depends on QCOM_DLOAD_MODE
+        default n
+        help
+          Select this if application bootloader, for example U-Boot, will handle
+          download mode due to kernel panic.
+
+config QCOM_CACHE_DUMP
+        bool "QCOM cache dumping support"
+        depends on ARCH_QCOM
+        help
+          Say y here to enable cache dumping support. This adds infrastructure
+          to dump the L1 and L2 caches to an allocated buffer. This allows for
+          analysis of the caches in case cache corruption is suspected.
+          If unsure, say N
+
+config MSM_GLINK
+	bool "Generic Link (G-Link)"
+	help
+	 G-Link is a generic link transport that replaces SMD.  It is used
+	 within a System-on-Chip (SoC) for communication between both internal
+	 processors and external peripherals.  The actual physical transport
+	 is handled by transport plug-ins that can be individually enabled and
+	 configured separately.
+	 analysis of the caches in case cache corruption is suspected.
+	 If unsure, say N
+
+config MSM_GLINK_LOOPBACK_SERVER
+	bool "Generic Link (G-Link) Loopback Server"
+	help
+	 G-Link Loopback Server that enable loopback test framework to test
+	 and validate the G-Link protocol stack. It support both local and
+	 remote clients to configure the loopback server and echo back the
+	 data received from the clients.
+
+config MSM_GLINK_SPI_XPRT
+	depends on MSM_GLINK
+	tristate "Generic Link (G-Link) SPI Transport"
+	help
+	 G-Link SPI Transport is a Transport plug-in developed over SPI
+	 bus. This transport plug-in performs marshaling of G-Link
+	 commands & data to the appropriate SPI bus wire format and
+	 allows for G-Link communication with remote subsystems that are
+	 external to the System-on-Chip.
+
+config WCD_DSP_GLINK
+	tristate "WCD DSP GLINK Driver"
+	depends on MSM_GLINK
+	default y if SND_SOC_WCD934X=y
+	help
+	   This option enables driver which provides communication interface
+	   between MSM and WCD DSP over glink transport protocol. This driver
+	   provides read and write interface via char device.
+
+config QCOM_CACHE_DUMP_ON_PANIC
+        bool "Dump caches on panic"
+        depends on QCOM_CACHE_DUMP
+        help
+          By default, the caches are flushed on panic. This means that trying to
+          look at them in a RAM dump will give useless data. Select this if you
+          want to dump the L1 and L2 caches on panic before any flush occurs.
+          If unsure, say N
+
+config QCOM_TZ_LOG
+	tristate "Trust Zone (TZ) Log Driver"
+	depends on DEBUG_FS
+	help
+	  This option enables a driver with a debugfs interface for messages
+	  produced by the Secure code (Trust zone). These messages provide
+	  diagnostic information about TZ operation.

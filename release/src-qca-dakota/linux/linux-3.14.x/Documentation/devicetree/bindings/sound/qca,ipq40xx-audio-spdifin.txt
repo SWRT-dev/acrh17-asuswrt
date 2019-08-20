@@ -1,0 +1,18 @@
+qca,ipq40xx-audio-spdifin
+
+SPDIFIN configuration space for IPQ40xx
+
+Required properties:
+
+  - compatible : "qca,ipq40xx-audio-spdifin"
+
+  - reg	: Must contain SPDIF core's registers location and length
+
+Example:
+
+spdifin: spdifin@7707000 {
+	compatible = "qca,ipq40xx-audio-spdifin";
+	reg = <0x7707000 0x20>;
+};
+
+

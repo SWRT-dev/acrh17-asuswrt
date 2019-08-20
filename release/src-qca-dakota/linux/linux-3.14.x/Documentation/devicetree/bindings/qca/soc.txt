@@ -1,0 +1,17 @@
+QCA System-on-Chip
+
+Required properties:
+
+- compatible: "simple-bus"
+- #address-cells: must be 1
+- #size-cells: must be 1
+
+Example:
+
+	soc {
+		compatible = "simple-bus";
+		model = "Qualcomm Technologies, Inc. IPQ40xx";
+		#address-cells = <1>;
+		#size-cells = <1>;
+		...
+	};

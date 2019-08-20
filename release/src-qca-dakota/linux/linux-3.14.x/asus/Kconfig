@@ -1,0 +1,40 @@
+choice
+	prompt "Choose Product"
+	help
+	   Choose specific product for different hardware layout
+
+config RTAC55U
+	bool "RTAC55U (initial porting product)"
+
+config PLN12
+	bool "PL-N12 (QCA9533 + AR7420)"
+
+config PLAC56
+	bool "PL-AC56 (QCA9563 + QCA9882 + QCA7500)"
+
+config PLAC66U
+	bool "PL-AC66U (QCA9563 + QCA9880 + QCA7500)"
+
+config RTAC58U
+	bool "RTAC58U (initial porting product)"
+
+config 4GAC53U
+	bool "4G-AC53U (initial porting product)"
+
+config RTAC82U
+	bool "RTAC82U (initial porting product)"
+
+config MAPAC1300
+	bool "MAP-AC1300 (initial porting product)"
+
+config VZWAC1300
+	bool "VZW-AC1300 (initial porting product)"
+
+config MAPAC2200
+	bool "MAP-AC2200 (initial porting product)"
+
+config MAPAC3000
+	bool "MAP-AC3000 (initial porting product)"
+
+endchoice
+

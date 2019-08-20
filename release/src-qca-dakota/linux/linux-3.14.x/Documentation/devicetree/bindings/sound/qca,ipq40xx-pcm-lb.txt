@@ -1,0 +1,15 @@
+qca,ipq40xx-pcm-lb
+
+VOIP PCM driver loopback test module for IPQ40xx
+
+Required properties:
+
+  - compatible : "qca,ipq40xx-pcm-lb"
+
+Example:
+
+pcm_lb: pcm_lb@0 {
+        compatible = "qca,ipq40xx-pcm-lb";
+};
+
+

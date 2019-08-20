@@ -1,0 +1,176 @@
+/* Copyright (c) 2015, The Linux Foundation. All rights reserved.
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any
+ * purpose with or without fee is hereby granted, provided that the above
+ * copyright notice and this permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+ * WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ * ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+ * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+ * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "qcom-ipq8064-v2.0.dtsi"
+/ {
+	cpus {
+		 cpu@0 {
+			operating-points-0-0 = <
+				/* kHz      uV */
+				1725000 1262500
+				1400000 1175000
+				1000000 1100000
+				 800000 1050000
+				 600000 1000000
+				 384000  975000
+			>;
+			operating-points-0-1 = <
+				/* kHz      uV */
+				1725000 1225000
+				1400000 1150000
+				1000000 1075000
+				 800000 1025000
+				 600000  975000
+				 384000  950000
+			>;
+			operating-points-0-2 = <
+				/* kHz      uV */
+				1725000 1200000
+				1400000 1125000
+				1000000 1050000
+				 800000 1000000
+				 600000  950000
+				 384000  925000
+			>;
+			operating-points-0-3 = <
+				/* kHz      uV */
+				1725000 1175000
+				1400000 1100000
+				1000000 1025000
+				 800000  975000
+				 600000  925000
+				 384000  900000
+			>;
+			operating-points-0-4 = <
+				/* kHz      uV */
+				1725000 1150000
+				1400000 1075000
+				1000000 1000000
+				 800000  950000
+				 600000  900000
+				 384000  875000
+			>;
+			operating-points-0-5 = <
+				/* kHz      uV */
+				1725000 1100000
+				1400000 1025000
+				1000000  950000
+				 800000  900000
+				 600000  850000
+				 384000  825000
+			>;
+			operating-points-0-6 = <
+				/* kHz      uV */
+				1725000 1050000
+				1400000  975000
+				1000000  900000
+				 800000  850000
+				 600000  800000
+				 384000  775000
+			>;
+		 };
+
+		 cpu@1 {
+		    	operating-points-0-0 = <
+				/* kHz      uV */
+				1725000 1262500
+				1400000 1175000
+				1000000 1100000
+				 800000 1050000
+				 600000 1000000
+				 384000  975000
+			>;
+			operating-points-0-1 = <
+				/* kHz      uV */
+				1725000 1225000
+				1400000 1150000
+				1000000 1075000
+				 800000 1025000
+				 600000  975000
+				 384000  950000
+			>;
+			operating-points-0-2 = <
+				/* kHz      uV */
+				1725000 1200000
+				1400000 1125000
+				1000000 1050000
+				 800000 1000000
+				 600000  950000
+				 384000  925000
+			>;
+			operating-points-0-3 = <
+				/* kHz      uV */
+				1725000 1175000
+				1400000 1100000
+				1000000 1025000
+				 800000  975000
+				 600000  925000
+				 384000  900000
+			>;
+			operating-points-0-4 = <
+				/* kHz      uV */
+				1725000 1150000
+				1400000 1075000
+				1000000 1000000
+				 800000  950000
+				 600000  900000
+				 384000  875000
+			>;
+			operating-points-0-5 = <
+				/* kHz      uV */
+				1725000 1100000
+				1400000 1025000
+				1000000  950000
+				 800000  900000
+				 600000  850000
+				 384000  825000
+			>;
+			operating-points-0-6 = <
+				/* kHz      uV */
+				1725000 1050000
+				1400000  975000
+				1000000  900000
+				 800000  850000
+				 600000  800000
+				 384000  775000
+			>;
+		};
+	};
+
+	soc: soc {
+		rpm@108000 {
+			smb208_s2a: smb208-s2a {
+				regulator-max-microvolt = <1275000>;
+			};
+
+			smb208_s2b: smb208-s2b {
+				regulator-max-microvolt = <1275000>;
+			};
+		};
+
+		nss0: nss@40000000 {
+			qcom,low-frequency = <110000000>;
+			qcom,mid-frequency = <600000000>;
+			qcom,max-frequency = <800000000>;
+		};
+
+		nss1: nss@40800000 {
+			qcom,low-frequency = <110000000>;
+			qcom,mid-frequency = <600000000>;
+			qcom,max-frequency = <800000000>;
+		};
+	};
+};

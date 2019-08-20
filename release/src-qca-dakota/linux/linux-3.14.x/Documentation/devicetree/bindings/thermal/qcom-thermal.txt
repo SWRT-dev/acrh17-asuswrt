@@ -1,0 +1,24 @@
+* QCOM SoC Temperature Sensor (TSENS)
+
+Required properties:
+- compatible : "qcom,ipq806x-tsens"
+- qcom,slope : Must contain slope value for each of the sensors controlled
+			by this device
+- reg : Registers and the corresponding size which needs to
+	be ioremapped.
+- reg-names = Names for each registers.
+- interrupts : Notification interrupt to the userspace.
+- qcom,tsens_factor : Sensor multiplication factor.
+- qcom,sensors : No.of sensors available.
+
+Example:
+
+tsens: tsens-ipq806x {
+	compatible = "qcom,ipq806x-tsens";
+	reg = <0x900000 0x3678>, <0x700000 0x420>;
+	reg-names = "tsens_physical", "tsens_eeprom_physical";
+	interrupts = <0 178 0>;
+	qcom,sensors = <11>;
+	qcom,tsens_factor = <1000>;
+	qcom,slope = <1176 1176 1154 1176 1111 1132 1132 1199 1132 1199 1132>;
+};

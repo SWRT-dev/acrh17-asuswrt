@@ -1,0 +1,14 @@
+QCA I2S1 DAI module
+
+Required properties:
+- compatible : "qca,ipq40xx-i2s1"
+- dma-tx-channel : Specify the MBOX TX channel number for I2S1.
+- stereo-tx-port : Specify the Stereo port id for I2S1.
+
+Example:
+
+i2s1: ipq40xx-pcm-i2s1@0 {
+	compatible = "qca,ipq40xx-i2s1";
+	dma-tx-channel = <MBOX1_TX_ID>;
+	stereo-tx-port = <STEREO1_ID>;
+};

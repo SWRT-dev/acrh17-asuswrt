@@ -1,0 +1,64 @@
+QCA WLAN Driver
+---------------
+
+This driver adds support for the WLAN subsystem for supporting
+integrated WLAN module
+
+Required properties:
+  - compatible = "qca,wifi-ipq40xx";
+  - reg = <baseaddr length>
+  - resets = <list of wifi resets>.
+  - reset-names = <list of reset's string name defined in the resets field>.
+  - interrupts = <list of msi and legacy interrupts>
+  - interrupt-names = <list of interrupt's string name defined in the interrupts field. Please
+    ensure the order of the interrupts and the interrupts name matches with each other.
+  - status = ok or disabled.
+  - qca,msi_addr = <msiaddr>
+  - qca,msi_base = <msidata>
+    Please refer below example.
+
+
+Optional properties:
+
+Example:
+
+	wifi0: wifi@a000000 {
+	   compatible = "qca,wifi-qca961x";
+	   reg = <0xa000000 0x200000>;
+	   resets = <&gcc WIFI0_CPU_INIT_RESET>,
+		  <&gcc WIFI0_RADIO_SRIF_RESET>,
+		  <&gcc WIFI0_RADIO_WARM_RESET>,
+		  <&gcc WIFI0_RADIO_COLD_RESET>,
+		  <&gcc WIFI0_CORE_WARM_RESET>,
+		  <&gcc WIFI0_CORE_COLD_RESET>;
+	   reset-names = "wifi_cpu_init",
+	       "wifi_radio_srif",
+	       "wifi_radio_warm",
+	       "wifi_radio_cold",
+	       "wifi_core_warm",
+	       "wifi_core_cold";
+	   /* TBD: Check if 'clocks' entry is required here - if required, add the entries once they are defined in GCC driver */
+	   interrupts = <0 0x20 0x1>,
+		      <0 0x21 0x1>,
+		      <0 0x22 0x1>,
+		      <0 0x23 0x1>,
+		      <0 0x24 0x1>,
+		      <0 0x25 0x1>,
+		      <0 0x26 0x1>,
+		      <0 0x27 0x1>,
+		      <0 0x28 0x1>,
+		      <0 0x29 0x1>,
+		      <0 0x2a 0x1>,
+		      <0 0x2b 0x1>,
+		      <0 0x2c 0x1>,
+		      <0 0x2d 0x1>,
+		      <0 0x2e 0x1>,
+		      <0 0x2f 0x1>,
+		      <0 0xa8 0x0>;
+	   interrupt-names = "msi0", "msi1", "msi2", "msi3", "msi4", "msi5", "msi6",
+	       "msi7", "msi8", "msi9", "msi10", "msi11", "msi12", "msi13", "msi14",
+	       "msi15", "legacy";
+	   status = "disabled";
+	   qca,msi_addr = <0x0b006040>;
+	   qca,msi_base = <0x40>;
+       };`

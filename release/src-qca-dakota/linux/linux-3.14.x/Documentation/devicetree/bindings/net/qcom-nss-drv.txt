@@ -1,0 +1,113 @@
+* Qualcomm Technologies Inc. NSS HLOS Platform Driver.
+
+This driver communicates with the NSS Firmware, and provides empty buffers for packet-processing to the UBI32 processor.
+It also keeps track of sync packets from NSS Firmware.
+This driver has 2 sections listed below, one common to all the UBI32 cores and other specific to each UBI32 core.
+
+1. Driver access details specific to each UBI32/NSS core.
+
+Required properties:
+- compatible: "qcom,nss0"
+- compatible: "qcom,nss1"
+- interrupts: UBI32 to Apps interrupts for Sync/Data Packets and Empty Buffers.
+- reg-names: Indicates various resources passed to driver by name.
+		"nphys","vphys"
+		Refers to TCM and CSM Base Addresses of UBI32 Memory map.
+- reg: physical address and length of the register set for the device.
+- qcom,id: Unique Identifier for the HLOS block.This field is unique identifier for the core, which is also used as an index for global nss context.
+- clocks: physical address for NSS source clock, TCM clock and fabric clock.
+- resets: physical address for core clock reset, AHB and AXI reset.
+- qcom,rst_addr: Reset vector for NSS core.
+- qcom,load_addr: physical address to load NSS firmware.
+- qcom,turbo_frequency = turbo freq supported or not.
+- qcom,low_frequency = lowest supported operating frequency.
+- qcom,mid_frequency = nominal supported operating frequency.
+- qcom,max_frequency = maximum supported operating frequency.
+
+Optional properties:
+- qcom,ipv4-enabled: Enables registeration of N2H/PPPoE/ETH handlers, to receive stat sync
+	             IPV4 packets from UBI32.
+- qcom,ipv6-enabled: Enables registeration of IPV6 packet handlers, to receive stat sync
+                     IPV6 packets from UBI32.
+- qcom,crypto-enabled: Enables the cryptography feature for the platform.
+- qcom,gmac0-enabled: Enables GMAC0 port.
+- qcom,gmac1-enabled: Enables GMAC1 port.
+- qcom,gmac2-enabled: Enables GMAC2 port.
+- qcom,gmac3-enabled: Enables GMAC3 port.
+- qcom,wlan_dataplane_offload_enabled: Enables wifi dataplane offload in NSS.
+
+example:
+nss0: nss@40000000 {
+	compatible = "qcom,nss0";
+	pinctrl-0 = <&nss_spi_pins>;
+	pinctrl-names = "default";
+	interrupts = <GIC_SPI 213 IRQ_TYPE_LEVEL_HIGH
+		GIC_SPI 232 IRQ_TYPE_LEVEL_HIGH>;
+	reg = <0x36000000 0x1000 0x39000000 0x10000>;
+	reg-names = "nphys", "vphys";
+	clocks = <&gcc NSS_CORE_CLK>, <&gcc NSSTCM_CLK_SRC>, <&gcc NSSTCM_CLK>, <&nss_fabric0_clk>, <&nss_fabric1_clk>;
+	clock-names = "nss_core_clk", "nss_tcm_src", "nss_tcm_clk", "nss-fab0-clk", "nss-fab1-clk";
+	resets = <&gcc UBI32_CORE1_CLKRST_CLAMP_RESET>,
+		<&gcc UBI32_CORE1_CLAMP_RESET>,
+		<&gcc UBI32_CORE1_AHB_RESET>,
+		<&gcc UBI32_CORE1_AXI_RESET>;
+	reset-names = "clkrst_clamp", "clamp", "ahb", "axi";
+	qcom,id = <0>;
+	qcom,num_irq = <2>;
+	qcom,rst_addr = <0x40000000>;
+	qcom,load_addr = <0x40000000>;
+	qcom,turbo_frequency = <1>;
+	qcom,low_frequency = <110000000>;
+	qcom,mid_frequency = <550000000>;
+	qcom,max_frequency = <733000000>;
+	qcom,ipv4_enabled = <1>;
+	qcom,ipv6_enabled = <1>;
+	qcom,l2switch_enabled = <1>;
+	qcom,crypto_enabled = <0>;
+	qcom,ipsec_enabled = <0>;
+	qcom,wlanredirect_enabled = <1>;
+	qcom,tun6rd_enabled = <1>;
+	qcom,tunipip6_enabled = <1>;
+	qcom,shaping_enabled = <1>;
+	qcom,gmac0_enabled = <1>;
+	qcom,gmac1_enabled = <1>;
+	qcom,gmac2_enabled = <1>;
+	qcom,gmac3_enabled = <1>;
+	qcom,wlan_dataplane_offload_enabled = <1>;
+};
+
+nss1: nss@40800000 {
+	compatible = "qcom,nss1";
+	interrupts = <GIC_SPI 214 IRQ_TYPE_LEVEL_HIGH
+			  GIC_SPI 233 IRQ_TYPE_LEVEL_HIGH>;
+	reg = <0x36400000 0x1000 0x39010000 0x10000>;
+	reg-names = "nphys", "vphys";
+	resets = <&gcc UBI32_CORE2_CLKRST_CLAMP_RESET>,
+		 <&gcc UBI32_CORE2_CLAMP_RESET>,
+		 <&gcc UBI32_CORE2_AHB_RESET>,
+		 <&gcc UBI32_CORE2_AXI_RESET>;
+	reset-names = "clkrst_clamp", "clamp", "ahb", "axi";
+	qcom,id = <1>;
+	qcom,num_irq = <2>;
+	qcom,rst_addr = <0x40800000>;
+	qcom,load_addr = <0x40800000>;
+	qcom,turbo_frequency = <1>;
+	qcom,low_frequency = <110000000>;
+	qcom,mid_frequency = <550000000>;
+	qcom,max_frequency = <733000000>;
+	qcom,ipv4_enabled = <0>;
+	qcom,ipv6_enabled = <0>;
+	qcom,l2switch_enabled = <0>;
+	qcom,crypto_enabled = <1>;
+	qcom,ipsec_enabled = <1>;
+	qcom,wlanredirect_enabled = <0>;
+	qcom,tun6rd_enabled = <0>;
+	qcom,tunipip6_enabled = <0>;
+	qcom,shaping_enabled = <0>;
+	qcom,gmac0_enabled = <0>;
+	qcom,gmac1_enabled = <0>;
+	qcom,gmac2_enabled = <0>;
+	qcom,gmac3_enabled = <0>;
+	qcom,wlan_dataplane_offload_enabled = <0>;
+};
+

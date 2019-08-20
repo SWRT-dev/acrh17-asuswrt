@@ -1,0 +1,302 @@
+/* Copyright (c) 2014, The Linux Foundation. All rights reserved.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 and
+ * only version 2 as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ */
+
+#include "qcom-ipq40xx.dtsi"
+#include "qcom-ipq40xx-lcdc.dtsi"
+#include "qcom-ipq40xx-lcdpanel.dtsi"
+#include "qcom-ipq40xx-hsuart.dtsi"
+#include "qcom-ipq40xx-audio.dtsi"
+/ {
+	model = "Qualcomm Technologies, Inc. IPQ40xx R3PC";
+	compatible = "qcom,qca961x-r3pc", "qcom,qca961x";
+
+	memory {
+		device_type = "memory";
+		reg = <0x80000000 0x20000000>; /* 512MB */
+	};
+
+	chosen {
+		bootargs = "console=ttyMSM0,115200n8";
+	};
+
+};
+	&soc {
+		timer {
+			clock-frequency = <2400000>;
+		};
+
+		pinctrl@0x01000000 {
+			serial_pins: serial_pinmux {
+				mux {
+					pins = "gpio16", "gpio17";
+					function = "blsp_uart0";
+					bias-disable;
+				};
+			};
+		};
+
+		serial@78af000 {
+			pinctrl-0 = <&serial_pins>;
+			pinctrl-names = "default";
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+			clock-names = "core", "iface";
+		};
+
+		serial@78b0000 {
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+			clock-names = "core", "iface";
+		};
+
+		spi_0: spi@78b5000 { /* BLSP1 QUP1 */
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+			clock-names = "iface_clk", "core_clk";
+			qcom,gpio-cs1  = <&tlmm 59 0>;
+
+			m25p80@0 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "n25q128a11";
+				reg = <0>;
+				linux,modalias = "m25p80", "n25q128a11";
+				spi-max-frequency = <50000000>;
+			};
+
+			mt29f@1 {
+				#address-cells = <1>;
+				#size-cells = <0>;
+				compatible = "spinand,mt29f";
+				reg = <1>;
+				spi-max-frequency = <50000000>;
+			};
+
+		};
+
+		qcom,nand@7980000 {
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>;
+			clock-names = "core_clk";
+		};
+
+		tcsr: tcsr@194b000 {
+			status = "ok";
+		};
+
+		usb3_ss_phy: ssphy@0 {
+			status = "ok";
+			reg = <0x00090000 0x800>;
+			qca,emulation = <1>;
+		};
+
+		dummy_ss_phy: ssphy@1 {
+			status = "ok";
+			compatible = "qca,dummy-ssphy";
+		};
+
+		usb3_hs_phy: hsphy@a6000 {
+			status = "ok";
+			reg = <0xa6000 0x1c0>;
+			qca,emulation = <1>;
+		};
+
+		usb2_hs_phy: hsphy@a8000 {
+			status = "ok";
+			reg = <0xa8000 0x1c0>;
+			qca,emulation = <1>;
+		};
+
+		usb3: usb3@8a00000 {
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+			clock-names = "master",
+				"sleep",
+				"mock_utmi",
+				"srif_ahb",
+				"srif_25m";
+		};
+
+		usb2: usb2@6000000 {
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+			clock-names = "master",
+				"sleep",
+				"mock_utmi",
+				"srif_ahb",
+				"srif_25m";
+		};
+
+		i2c_0: i2c@78b7000 { /* BLSP1 QUP2 */
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+			clock-names = "iface_clk", "core_clk";
+		};
+
+		gcc: clock-controller@1800000 {
+			compatible = "qcom,gcc-dummy";
+			#clock-cells = <1>;
+			#reset-cells = <1>;
+			reg = <0x1800000 0x60000>;
+		};
+
+		qcom_crypto: qcrypto@8e20000 {
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+
+			clock-names = "core_clk_src", "core_clk",
+					"iface_clk", "bus_clk";
+		};
+
+		qcom_cedev: qcedev@8e20000 {
+			status = "ok";
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+
+			clock-names = "core_clk_src", "core_clk",
+					"iface_clk", "bus_clk";
+		};
+
+		pcie0: qcom,pcie@80000 {
+			status = "ok";
+			qcom,is_emulation;
+			perst-gpio = <&tlmm 61 0>;
+			wake-gpio = <&tlmm 65 0>;
+			clkreq-gpio = <&tlmm 64 0>;
+
+			clocks = <&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>,
+				<&gcc GCC_DUMMY_CLK>;
+
+			clock-names =  "pcie_0_pipe_clk", "pcie_0_ref_clk_src", "pcie_0_aux_clk",
+				"pcie_0_cfg_ahb_clk", "pcie_0_mstr_axi_clk",
+				"pcie_0_slv_axi_clk", "pcie_0_ldo";
+		};
+
+		qcom: ledc@1937000  {
+			 status = "ok";
+		};
+
+		ess-switch@c000000 {
+			switch_mac_mode = <0x0>; /* mac mode for RGMII RMII */
+			switch_initvlas = <
+				0x0007c 0x54 /* PORT0_STATUS */
+			>;
+		};
+
+		vcc_sd0: regulator@0 {
+			compatible = "regulator-fixed";
+			regulator-name = "SDHI0 Vcc";
+			regulator-min-microvolt = <3000000>;
+			regulator-max-microvolt = <3000000>;
+			gpio = <&tlmm 6 0>;
+		};
+
+		vccq_sd0: regulator@1 {
+			compatible = "regulator-gpio";
+			regulator-name = "SD0 VccQ";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <3000000>;
+
+			gpios = <&tlmm 7 0>;
+			states = <3000000 0
+				1800000 1>;
+			enable-active-high;
+		};
+
+		sdhci@7824000 {
+			status = "ok";
+			qca,emulation;
+			vmmc-supply = <&vcc_sd0>;
+			vqmmc-supply = <&vccq_sd0>;
+			non-removable;
+			clocks = <&gcc GCC_DUMMY_CLK>, <&gcc GCC_DUMMY_CLK>;
+			clock-names = "core", "iface";
+		};
+
+		pcm: pcm@7704000 {
+			status = "ok";
+		};
+
+		i2s: ipq40xx-pcm-i2s@0 {
+			status = "ok";
+		};
+
+		tdm: tdm@0 {
+			status = "ok";
+		};
+
+		spdif: spdif@0 {
+			status = "ok";
+		};
+
+		qcacodec: qca-codec@50 {
+			status = "ok";
+		};
+
+		i2splatform: qca-pcm-i2s@7709000 {
+			status = "ok";
+		};
+
+		tdmplatform: qca-pcm-tdm@7709000 {
+			status = "ok";
+		};
+
+		i2s1platform: qca-pcm-i2s1@770b000 {
+			status = "ok";
+		};
+
+		i2s1: ipq40xx-pcm-i2s1@0 {
+			status = "ok";
+		};
+
+		i2s2platform: qca-pcm-i2s2@770d000 {
+			status = "ok";
+		};
+
+		i2s2: ipq40xx-pcm-i2s2@0 {
+			status = "ok";
+		};
+
+		spdifplatform: qca-pcm-spdif@7707000 {
+			status = "ok";
+		};
+
+		sound: sound@0 {
+			status = "ok";
+		};
+
+		pcm_lb: pcm_lb@0 {
+			status = "ok";
+		};
+	};

@@ -1,0 +1,22 @@
+
+qca,ipq40xx cpufreq driver
+-------------------
+
+IPQ40xx SoC cpufreq driver for CPU frequency scaling.
+
+Required properties:
+- operating-points: Table of frequencies and voltage CPU could be transitioned into,
+	in the decreasing order. Frequency should be in KHz units and voltage
+	should be in microvolts.
+
+Optional properties:
+- clock-latency: Clock monitor latency in microsecond. Example: 200usec
+
+All the required listed above must be defined under node cpufreq.
+
+Example:
+--------
+	cpu_freq_ipq40xx {
+		compatible = "qca,ipq40xx_freq";
+		clock-latency = <0x100>;
+	};
