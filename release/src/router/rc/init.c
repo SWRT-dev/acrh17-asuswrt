@@ -98,9 +98,9 @@ static char *defenv[] = {
 	"HOME=/",
 	//"PATH=/usr/bin:/bin:/usr/sbin:/sbin",
 #ifdef RTCONFIG_LANTIQ
-	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/rom/opt/lantiq/bin:/rom/opt/lantiq/usr/sbin",
+	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/rom/opt/lantiq/bin:/rom/opt/lantiq/usr/sbin:/jffs/softcenter/bin:/jffs/softcenter/scripts",
 #else
-	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin",
+	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/jffs/softcenter/bin:/jffs/softcenter/scripts",
 #endif
 #ifdef HND_ROUTER
 	"LD_LIBRARY_PATH=/lib:/usr/lib:/lib/aarch64",
@@ -109,7 +109,10 @@ static char *defenv[] = {
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
-	"LD_LIBRARY_PATH=/lib:/usr/lib:/opt/lantiq/usr/lib:/opt/lantiq/usr/sbin/:/tmp/wireless/lantiq/usr/lib/",
+	"LD_LIBRARY_PATH=/lib:/usr/lib:/opt/lantiq/usr/lib:/opt/lantiq/usr/sbin/:/tmp/wireless/lantiq/usr/lib/:/jffs/softcenter/lib",
+#endif
+#ifdef defined(RTAC68U) || defined(RTAC3200)
+	"LD_LIBRARY_PATH=/lib:/usr/lib:/jffs/softcenter/lib",
 #endif
 	"SHELL=" SHELL,
 	"USER=root",
@@ -9962,6 +9965,7 @@ static void sysinit(void)
 		"/tmp/etc/rc.d",
 #endif
 		"/tmp/var/tmp",
+		"/tmp/etc/dnsmasq.user",	// ssr and adbyby
 		NULL
 	};
 	umask(0);
@@ -10564,6 +10568,7 @@ int init_main(int argc, char *argv[])
 		extern void asm1042_upgrade(int);
 		asm1042_upgrade(1);	// check whether upgrade firmware of ASM1042
 #endif
+		run_custom_script("init-start", 0, NULL, NULL);
 
 		state = SIGUSR2;	/* START */
 
@@ -11216,4 +11221,3 @@ int reboothalt_main(int argc, char *argv[])
 
 	return 0;
 }
-

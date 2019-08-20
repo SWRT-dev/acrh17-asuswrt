@@ -780,6 +780,7 @@ static const applets_t applets[] = {
 	{ "usbled",			usbled_main			},
 #endif
 	{ "ddns_updated", 		ddns_updated_main		},
+	{ "ddns_custom_updated",	ddns_custom_updated_main	},
 	{ "radio",			radio_main			},
 	{ "udhcpc",			udhcpc_wan			},
 	{ "udhcpc_lan",			udhcpc_lan			},
@@ -871,6 +872,9 @@ static const applets_t applets[] = {
 #endif
 #ifdef RTCONFIG_TR069
 	{ "dhcpc_lease",		dhcpc_lease_main		},
+#endif
+#if defined(RTCONFIG_QCA)
+	{ "dhcpc_lease",		dnsmasq_script_main		},
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	{ "roamast",			roam_assistant_main		},

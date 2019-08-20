@@ -90,6 +90,8 @@ MODEL = $(subst -,,$(subst +,P,$(BUILD_NAME)))
 endif
 export CFLAGS += -D$(MODEL)
 export $(MODEL)=y
+export CFLAGS += -D$(MERLINR_NAME)
+export $(MERLINR_NAME)=y
 
 export OLD_SRC=$(SRCBASE)/../src
 ifeq ($(RTCONFIG_REALTEK),y)
@@ -720,6 +722,10 @@ obj-y += rc
 obj-y += rom
 obj-y += others
 obj-y += libpasswd
+ifeq ($(RTCONFIG_SOFTCENTER),y)
+obj-y += skipdbv2 libev-4.22 softcenter libiconv-1.14
+obj-y += ipset libmnl libnfnetlink
+endif
 obj-y += httpd json-c
 obj-$(RTCONFIG_VISUALIZATION) += sqlite3 json-c libxml2 visdcoll visdcon
 obj-y += www
@@ -2179,6 +2185,9 @@ roldconf: config/conf
 	$(MAKE) shared-clean libdisk-clean rc-clean nvram$(BCMEX)$(EX7)-clean httpd-clean prebuilt-clean libbcmcrypto-clean
 #	@$(MAKE) iptables-clean ebtables-clean pppd-clean zebra-clean openssl-clean mssl-clean pppd-clean
 	$(MAKE) dnsmasq-clean iproute2-clean networkmap-clean
+ifeq ($(RTCONFIG_SOFTCENTER),y)
+	$(MAKE) skipdbv2-clean libev-4.22-clean
+endif
 ifeq ($(RTCONFIG_BCMARM),y)
 	$(MAKE) compressed-clean
 endif
@@ -2694,7 +2703,7 @@ dnsmasq:
 	@$(SEP)
 	@$(MAKE) -C dnsmasq \
 	COPTS="-DHAVE_BROKEN_RTC -DHAVE_LEASEFILE_EXPIRE -DEDNS_PKTSZ=1280 \
-		-DNO_ID -DNO_AUTH -DNO_IPSET -DNO_LOOP -DNO_INOTIFY -DNO_DUMPFILE \
+		-DNO_ID -DNO_AUTH -DNO_LOOP -DNO_INOTIFY -DNO_DUMPFILE \
 		$(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6) \
 		$(if $(RTCONFIG_USB_EXTRAS)||$(RTCONFIG_TR069),,-DNO_SCRIPT) \
 		$(if $(RTCONFIG_USB_EXTRAS),,-DNO_TFTP)" \
@@ -2861,6 +2870,127 @@ endif
 iptables-1.4.x-clean:
 	[ ! -f iptables-1.4.x/Makefile ] || $(MAKE) -C iptables-1.4.x KERNEL_DIR=$(LINUX_INC_DIR) distclean
 	@rm -f iptables-1.4.x/Makefile
+
+ifeq ($(RTCONFIG_SOFTCENTER),y)
+libev-4.22/configure:
+	cd libev-4.22 && ./autogen.sh
+
+libev-4.22/Makefile: libev-4.22/configure
+	cd libev-4.22 && $(CONFIGURE)\
+		--target=arm-linux --host=arm-linux --build=x86_64-linux-gnu --program-prefix= --program-suffix= \
+		--prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib --sysconfdir=/etc \
+		--datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info --disable-nls --enable-shared --enable-static
+
+libev-4.22: libev-4.22/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libev-4.22-clean:
+	[ ! -f libev-4.22/Makefile ] || $(MAKE) -C libev-4.22 -f Makefile distclean
+	@rm -f libev.la
+	@rm -f libev-4.22/stamp-h1
+	@rm -f libev-4.22/.libs
+	@rm -f libev-4.22/.deps
+
+libev-4.22-install:
+	install -D $(STAGEDIR)/usr/lib/libev.so.4.0.0 $(INSTALLDIR)/libev-4.22/usr/lib/libev.so.4.0.0
+	$(STRIP) $(INSTALLDIR)/libev-4.22/usr/lib/libev.so.4.0.0
+	cd $(INSTALLDIR)/libev-4.22/usr/lib && \
+		ln -sf libev.so.4.0.0 libev.so.4 && \
+		ln -sf libev.so.4.0.0 libev.so
+
+skipdbv2/Makefile: skipdbv2/CMakeLists.txt
+	cd skipdbv2 && cmake -DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DCMAKE_EXE_LINKER_FLAGS="-L$(STAGEDIR)/usr/lib -lev" 
+
+skipdbv2: libev-4.22 skipdbv2/Makefile
+	$(MAKE) -C $@
+
+skipdbv2-clean:
+	[ ! -f skipdbv2/Makefile ] || $(MAKE) -C skipdbv2 -f Makefile clean
+	@rm -rf skipdbv2/bin
+	@rm -rf skipdbv2/lib
+	@rm -rf skipdbv2/CMakeFiles
+	@rm -f skipdbv2/CMakeCache.txt
+	@rm -f skipdbv2/cmake_install.cmake
+	@rm -f skipdbv2/Makefile
+
+skipdbv2-install: skipdbv2
+	install -D skipdbv2/bin/skipd $(INSTALLDIR)/skipdbv2/usr/sbin/skipd
+	install -D skipdbv2/bin/dbus $(INSTALLDIR)/skipdbv2/usr/sbin/dbus
+	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/sbin/skipd
+	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/sbin/dbus
+
+libmnl/stamp-h1:
+	cd $(TOP)/libmnl && CC=$(CC) STRIP=$(STRIP) \
+	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+	$(CONFIGURE) --prefix=/usr
+	touch libmnl/stamp-h1
+
+libmnl: libmnl/stamp-h1
+	$(MAKE) -C libmnl
+	$(MAKE) -C libmnl DESTDIR=$(TOP)/libmnl/staged install
+
+libmnl-install: libmnl
+	install -d $(INSTALLDIR)/libmnl/usr/lib/
+	install libmnl/src/.libs/libmnl.so.0.1.0 $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
+	$(STRIP) $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
+	cd $(INSTALLDIR)/libmnl/usr/lib/ && \
+		ln -sf libmnl.so.0.1.0 libmnl.so.0 && \
+		ln -sf libmnl.so.0.1.0 libmnl.so
+
+libmnl-clean:
+	-@$(MAKE) -C libmnl clean
+	-@rm -rf libmnl/staged
+
+ipset/stamp-h1: libmnl
+	cd $(TOP)/ipset && CC=$(CC) STRIP=$(STRIP) \
+	autoreconf -i -f && \
+	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+	libmnl_CFLAGS="-I$(TOP)/libmnl/staged/usr/include" \
+	libmnl_LIBS="-L$(TOP)/libmnl/staged/usr/lib -lmnl" \
+	$(CONFIGURE) --prefix=/usr --with-kmod=yes --with-kbuild=$(LINUXDIR)
+	touch ipset/stamp-h1
+
+ipset: ipset/stamp-h1
+	$(MAKE) -C ipset
+	$(MAKE) -C ipset modules
+
+ipset-install:
+	install -D ipset/src/ipset $(INSTALLDIR)/ipset/usr/sbin/ipset
+	install -d $(INSTALLDIR)/ipset/usr/lib/
+	install ipset/lib/.libs/libipset.so.3.6.0 $(INSTALLDIR)/ipset/usr/lib/libipset.so.3.6.0
+	$(STRIP) $(INSTALLDIR)/ipset/usr/lib/libipset.so.3.6.0
+	$(STRIP) $(INSTALLDIR)/ipset/usr/sbin/ipset
+	cd $(INSTALLDIR)/ipset/usr/lib/ && \
+		ln -sf libipset.so.3.6.0 libipset.so.3 && \
+		ln -sf libipset.so.3.6.0 libipset.so
+
+ipset-clean:
+	-@$(MAKE) -C ipset clean
+	-@$(MAKE) -C ipset modules_clean
+	-@rm -rf ipset/Makefile ipset/stamp-h1
+
+libnfnetlink/stamp-h1:
+	cd $(TOP)/libnfnetlink && CC=$(CC) STRIP=$(STRIP) \
+		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
+		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		$(CONFIGURE) --prefix=/usr --enable-shared --enable-static
+	touch libnfnetlink/stamp-h1
+
+libnfnetlink: libnfnetlink/stamp-h1
+	@$(SEP)
+	$(MAKE) -C libnfnetlink
+
+libnfnetlink-install:
+	install -D libnfnetlink/src/.libs/libnfnetlink.so.0.2.0 $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
+	$(STRIP) -s $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
+	cd $(INSTALLDIR)/libnfnetlink/usr/lib/ && \
+		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so.0 && \
+		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so
+endif
 
 miniupnpd/config.h: shared/version.h
 	cd miniupnpd && ./genconfig.sh --vendorcfg --leasefile
@@ -3736,9 +3866,9 @@ libpcap: libpcap/stamp-h1
 
 libpcap-install: libpcap
 	@echo "do nothing"
-	#install -D libpcap/libpcap.so.1.4.0 $(INSTALLDIR)/libpcap/usr/lib/libpcap.so.1.4.0
-	#$(STRIP) $(INSTALLDIR)/libpcap/usr/lib/libpcap.so.1.4.0
-	#cd $(INSTALLDIR)/libpcap/usr/lib && ln -sf libpcap.so.1.4.0 libpcap.so
+	install -D libpcap/libpcap.so.1.5.3 $(INSTALLDIR)/libpcap/usr/lib/libpcap.so.1.5.3
+	$(STRIP) $(INSTALLDIR)/libpcap/usr/lib/libpcap.so.1.5.3
+	cd $(INSTALLDIR)/libpcap/usr/lib && ln -sf libpcap.so.1.5.3 libpcap.so
 
 libpcap-clean:
 	[ ! -f libpcap/Makefile ] || $(MAKE) -C libpcap clean
@@ -5293,11 +5423,11 @@ curl-7.21.7-install: curl-7.21.7
 	install -D curl-7.21.7/lib/.libs/libcurl.so.4.2.0 $(INSTALLDIR)/curl-7.21.7/usr/lib/libcurl.so.4.2.0
 	$(STRIP) $(INSTALLDIR)/curl-7.21.7/usr/lib/libcurl.so.4.2.0
 	cd $(INSTALLDIR)/curl-7.21.7/usr/lib && ln -sf libcurl.so.4.2.0 libcurl.so && ln -sf libcurl.so.4.2.0 libcurl.so.4
-ifeq ($(RTCONFIG_SPEEDTEST),y)
+#ifeq ($(RTCONFIG_SPEEDTEST),y)
 	# for speedtest
 	install -D curl-7.21.7/src/.libs/curl $(INSTALLDIR)/curl-7.21.7/usr/sbin/curl
 	$(STRIP) $(INSTALLDIR)/curl-7.21.7/usr/sbin/curl
-endif
+#endif
 
 curl-7.21.7-clean:
 	[ ! -f curl-7.21.7/Makefile ] || $(MAKE) -C curl-7.21.7 clean
@@ -7567,5 +7697,6 @@ $(obj-y) $(obj-n) $(obj-clean) $(obj-install): dummy
 .PHONY: all clean distclean mrproper install package image
 .PHONY: conf mconf oldconf kconf kmconf config menuconfig oldconfig
 .PHONY: dummy libnet libpcap
+
 
 

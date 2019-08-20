@@ -1,4 +1,4 @@
-﻿/* menuTree_bwdpi_traffic_analyzer.js */
+/* menuTree_bwdpi_traffic_analyzer.js */
 define(function(){
 	var menuTree = {
 		list: [
@@ -156,6 +156,15 @@ define(function(){
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
+			{
+				menuName: "<#Softcenter_tool#>",
+				index: "menu_Tools",
+				tab: [
+					{url: "Tools_Sysinfo.asp", tabName: "Sysinfo"},
+					{url: "key.asp", tabName: "Verify"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				] 
+			},
 			/* ============================================================================================================ */
 			{
 				menuName: "<#menu5#>",
@@ -292,6 +301,22 @@ define(function(){
 					{url: "Main_Netstat_Content.asp", tabName: "Netstat"},
 					{url: "Main_WOL_Content.asp", tabName: "<#NetworkTools_WOL#>"},
 					{url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				]
+			},
+			{
+				menuName: "<#Softcenter#>",
+				index: "menu_Split",
+				tab: [
+					{url: "NULL", tabName: "__HIDE__"}
+				]
+			},
+			{
+				menuName: "<#Softcenter#>",
+				index: "menu_Softcenter",
+				tab: [
+					{url: "Main_Soft_center.asp", tabName: "<#Softcenter#>"},
+					{url: "Main_Soft_setting.asp", tabName: "ManualInstall"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			}

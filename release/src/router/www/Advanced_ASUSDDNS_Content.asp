@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <html xmlns:v>
 <head>
@@ -615,7 +615,7 @@ function save_cert_key(){
 		  		<td bgcolor="#4D595D" valign="top"  >
 		  		<div>&nbsp;</div>
 		  		<div class="formfonttitle"><#menu5_3#> - <#menu5_3_6#></div>
-		  		<div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		  		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 		 		<div class="formfontdesc"><#LANHostConfig_x_DDNSEnable_sectiondesc#></div>
 		 		<div class="formfontdesc" style="margin-top:-8px;"><#NSlookup_help#></div>
 				<div class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
@@ -655,9 +655,13 @@ function save_cert_key(){
 						<option value="WWW.TUNNELBROKER.NET" <% nvram_match("ddns_server_x", "WWW.TUNNELBROKER.NET","selected"); %>>WWW.TUNNELBROKER.NET</option>
 						<option value="WWW.NO-IP.COM" <% nvram_match("ddns_server_x", "WWW.NO-IP.COM","selected"); %>>WWW.NO-IP.COM</option>
 						<option value="WWW.ORAY.COM" <% nvram_match("ddns_server_x", "WWW.ORAY.COM","selected"); %>>WWW.ORAY.COM(花生壳)</option>
+						<option value="WWW.3322.ORG" <% nvram_match("ddns_server_x", "WWW.3322.ORG","selected"); %>>WWW.3322.ORG</option>
+						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected"); %>>Custom</option>
 					</select>
 				<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
 				<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
+				<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>
+				<div id="need_custom_scripts" style="display:none;"><span>WARNING: you must enable both the JFFS2 partition and custom scripts support!<br>Click <a href="Advanced_System_Content.asp" style="text-decoration: underline;">HERE</a> to proceed.</span></div>
 				</td>
 			</tr>
 			<tr id="ddns_hostname_tr">
@@ -703,7 +707,7 @@ function save_cert_key(){
 			<tr style="display:none;">
 				<th><#DDNS_verification_frequency#></th>
 				<td>
-					<input type="text" lass="input_3_table" name="ddns_regular_period" value="<% nvram_get("ddns_regular_period"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
+					<input type="text"  class="input_3_table" name="ddns_regular_period" value="<% nvram_get("ddns_regular_period"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
 				</td>
 			</tr>
 			<tr style="display:none;">

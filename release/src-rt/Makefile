@@ -67,6 +67,11 @@ export SRCBASEDIR := $(shell pwd | sed 's/.*release\///g')
 RELEASEDIR := $(shell (cd $(SRC_ROOT)/.. && pwd -P))
 export PATH := $(RELEASEDIR)/tools:$(SRCBASE)/ctools:$(PATH)
 
+#K3C/K3/SBRAC1900P/SBRAC3200P/R7000/R8000/R7900P/R8000P
+export MERLINR_NAME := RT-ACRH17
+export MERLINR_VER := R1
+export MERLINRVER := $(MERLINR_NAME)_$(MERLINR_VER)
+
 # tmp depend on busybox
 E2FSPROGS := $(if $(filter $(BUSYBOX),busybox-1.17.4),n,y)
 
@@ -105,11 +110,11 @@ EXSTRING="-$(EXTENDTYPE)"
 else
 EXSTRING=
 endif
-export EXTENDNO := $(shell expr $(EXTENDNO1) + $(RC_EXT_NO))-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
+export EXTENDNO := $(MERLINRVER)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
 endif
 
 ifeq ($(EXTENDNO),)
-export EXTENDNO := 0-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
+export EXTENDNO := $(MERLINRVER)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
 endif
 
 export SWPJNAME := $(shell git branch | grep "*" | grep "swpj-" | sed 's/.*swpj-//g')
@@ -127,7 +132,7 @@ export SWPJEXTENDNO := $(shell git describe --match swpj_$(SWPJNAME)_$(SWPJVERNO
 ifneq ($(SWPJEXTENDNO),)
 export EXTENDNO := $(SWPJEXTENDNO)
 else
-export EXTENDNO := 0-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
+export EXTENDNO := $(MERLINRVER)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")
 endif
 endif
 
@@ -175,6 +180,8 @@ endif
 export MODEL
 export CFLAGS += -D$(MODEL)
 export $(MODEL):=y
+export CFLAGS += -D$(MERLINR_NAME)
+export $(MERLINR_NAME)=y
 endif
 
 EXTRA_KERNEL_YES_CONFIGS_1 := $(filter %=y %=Y,$(EXTRA_KERNEL_CONFIGS))
@@ -2606,6 +2613,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_WTF_REDEEM/d" $(1); \
 		echo "RTCONFIG_WTF_REDEEM=y" >>$(1); \
 	fi; \
+	if [ "$(SOFTCENTER)" = "y" ]; then \
+	sed -i "/RTCONFIG_SOFTCENTER/d" $(1); \
+	echo "RTCONFIG_SOFTCENTER=y" >>$(1); \
+	fi; \
 	)
 	$(call platformRouterOptions, $(1))
 endef
@@ -4252,4 +4263,3 @@ get_extendno:
 .PHONY: a b c d m Makefile allversions
 .PHONY: tags
 .PHONY: dummy
-

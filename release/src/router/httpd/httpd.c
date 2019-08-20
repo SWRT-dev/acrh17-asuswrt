@@ -1106,6 +1106,28 @@ handle_request(void)
         }
 #endif
         HTTPD_DBG("file = %s\n", file);
+#ifdef RTCONFIG_SOFTCENTER
+	char scPath[128];
+	if ((strncmp(file, "Main_S", 6)==0) || (strncmp(file, "Module_", 7)==0))//jsp
+	{
+		snprintf(scPath, sizeof(scPath), "/jffs/softcenter/webs/");
+		strcat(scPath, file);
+
+		if(check_if_file_exist(scPath)){
+			file = scPath;
+		}
+	}
+	if ((strstr(file, "res/")))//jpg,png,js,css,html
+	{
+		if(!check_if_file_exist(file)){
+			snprintf(scPath, sizeof(scPath), "/jffs/softcenter/");
+			strcat(scPath, file);
+			if(check_if_file_exist(scPath)){
+				file = scPath;
+			}
+		}
+	}
+#endif
 	mime_exception = 0;
 	do_referer = 0;
 
@@ -1312,7 +1334,15 @@ handle_request(void)
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA)
 					&& !strstr(file, "asustitle.png")
 #endif
-					&& !strstr(file,"cert_key.tar")){
+					&& !strstr(file,"cert_key.tar")
+#ifdef RTCONFIG_SOFTCENTER
+					&& !strstr(file, "ss_conf")
+					&& !strstr(file, "ss_status")
+					&& !strstr(file, "dbconf")
+					&& !strstr(file, "Main_S")
+					&& !strstr(file, "Module_")
+#endif
+					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );
 				return;
 			}
@@ -2262,4 +2292,3 @@ int check_current_ip_is_lan_or_wan()
 
 	return _check_ip_is_lan_or_wan(target_ip, nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
 }
-

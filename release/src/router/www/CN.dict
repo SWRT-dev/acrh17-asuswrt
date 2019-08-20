@@ -3534,3 +3534,5 @@ AURA_Event_Login_desc=当路由器管理页面登入失败时，LED 灯会显示
 AURA_Event_Attack=攻击防护
 AURA_Event_Attack_desc=当系统成功帮您挡下一个潜在攻击事件，LED 灯号将会显示红色彗星。
 AURA_Event_Note=<b>注意：</b>开启 Event 模式后，系统会依照目前的事件显示灯号，您将无法控制 LED 的灯效与颜色。
+Softcenter=软件中心
+Softcenter_tool=工具箱

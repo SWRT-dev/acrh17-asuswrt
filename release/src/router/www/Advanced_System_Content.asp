@@ -1498,6 +1498,27 @@ function pullPingTargetList(obj){
 					</td>
 				</tr>
 			</table>
+			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<thead>
+					<tr>
+						<td colspan="2">Persistent JFFS2 partition</td>
+					</tr>
+				</thead>
+				<tr>
+					<th>Format JFFS partition at next boot</th>
+					<td>
+						<input type="radio" name="jffs2_format" value="1" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="jffs2_format" value="0" <% nvram_match("jffs2_format", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+				<tr>
+					<th>Enable JFFS custom scripts and configs</th>
+					<td>
+						<input type="radio" name="jffs2_scripts" value="1" <% nvram_match("jffs2_scripts", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="jffs2_scripts" value="0" <% nvram_match("jffs2_scripts", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+			</table>
 
 			<table id="hdd_spindown_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;display:none;">
 				<thead>

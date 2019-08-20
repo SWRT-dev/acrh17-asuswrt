@@ -1,0 +1,242 @@
+The system is: Linux - 4.2.0-42-generic - x86_64
+Compiling the C compiler identification source file "CMakeCCompilerId.c" succeeded.
+Compiler: /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc 
+Build flags: -DBLUECAVE;-DK3C;-DBLUECAVE;-DK3C;-DBCMWPA2;-DCONFIG_LANTIQ;-DDEBUG_NOISY;-DDEBUG_RCTEST;-pipe;-funit-at-a-time;-Wno-pointer-sign;-mips32r2;-mno-branch-likely;-mtune=1004kc;-DLINUX30;-DLINUX26;-DLINUX_KERNEL_VERSION=199272;--sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2;-DBLUECAVE;-DK3C;-DLANTIQ_BSD;-D__CONFIG_EMF__;-D__CONFIG_WPS__
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the C compiler identification source "CMakeCCompilerId.c" produced "a.out"
+
+The C compiler identification is GNU, found in "/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/2.8.12.2/CompilerIdC/a.out"
+
+Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+Compiler: /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++ 
+Build flags: 
+Id flags: 
+
+The output was:
+0
+
+
+Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+
+The CXX compiler identification is GNU, found in "/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/2.8.12.2/CompilerIdCXX/a.out"
+
+Determining if the C compiler works passed with the following output:
+Change Dir: /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec2374784242/fast"
+make[4]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTryCompileExec2374784242.dir/build.make CMakeFiles/cmTryCompileExec2374784242.dir/build
+make[5]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec2374784242.dir/testCCompiler.c.o
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc   -DBLUECAVE -DK3C -DBLUECAVE -DK3C -DBCMWPA2 -DCONFIG_LANTIQ -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -funit-at-a-time -Wno-pointer-sign -mips32r2 -mno-branch-likely -mtune=1004kc -DLINUX30 -DLINUX26 -DLINUX_KERNEL_VERSION=199272 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 -DBLUECAVE -DK3C -DLANTIQ_BSD -D__CONFIG_EMF__ -D__CONFIG_WPS__     -o CMakeFiles/cmTryCompileExec2374784242.dir/testCCompiler.c.o   -c /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/testCCompiler.c
+Linking C executable cmTryCompileExec2374784242
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2374784242.dir/link.txt --verbose=1
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc  -DBLUECAVE -DK3C -DBLUECAVE -DK3C -DBCMWPA2 -DCONFIG_LANTIQ -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -funit-at-a-time -Wno-pointer-sign -mips32r2 -mno-branch-likely -mtune=1004kc -DLINUX30 -DLINUX26 -DLINUX_KERNEL_VERSION=199272 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 -DBLUECAVE -DK3C -DLANTIQ_BSD -D__CONFIG_EMF__ -D__CONFIG_WPS__      CMakeFiles/cmTryCompileExec2374784242.dir/testCCompiler.c.o  -o cmTryCompileExec2374784242 -rdynamic 
+make[5]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+make[4]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+
+
+Detecting C compiler ABI info compiled with the following output:
+Change Dir: /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec1746188934/fast"
+make[4]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTryCompileExec1746188934.dir/build.make CMakeFiles/cmTryCompileExec1746188934.dir/build
+make[5]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building C object CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc   -DBLUECAVE -DK3C -DBLUECAVE -DK3C -DBCMWPA2 -DCONFIG_LANTIQ -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -funit-at-a-time -Wno-pointer-sign -mips32r2 -mno-branch-likely -mtune=1004kc -DLINUX30 -DLINUX26 -DLINUX_KERNEL_VERSION=199272 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 -DBLUECAVE -DK3C -DLANTIQ_BSD -D__CONFIG_EMF__ -D__CONFIG_WPS__     -o CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-2.8/Modules/CMakeCCompilerABI.c
+Linking C executable cmTryCompileExec1746188934
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1746188934.dir/link.txt --verbose=1
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc  -DBLUECAVE -DK3C -DBLUECAVE -DK3C -DBCMWPA2 -DCONFIG_LANTIQ -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -funit-at-a-time -Wno-pointer-sign -mips32r2 -mno-branch-likely -mtune=1004kc -DLINUX30 -DLINUX26 -DLINUX_KERNEL_VERSION=199272 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 -DBLUECAVE -DK3C -DLANTIQ_BSD -D__CONFIG_EMF__ -D__CONFIG_WPS__    -v CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec1746188934 -rdynamic  
+Reading specs from /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/specs
+COLLECT_GCC=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc
+COLLECT_LTO_WRAPPER=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/lto-wrapper
+Target: mips-openwrt-linux-uclibc
+Configured with: /media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/build_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/gcc-linaro-4.8-2014.04/configure --with-bugurl=https://dev.openwrt.org/ --with-pkgversion='OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq' --prefix=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 --build=i686-linux-gnu --host=i686-linux-gnu --target=mips-openwrt-linux-uclibc --with-gnu-ld --enable-target-optspace --disable-libgomp --disable-libmudflap --disable-multilib --disable-nls --with-host-libstdcxx=-lstdc++ --with-float=soft --with-gmp=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpfr=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpc=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --disable-decimal-float --with-mips-plt --enable-libssp --disable-__cxa_atexit --with-headers=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/include --disable-libsanitizer --enable-languages=c,c++ --enable-shared --enable-threads --with-slibdir=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib
+Thread model: posix
+gcc version 4.8.3 (OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq) 
+COMPILER_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/bin/
+LIBRARY_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib/
+COLLECT_GCC_OPTIONS='-D' 'BLUECAVE' '-D' 'K3C' '-D' 'BLUECAVE' '-D' 'K3C' '-D' 'BCMWPA2' '-D' 'CONFIG_LANTIQ' '-D' 'DEBUG_NOISY' '-D' 'DEBUG_RCTEST' '-pipe' '-funit-at-a-time' '-Wno-pointer-sign' '-mips32r2' '-mno-branch-likely' '-mtune=1004kc' '-D' 'LINUX30' '-D' 'LINUX26' '-D' 'LINUX_KERNEL_VERSION=199272' '-D' 'BLUECAVE' '-D' 'K3C' '-D' 'LANTIQ_BSD' '-D' '__CONFIG_EMF__' '-D' '__CONFIG_WPS__' '-v' '-o' 'cmTryCompileExec1746188934' '-rdynamic' '-msoft-float' '-mllsc' '-mplt' '-mno-shared'
+ /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/collect2 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 --eh-frame-hdr -EB -export-dynamic -dynamic-linker /lib/ld-uClibc.so.0 -o cmTryCompileExec1746188934 /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crt1.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crti.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtbegin.o -L /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -rpath-link /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3 -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o -lgcc_s -lc -lgcc_s /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtend.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crtn.o
+make[5]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+make[4]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+
+
+Parsed C implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/make "cmTryCompileExec1746188934/fast"]
+  ignore line: [make[4]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTryCompileExec1746188934.dir/build.make CMakeFiles/cmTryCompileExec1746188934.dir/build]
+  ignore line: [make[5]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building C object CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o]
+  ignore line: [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc   -DBLUECAVE -DK3C -DBLUECAVE -DK3C -DBCMWPA2 -DCONFIG_LANTIQ -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -funit-at-a-time -Wno-pointer-sign -mips32r2 -mno-branch-likely -mtune=1004kc -DLINUX30 -DLINUX26 -DLINUX_KERNEL_VERSION=199272 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 -DBLUECAVE -DK3C -DLANTIQ_BSD -D__CONFIG_EMF__ -D__CONFIG_WPS__     -o CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o   -c /usr/share/cmake-2.8/Modules/CMakeCCompilerABI.c]
+  ignore line: [Linking C executable cmTryCompileExec1746188934]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec1746188934.dir/link.txt --verbose=1]
+  ignore line: [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc  -DBLUECAVE -DK3C -DBLUECAVE -DK3C -DBCMWPA2 -DCONFIG_LANTIQ -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -funit-at-a-time -Wno-pointer-sign -mips32r2 -mno-branch-likely -mtune=1004kc -DLINUX30 -DLINUX26 -DLINUX_KERNEL_VERSION=199272 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 -DBLUECAVE -DK3C -DLANTIQ_BSD -D__CONFIG_EMF__ -D__CONFIG_WPS__    -v CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o  -o cmTryCompileExec1746188934 -rdynamic  ]
+  ignore line: [Reading specs from /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/specs]
+  ignore line: [COLLECT_GCC=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-gcc]
+  ignore line: [COLLECT_LTO_WRAPPER=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/lto-wrapper]
+  ignore line: [Target: mips-openwrt-linux-uclibc]
+  ignore line: [Configured with: /media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/build_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/gcc-linaro-4.8-2014.04/configure --with-bugurl=https://dev.openwrt.org/ --with-pkgversion='OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq' --prefix=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 --build=i686-linux-gnu --host=i686-linux-gnu --target=mips-openwrt-linux-uclibc --with-gnu-ld --enable-target-optspace --disable-libgomp --disable-libmudflap --disable-multilib --disable-nls --with-host-libstdcxx=-lstdc++ --with-float=soft --with-gmp=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpfr=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpc=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --disable-decimal-float --with-mips-plt --enable-libssp --disable-__cxa_atexit --with-headers=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/include --disable-libsanitizer --enable-languages=c,c++ --enable-shared --enable-threads --with-slibdir=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.8.3 (OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq) ]
+  ignore line: [COMPILER_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/bin/]
+  ignore line: [LIBRARY_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-D' 'BLUECAVE' '-D' 'K3C' '-D' 'BLUECAVE' '-D' 'K3C' '-D' 'BCMWPA2' '-D' 'CONFIG_LANTIQ' '-D' 'DEBUG_NOISY' '-D' 'DEBUG_RCTEST' '-pipe' '-funit-at-a-time' '-Wno-pointer-sign' '-mips32r2' '-mno-branch-likely' '-mtune=1004kc' '-D' 'LINUX30' '-D' 'LINUX26' '-D' 'LINUX_KERNEL_VERSION=199272' '-D' 'BLUECAVE' '-D' 'K3C' '-D' 'LANTIQ_BSD' '-D' '__CONFIG_EMF__' '-D' '__CONFIG_WPS__' '-v' '-o' 'cmTryCompileExec1746188934' '-rdynamic' '-msoft-float' '-mllsc' '-mplt' '-mno-shared']
+  link line: [ /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/collect2 --sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 --eh-frame-hdr -EB -export-dynamic -dynamic-linker /lib/ld-uClibc.so.0 -o cmTryCompileExec1746188934 /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crt1.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crti.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtbegin.o -L /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -rpath-link /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3 -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o -lgcc_s -lc -lgcc_s /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtend.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crtn.o]
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/collect2] ==> ignore
+    arg [--sysroot=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-EB] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib/ld-uClibc.so.0] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec1746188934] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crt1.o] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crti.o] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtbegin.o] ==> ignore
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib]
+    arg [-rpath-link] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> ignore
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3]
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc]
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib]
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib]
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib]
+    arg [CMakeFiles/cmTryCompileExec1746188934.dir/CMakeCCompilerABI.c.o] ==> ignore
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtend.o] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crtn.o] ==> ignore
+  remove lib [gcc_s]
+  remove lib [gcc_s]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc/mips-openwrt-linux-uclibc/4.8.3]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/mips-openwrt-linux-uclibc/lib]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib]
+  implicit libs: [c]
+  implicit dirs: [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc/mips-openwrt-linux-uclibc/4.8.3;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/mips-openwrt-linux-uclibc/lib;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib]
+  implicit fwks: []
+
+
+Determining if the CXX compiler works passed with the following output:
+Change Dir: /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec2480431505/fast"
+make[4]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTryCompileExec2480431505.dir/build.make CMakeFiles/cmTryCompileExec2480431505.dir/build
+make[5]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec2480431505.dir/testCXXCompiler.cxx.o
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++     -o CMakeFiles/cmTryCompileExec2480431505.dir/testCXXCompiler.cxx.o -c /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/testCXXCompiler.cxx
+Linking CXX executable cmTryCompileExec2480431505
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec2480431505.dir/link.txt --verbose=1
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++        CMakeFiles/cmTryCompileExec2480431505.dir/testCXXCompiler.cxx.o  -o cmTryCompileExec2480431505 -rdynamic 
+make[5]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+make[4]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+
+
+Detecting CXX compiler ABI info compiled with the following output:
+Change Dir: /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp
+
+Run Build Command:/usr/bin/make "cmTryCompileExec940447935/fast"
+make[4]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/make -f CMakeFiles/cmTryCompileExec940447935.dir/build.make CMakeFiles/cmTryCompileExec940447935.dir/build
+make[5]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+/usr/bin/cmake -E cmake_progress_report /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/CMakeFiles 1
+Building CXX object CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++     -o CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-2.8/Modules/CMakeCXXCompilerABI.cpp
+Linking CXX executable cmTryCompileExec940447935
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec940447935.dir/link.txt --verbose=1
+/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++      -v CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec940447935 -rdynamic  
+Reading specs from /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/specs
+COLLECT_GCC=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++
+COLLECT_LTO_WRAPPER=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/lto-wrapper
+Target: mips-openwrt-linux-uclibc
+Configured with: /media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/build_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/gcc-linaro-4.8-2014.04/configure --with-bugurl=https://dev.openwrt.org/ --with-pkgversion='OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq' --prefix=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 --build=i686-linux-gnu --host=i686-linux-gnu --target=mips-openwrt-linux-uclibc --with-gnu-ld --enable-target-optspace --disable-libgomp --disable-libmudflap --disable-multilib --disable-nls --with-host-libstdcxx=-lstdc++ --with-float=soft --with-gmp=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpfr=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpc=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --disable-decimal-float --with-mips-plt --enable-libssp --disable-__cxa_atexit --with-headers=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/include --disable-libsanitizer --enable-languages=c,c++ --enable-shared --enable-threads --with-slibdir=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib
+Thread model: posix
+gcc version 4.8.3 (OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq) 
+COMPILER_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/bin/
+LIBRARY_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/
+COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec940447935' '-rdynamic' '-shared-libgcc' '-msoft-float' '-mllsc' '-mplt' '-mno-shared'
+ /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/collect2 --eh-frame-hdr -EB -export-dynamic -dynamic-linker /lib/ld-uClibc.so.0 -o cmTryCompileExec940447935 /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crt1.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crti.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtbegin.o -L /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -rpath-link /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3 -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lc -lgcc_s /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtend.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crtn.o
+make[5]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+make[4]: Leaving directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp'
+
+
+Parsed CXX implicit link information from above output:
+  link line regex: [^( *|.*[/\])(ld|([^/\]+-)?ld|collect2)[^/\]*( |$)]
+  ignore line: [Change Dir: /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp]
+  ignore line: []
+  ignore line: [Run Build Command:/usr/bin/make "cmTryCompileExec940447935/fast"]
+  ignore line: [make[4]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/make -f CMakeFiles/cmTryCompileExec940447935.dir/build.make CMakeFiles/cmTryCompileExec940447935.dir/build]
+  ignore line: [make[5]: Entering directory `/home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp']
+  ignore line: [/usr/bin/cmake -E cmake_progress_report /home/paldier/384/release/src/router/skipdbv2/CMakeFiles/CMakeTmp/CMakeFiles 1]
+  ignore line: [Building CXX object CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o]
+  ignore line: [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++     -o CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o -c /usr/share/cmake-2.8/Modules/CMakeCXXCompilerABI.cpp]
+  ignore line: [Linking CXX executable cmTryCompileExec940447935]
+  ignore line: [/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTryCompileExec940447935.dir/link.txt --verbose=1]
+  ignore line: [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++      -v CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o  -o cmTryCompileExec940447935 -rdynamic  ]
+  ignore line: [Reading specs from /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/specs]
+  ignore line: [COLLECT_GCC=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/mips-openwrt-linux-uclibc-g++]
+  ignore line: [COLLECT_LTO_WRAPPER=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/lto-wrapper]
+  ignore line: [Target: mips-openwrt-linux-uclibc]
+  ignore line: [Configured with: /media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/build_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/gcc-linaro-4.8-2014.04/configure --with-bugurl=https://dev.openwrt.org/ --with-pkgversion='OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq' --prefix=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2 --build=i686-linux-gnu --host=i686-linux-gnu --target=mips-openwrt-linux-uclibc --with-gnu-ld --enable-target-optspace --disable-libgomp --disable-libmudflap --disable-multilib --disable-nls --with-host-libstdcxx=-lstdc++ --with-float=soft --with-gmp=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpfr=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --with-mpc=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/host --disable-decimal-float --with-mips-plt --enable-libssp --disable-__cxa_atexit --with-headers=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/include --disable-libsanitizer --enable-languages=c,c++ --enable-shared --enable-threads --with-slibdir=/media/intel160g/3asuswrt/UGW-7.2MR1/UGW-7.2.1.20-SW-CD/Sources/UGW-7.2.1.20/staging_dir/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib]
+  ignore line: [Thread model: posix]
+  ignore line: [gcc version 4.8.3 (OpenWrt/Linaro GCC 4.8-2014.04 15.05_ltq) ]
+  ignore line: [COMPILER_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/bin/]
+  ignore line: [LIBRARY_PATH=/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/:/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/]
+  ignore line: [COLLECT_GCC_OPTIONS='-v' '-o' 'cmTryCompileExec940447935' '-rdynamic' '-shared-libgcc' '-msoft-float' '-mllsc' '-mplt' '-mno-shared']
+  link line: [ /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/collect2 --eh-frame-hdr -EB -export-dynamic -dynamic-linker /lib/ld-uClibc.so.0 -o cmTryCompileExec940447935 /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crt1.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crti.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtbegin.o -L /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -rpath-link /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3 -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc -L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o -lstdc++ -lm -lgcc_s -lc -lgcc_s /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtend.o /home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crtn.o]
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../libexec/gcc/mips-openwrt-linux-uclibc/4.8.3/collect2] ==> ignore
+    arg [--eh-frame-hdr] ==> ignore
+    arg [-EB] ==> ignore
+    arg [-export-dynamic] ==> ignore
+    arg [-dynamic-linker] ==> ignore
+    arg [/lib/ld-uClibc.so.0] ==> ignore
+    arg [-o] ==> ignore
+    arg [cmTryCompileExec940447935] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crt1.o] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crti.o] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtbegin.o] ==> ignore
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib]
+    arg [-rpath-link] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> ignore
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3]
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc]
+    arg [-L/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib] ==> dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib]
+    arg [CMakeFiles/cmTryCompileExec940447935.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+    arg [-lstdc++] ==> lib [stdc++]
+    arg [-lm] ==> lib [m]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [-lc] ==> lib [c]
+    arg [-lgcc_s] ==> lib [gcc_s]
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/crtend.o] ==> ignore
+    arg [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib/crtn.o] ==> ignore
+  remove lib [gcc_s]
+  remove lib [gcc_s]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc/mips-openwrt-linux-uclibc/4.8.3]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc]
+  collapse library dir [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/bin/../lib/gcc/mips-openwrt-linux-uclibc/4.8.3/../../../../mips-openwrt-linux-uclibc/lib] ==> [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/mips-openwrt-linux-uclibc/lib]
+  implicit libs: [stdc++;m;c]
+  implicit dirs: [/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/usr/lib;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc/mips-openwrt-linux-uclibc/4.8.3;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/lib/gcc;/home/paldier/384/release/src-lantiq/tools/toolchain-mips_mips32_gcc-4.8-linaro_uClibc-0.9.33.2/mips-openwrt-linux-uclibc/lib]
+  implicit fwks: []
+
+
