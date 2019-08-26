@@ -1623,6 +1623,8 @@ extern int discover_interface(const char *current_wan_ifname, int dhcp_det);
 extern int discover_all(int wan_unit);
 
 // strings.c
+extern int replace_char(char *str, const char from, const char to);
+extern int str_escape_quotes(const char *output, const char *input, int outsize);
 extern int char_to_ascii_safe(const char *output, const char *input, int outsize);
 extern void char_to_ascii(const char *output, const char *input);
 #if defined(RTCONFIG_UTF8_SSID)
@@ -1782,6 +1784,12 @@ extern struct vlan_rules_s *get_vlan_rules(void);
 #if defined(HND_ROUTER) && defined(RTCONFIG_BONDING)
 extern int get_bonding_status();
 #endif
+
+/* scripts.c */
+extern void run_custom_script(char *name, int timeout, char *arg1, char *arg2);
+extern void run_postconf(char *name, char *config);
+extern void use_custom_config(char *config, char *target);
+extern void append_custom_config(char *config, FILE *fp);
 extern int isValidMacAddress(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
 extern int isValid_digit_string(const char *string);

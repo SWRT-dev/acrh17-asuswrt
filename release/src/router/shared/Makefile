@@ -111,6 +111,7 @@ OBJS += bwdpi_utils.o
 OBJS += bwdpi_utils.o
 OBJS += mac_name_tab.o
 OBJS += stun.o
+OBJS += scripts.o
 ifeq ($(RTCONFIG_TRAFFIC_LIMITER),y)
 OBJS += tld_utils.o
 endif

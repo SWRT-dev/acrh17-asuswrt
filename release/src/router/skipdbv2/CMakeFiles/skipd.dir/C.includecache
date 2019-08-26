@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,11 +6,11 @@
 
 #IncludeRegexTransform: 
 
-/home/paldier/384/release/src/router/skipdbv2/mgr/coroutine.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/coroutine.h
 stdlib.h
 -
 
-/home/paldier/384/release/src/router/skipdbv2/mgr/daemonize.c
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/daemonize.c
 stdio.h
 -
 stdlib.h
@@ -46,7 +46,7 @@ syslog.h
 ev.h
 -
 
-/home/paldier/384/release/src/router/skipdbv2/mgr/skipd.c
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/skipd.c
 stdlib.h
 -
 stdio.h
@@ -88,13 +88,13 @@ syslog.h
 ev.h
 -
 coroutine.h
-/home/paldier/384/release/src/router/skipdbv2/mgr/coroutine.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/coroutine.h
 SkipDB.h
-/home/paldier/384/release/src/router/skipdbv2/mgr/SkipDB.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/SkipDB.h
 skipd.h
-/home/paldier/384/release/src/router/skipdbv2/mgr/skipd.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/skipd.h
 
-/home/paldier/384/release/src/router/skipdbv2/mgr/skipd.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/skipd.h
 
 basekit/BStream.h
 Common.h

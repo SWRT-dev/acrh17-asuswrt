@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,15 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/home/paldier/384/release/src/router/skipdbv2/tests/test.c
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/test.c
 SkipDB.h
-/home/paldier/384/release/src/router/skipdbv2/tests/SkipDB.h
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/SkipDB.h
 time.h
 -
 stdlib.h
 -
 Date.h
-/home/paldier/384/release/src/router/skipdbv2/tests/Date.h
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/Date.h
 
 basekit/BStream.h
 Common.h

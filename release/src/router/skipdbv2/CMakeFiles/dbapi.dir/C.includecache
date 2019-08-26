@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,7 +6,7 @@
 
 #IncludeRegexTransform: 
 
-/home/paldier/384/release/src/router/skipdbv2/mgr/dbapi.c
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/dbapi.c
 stdlib.h
 -
 stdio.h
@@ -40,7 +40,7 @@ errno.h
 unistd.h
 -
 skipd.h
-/home/paldier/384/release/src/router/skipdbv2/mgr/skipd.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/skipd.h
 
-/home/paldier/384/release/src/router/skipdbv2/mgr/skipd.h
+/home/paldier/acrh17/release/src/router/skipdbv2/mgr/skipd.h
 

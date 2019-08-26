@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,15 +6,15 @@
 
 #IncludeRegexTransform: 
 
-/home/paldier/384/release/src/router/skipdbv2/tests/udbtest.c
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/udbtest.c
 time.h
 -
 stdlib.h
 -
 UDB.h
-/home/paldier/384/release/src/router/skipdbv2/tests/UDB.h
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/UDB.h
 Date.h
-/home/paldier/384/release/src/router/skipdbv2/tests/Date.h
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/Date.h
 
 basekit/Base.h
 stdio.h

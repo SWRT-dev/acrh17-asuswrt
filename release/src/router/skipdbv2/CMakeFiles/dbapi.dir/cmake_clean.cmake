@@ -1,10 +1,10 @@
-FILE(REMOVE_RECURSE
+file(REMOVE_RECURSE
   "CMakeFiles/dbapi.dir/mgr/dbapi.c.o"
   "bin/dbapi.pdb"
   "bin/dbapi"
 )
 
 # Per-language clean rules from dependency scanning.
-FOREACH(lang C)
-  INCLUDE(CMakeFiles/dbapi.dir/cmake_clean_${lang}.cmake OPTIONAL)
-ENDFOREACH(lang)
+foreach(lang C)
+  include(CMakeFiles/dbapi.dir/cmake_clean_${lang}.cmake OPTIONAL)
+endforeach()

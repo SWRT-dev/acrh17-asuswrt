@@ -1,4 +1,4 @@
-#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
 
 #IncludeRegexScan: ^.*$
 
@@ -6,9 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/paldier/384/release/src/router/skipdbv2/tests/example.c
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/example.c
 SkipDB.h
-/home/paldier/384/release/src/router/skipdbv2/tests/SkipDB.h
+/home/paldier/acrh17/release/src/router/skipdbv2/tests/SkipDB.h
 
 basekit/BStream.h
 Common.h
