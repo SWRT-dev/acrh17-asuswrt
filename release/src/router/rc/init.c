@@ -11108,6 +11108,16 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			nvram_set("success_start_service", "1");
 			force_free_caches();
 #endif
+#if defined(RTACRH17)
+#ifdef RTCONFIG_SOFTCENTER
+	if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh")){
+		doSystem("/usr/sbin/jffsinit.sh &");
+		logmessage("软件中心", "开始安装......");
+		logmessage("软件中心", "1分钟后完成安装");
+		_dprintf("....softcenter ok....\n");
+	}
+#endif
+#endif
 
 #ifdef RTCONFIG_AMAS
 			nvram_set("start_service_ready", "1");
