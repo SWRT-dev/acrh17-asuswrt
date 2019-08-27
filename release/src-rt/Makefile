@@ -72,7 +72,7 @@ export MERLINR_NAME := RTACRH17
 export MERLINR_VER := R1
 export MERLINRVER := $(MERLINR_NAME)_$(MERLINR_VER)
 ifeq ($(MERLINR_NAME),RTACRH17)
-export PATH := /opt/openwrt-gcc463.arm/bin:$(PATH)
+export PATH := $(SRCBASE)/../../tools/openwrt-gcc463.arm/openwrt-gcc463.arm/bin:$(PATH)
 endif
 
 # tmp depend on busybox
@@ -4098,7 +4098,11 @@ endif
 	@echo ""
 	@echo "Using $(N) profile, $(B) build config."
 	@echo ""
-
+ifeq ($(MERLINR_NAME),RTACRH17)
+	@if [ ! -d "$(SRCBASE)/../../tools/openwrt-gcc463.arm" ] ; then \
+		cd ${SRCBASE}/../../tools; tar -jxvf openwrt-gcc463.arm.tar.bz2 ;  \
+	fi
+endif
 	@cd $(LINUXDIR) ; \
 		rm -f config_current ; \
 		ln -s config_$(lowercase_B) config_current ; \
