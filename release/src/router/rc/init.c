@@ -11116,6 +11116,26 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 		logmessage("软件中心", "1分钟后完成安装");
 		_dprintf("....softcenter ok....\n");
 	}
+	eval("insmod", "ip_set");
+	eval("insmod", "ip_set_bitmap_ip");
+	eval("insmod", "ip_set_bitmap_ipmac");
+	eval("insmod", "ip_set_bitmap_port");
+	eval("insmod", "ip_set_hash_ip");
+	eval("insmod", "ip_set_hash_ipport");
+	eval("insmod", "ip_set_hash_ipportip");
+	eval("insmod", "ip_set_hash_ipportnet");
+	eval("insmod", "ip_set_hash_ipmac");
+	eval("insmod", "ip_set_hash_ipmark");
+	eval("insmod", "ip_set_hash_net");
+	eval("insmod", "ip_set_hash_netport");
+	eval("insmod", "ip_set_hash_netiface");
+	eval("insmod", "ip_set_hash_netnet");
+	eval("insmod", "ip_set_hash_netportnet");
+	eval("insmod", "ip_set_hash_mac");
+	eval("insmod", "ip_set_list_set");
+	eval("insmod", "nf_tproxy_core");
+	eval("insmod", "xt_TPROXY");
+	eval("insmod", "xt_set");
 #endif
 #endif
 
