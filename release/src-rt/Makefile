@@ -69,7 +69,7 @@ export PATH := $(RELEASEDIR)/tools:$(SRCBASE)/ctools:$(PATH)
 
 #K3C/K3/SBRAC1900P/SBRAC3200P/R7000/R8000/R7900P/R8000P
 export MERLINR_NAME := RTACRH17
-export MERLINR_VER := R1
+export MERLINR_VER := B1
 export MERLINRVER := $(MERLINR_NAME)_$(MERLINR_VER)
 ifeq ($(MERLINR_NAME),RTACRH17)
 export PATH := $(SRCBASE)/../../tools/openwrt-gcc463.arm/openwrt-gcc463.arm/bin:$(PATH)
