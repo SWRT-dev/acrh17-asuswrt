@@ -49,6 +49,14 @@ elif [ "$ARCH" == "mipsle" ]; then
 else
 	ARCH_SUFFIX="arm"
 fi
+#new chips 6750-6755 are armv7l,2/3/4 cores 1.5G
+KVER=`uname -r`
+if [ "$KVER" == "4.1.52" -o "$KVER" == "4.1.49" ];then
+	ARCH_SUFFIX="armng"
+fi
+if [ "$KVER" == "3.14.77" ];then
+	ARCH_SUFFIX="armqca"
+fi
 VER_SUFFIX=_version
 MD5_SUFFIX=_md5
 INSTALL_SUFFIX=_install
@@ -94,9 +102,12 @@ install_module() {
 		modelname=`nvram get modelname`
 		if [ "$modelname" == "K3" ]; then
 			dbus set softcenter_server_tcode=CN
-		elif [ "$modelname" == "SBR-AC1900P" -o "$modelname" == "SBR-AC3200P" -o "$modelname" == "R7900P" ]; then
+		elif [ "$modelname" == "SBRAC1900P" -o "$modelname" == "SBR-AC1900P" -o "$modelname" == "SBRAC3200P" -o "$modelname" == "SBR-AC3200P" -o "$modelname" == "R7900P" -o "$modelname" == "R8000P" ]; then
 			dbus set softcenter_server_tcode=ALI
-		elif [ "$modelname" == "GT-AC2900" -o "$modelname" == "GT-AC5300" -o "$modelname" == "RT-AX58U" ]; then
+		elif [ "$modelname" == "GTAC2900" -o "$modelname" == "GTAC5300" -o "$modelname" == "RTAC86U" ]; then
+			dbus set softcenter_server_tcode=CN1
+		elif [ "$modelname" == "RTAX58U" -o "$modelname" == "TUFAX3000" -o "$modelname" == "RTAX56U" -o "$modelname" == "RTACRH17" ]; then
+#test only
 			dbus set softcenter_server_tcode=CN1
 		else
 			dbus set softcenter_server_tcode=`nvram get territory_code |cut -c 1-2`
@@ -106,9 +117,9 @@ install_module() {
 	if [ "$softcenter_server_tcode" == "CN" ]; then
 		HOME_URL="http://update.wifi.com.cn/$ARCH_SUFFIX"
 	elif [ "$softcenter_server_tcode" == "CN1" ]; then
-		HOME_URL="https://123.56.45.194/$ARCH_SUFFIX"
+		HOME_URL="https://sc.softcenter.site/$ARCH_SUFFIX"
 	elif [ "$softcenter_server_tcode" == "ALI" ]; then
-		HOME_URL="https://121.40.153.145/$ARCH_SUFFIX"
+		HOME_URL="https://wufan.softcenter.site/$ARCH_SUFFIX"
 	else
 		HOME_URL="https://sc.paldier.com/$ARCH_SUFFIX"
 	fi

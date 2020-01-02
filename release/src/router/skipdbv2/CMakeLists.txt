@@ -27,20 +27,20 @@ ADD_LIBRARY(skipdb STATIC ${BASEKIT_SRC} ${FILE_SRC} ${UDB_SRC} ${SKIPDB_SRC})
 
 #INCLUDE_DIRECTORIES(${LIBEV_LIBRARIES})
 
-ADD_EXECUTABLE(test ./tests/test.c)
-TARGET_LINK_LIBRARIES(test skipdb m ${LIBEV_LIBRARIES})
+#ADD_EXECUTABLE(test ./tests/test.c)
+#TARGET_LINK_LIBRARIES(test skipdb m ${LIBEV_LIBRARIES})
 
-ADD_EXECUTABLE(test2 ./tests/test2.c)
-TARGET_LINK_LIBRARIES(test2 skipdb m ${LIBEV_LIBRARIES})
+#ADD_EXECUTABLE(test2 ./tests/test2.c)
+#TARGET_LINK_LIBRARIES(test2 skipdb m ${LIBEV_LIBRARIES})
 
-ADD_EXECUTABLE(jftest ./tests/jftest.c)
-TARGET_LINK_LIBRARIES(jftest skipdb m ${LIBEV_LIBRARIES})
+#ADD_EXECUTABLE(jftest ./tests/jftest.c)
+#TARGET_LINK_LIBRARIES(jftest skipdb m ${LIBEV_LIBRARIES})
 
-ADD_EXECUTABLE(udbtest ./tests/udbtest.c)
-TARGET_LINK_LIBRARIES(udbtest skipdb m ${LIBEV_LIBRARIES})
+#ADD_EXECUTABLE(udbtest ./tests/udbtest.c)
+#TARGET_LINK_LIBRARIES(udbtest skipdb m ${LIBEV_LIBRARIES})
 
-ADD_EXECUTABLE(example ./tests/example.c)
-TARGET_LINK_LIBRARIES(example skipdb m ${LIBEV_LIBRARIES})
+#ADD_EXECUTABLE(example ./tests/example.c)
+#TARGET_LINK_LIBRARIES(example skipdb m ${LIBEV_LIBRARIES})
 
 #ADD_EXECUTABLE(skiplist ./tests/skiplist)
 

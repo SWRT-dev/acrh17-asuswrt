@@ -80,6 +80,13 @@ struct AiMesh_whitelist {
 extern struct AiMesh_whitelist AiMesh_whitelists[];
 #endif
 
+#ifdef RTCONFIG_ODMPID
+struct REPLACE_PRODUCTID_S {
+        char *org_name;
+        char *replace_name;
+};
+#endif
+
 #define MIME_EXCEPTION_NOAUTH_ALL 	1<<0
 #define MIME_EXCEPTION_NOAUTH_FIRST	1<<1
 #define MIME_EXCEPTION_NORESETTIME	1<<2
@@ -397,3 +404,4 @@ extern void wtfast_gen_partnercode(char *str, size_t size);
 #endif
 extern void update_wlan_log(int sig);
 #endif /* _httpd_h_ */
+

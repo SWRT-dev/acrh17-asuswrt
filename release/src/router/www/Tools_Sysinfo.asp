@@ -46,6 +46,7 @@ var ctf_dis = "<% nvram_get("ctf_disable"); %>";
 var ctf_dis_force = "<% nvram_get("ctf_disable_force"); %>";
 var odmpid = "<% nvram_get("odmpid");%>";
 var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
+var qca_sfe = "<% nvram_get("qca_sfe"); %>";
 
 overlib_str_tmp = "";
 overlib.isOut = true;
@@ -152,14 +153,15 @@ function hwaccel_state(){
 				// Trim two trailing chars, either "  " or ", "
 				code = code.slice(0,-2) + "</span></>";
 			}
-		} else if (ctf_dis_force == "0") {
+		} else if (ctf_dis_force == "0" || qca_sfe == "1") {
 			code = "<span>Enabled";
 			if (ctf_fa != "") {
 				if (ctf_fa != "0")
 					code += " (CTF + FA)";
 				else
 					code += " (CTF only)";
-	                }
+			}  else if (qca_sfe == "1")
+					code += " (SFE)";
 			code += "</span>";
 		}
 	}

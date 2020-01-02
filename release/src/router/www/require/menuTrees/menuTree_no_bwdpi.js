@@ -117,6 +117,7 @@ define(function(){
 				index: "menu_Tools",
 				tab: [
 					{url: "Tools_Sysinfo.asp", tabName: "Sysinfo"},
+					{url: "Softcenter.asp", tabName: "<#Softcenter#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -377,6 +378,9 @@ define(function(){
 					if(!concurrep_support){
 						retArray.push("menu_Wireless");
 					}
+				}
+				else if (<% nvram_get("sc_mount"); %> == "0"){
+					retArray.push("menu_Softcenter");
 				}
 
 				return retArray;
@@ -660,3 +664,4 @@ define(function(){
 
 	return menuTree;
 });
+

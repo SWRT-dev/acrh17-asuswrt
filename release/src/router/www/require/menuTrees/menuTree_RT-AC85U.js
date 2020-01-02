@@ -353,6 +353,9 @@ define(function(){
 					retArray.push("menu_VLAN");
 					retArray.push("menu_Firewall");
 				}
+				else if (<% nvram_get("sc_installed"); %> == "0"){
+					retArray.push("menu_Softcenter");
+				}
 
 				return retArray;
 			},

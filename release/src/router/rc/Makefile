@@ -7,6 +7,9 @@ endif
 ifneq ($(or $(findstring linux-3.10.14,$(LINUXDIR))),)
 CFLAGS += -idirafter$(LINUXDIR)/include/uapi
 endif
+ifneq ($(or $(findstring linux-3.10.108,$(LINUXDIR))),)
+CFLAGS += -idirafter$(LINUXDIR)/include/uapi
+endif
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
 ifneq ($(HND_ROUTER),y)
@@ -147,9 +150,11 @@ endif
 endif
 endif
 
-ifeq ($(RTCONFIG_PUSH_EMAIL),y)
+ifeq ($(RTCONFIG_HTTPS),y)
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 CFLAGS  += -I$(TOP)/openssl/include
 LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+endif
 endif
 
 ifeq ($(RTCONFIG_FBWIFI),y)
@@ -289,7 +294,18 @@ endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
 OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
-
+ifeq ($(K3),y)
+OBJS += $(if $(wildcard k3.c), k3.o, prebuild/k3.o)
+OBJS += $(if $(wildcard k3ex.c), k3ex.o, prebuild/k3ex.o)
+else ifeq ($(K3C),y)
+OBJS += $(if $(wildcard k3c.c), k3c.o, prebuild/k3c.o)
+else ifeq ($(R7900P),y)
+OBJS += $(if $(wildcard r7900p.c), r7900p.o, prebuild/r7900p.o)
+else ifeq ($(R8000P),y)
+OBJS += $(if $(wildcard r7900p.c), r7900p.o, prebuild/r7900p.o)
+else
+OBJS += merlinr.o
+endif
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 OBJS += $(if $(wildcard speedtest.c),speedtest.o,prebuild/speedtest.o)
@@ -364,11 +380,16 @@ OBJS += pc_tmp.o
 endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
-ifeq ($(RTCONFIG_PUSH_EMAIL),y)
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 OBJS += dsl_fb.o
 endif
 endif
 
+ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
+ifeq (,$(filter y, $(RTCONFIG_BCMARM) $(RTCONFIG_HND_ROUTER) $(RTCONFIG_LANTIQ) $(RTCONFIG_QCA) $(RTCONFIG_RALINK)))
+OBJS += frs_service.o
+endif
+endif
 ifeq ($(RTCONFIG_DSL),y)
 OBJS += asustest.o
 endif
@@ -455,10 +476,6 @@ CFLAGS += -I$(TOP)/libletsencrypt
 LDFLAGS += -L$(TOP)/libletsencrypt -lletsencrypt
 endif
 
-ifeq ($(BUILD_NAME), GT-AC5300)
-CFLAGS += -DSUPPORT_GAME_PROFILE
-endif
-
 CFLAGS += $(if $(RTCONFIG_BLINK_LED),-I$(TOP)/bled)
 
 export CFLAGS
@@ -497,8 +514,12 @@ endif
 
 
 ifeq ($(RTCONFIG_HTTPS),y)
+CFLAGS += -I$(TOP)/curl-7.21.7/include
+LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(or $(RTCONFIG_PUSH_EMAIL),$(RTCONFIG_NOTIFICATION_CENTER)),y)
 OBJS += pwdec.o
+CFLAGS += -I$(TOP)/json-c
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 endif
 endif
 
@@ -715,6 +736,7 @@ ifeq ($(RTCONFIG_DETWAN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc detwan
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ddns_updated
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ddns_custom_updated
 
 #	@cd $(INSTALLDIR)/sbin && ln -sf rc wldist
 
@@ -900,7 +922,11 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_check
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsarootca_check
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_check_update
 endif
+endif
+
 	@cd $(INSTALLDIR)/sbin && ln -sf rc test_endian
 ifeq ($(RTCONFIG_BWDPI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_sig_check
@@ -927,7 +953,7 @@ endif
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc lteled
 endif
-ifeq ($(RTCONFIG_TR069),y)
+ifneq (,$(filter y,$(RTCONFIG_TR069) $(RTCONFIG_AMAS) $(RTAC3200) $(RTAC85P) $(RTACRH17) $(RTAC82U)))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dhcpc_lease
 endif
 
@@ -986,7 +1012,7 @@ size: rc
 
 # handle prebuilt object here
 ifneq ($(wildcard ./prebuild/dsl_fb.o),)
-ifeq ($(RTCONFIG_PUSH_EMAIL),y)
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 dsl_fb.o:
 	@-cp -f ./prebuild/dsl_fb.o .
 endif
@@ -998,7 +1024,7 @@ endif
 endif
 else
 ifeq ($(RTCONFIG_HTTPS),y)
-ifeq ($(RTCONFIG_PUSH_EMAIL),y)
+ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 dsl_fb.o:dsl_fb.c
 #	@echo "encrypt dsl password"
 #	./dsl_fb_enc.sh
@@ -1063,7 +1089,7 @@ ifneq ($(wildcard ./prebuild/ate.o),)
 ate.o:
 	@-cp -f ./prebuild/ate.o .
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900))
 ifneq ($(wildcard ./prebuild/cfe.o),)
 cfe.o:
 	@-cp -f ./prebuild/cfe.o .
@@ -1257,3 +1283,4 @@ pswatch: pswatch.c
 	@$(CC) -o $@ $^
 	$(STRIP) $@
 	$(CPTMP)
+

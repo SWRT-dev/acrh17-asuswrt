@@ -43,6 +43,10 @@
 #include <shared.h>
 #include <rtstate.h>
 
+#ifdef HND_ROUTER
+#include "bcmwifi_rates.h"
+#include "wlioctl_defs.h"
+#endif
 #include <wlioctl.h>
 
 #include <wlutils.h>
@@ -64,7 +68,37 @@ typedef unsigned long long u64;
 
 #include "sysinfo.h"
 
+#ifdef RTCONFIG_QTN
+#include "web-qtn.h"
+#endif
+
+#ifdef RTCONFIG_EXT_RTL8365MB
+#include <linux/major.h>
+#include <rtk_switch.h>
+#include <rtk_types.h>
+
+#define RTKSWITCH_DEV   "/dev/rtkswitch"
+
+typedef struct {
+        unsigned int link[4];
+        unsigned int speed[4];
+} phyState;
+#endif
+
+
+
 unsigned int get_phy_temperature(int radio);
+unsigned int get_wifi_clients(int unit, int querytype);
+
+#ifdef RTCONFIG_QTN
+unsigned int get_qtn_temperature(void);
+unsigned int get_qtn_version(char *version, int len);
+int GetPhyStatus_qtn(void);
+#endif
+
+#ifdef RTCONFIG_EXT_RTL8365MB
+void GetPhyStatus_rtk(int *states);
+#endif
 
 
 #define MBYTES 1024 / 1024
@@ -95,45 +129,112 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			char *buffer = read_whole_file("/proc/cpuinfo");
 
 			if (buffer) {
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+				int count = 0;
 				char model[64];
 
-				tmp = strstr(buffer, ":");
-
+				tmp = strstr(buffer, "Processor");
 				if (tmp)
-					sscanf(tmp, ":%[^\n]", model);
-				else {
-#if defined(RTCONFIG_LANTIQ)
-					strcpy(model, "GRX500 rev 1.2");
-#elif  defined(RTCONFIG_QCA)
-					strcpy(model, "Unknow");
-#endif
+					sscanf(tmp, "Processor  :  %[^\n]", model);
+				else {	// BCM490x
+					char impl[8], arch[8], variant[8], part[10];
+					impl[0]='\0'; arch[0]='\0'; variant[0]='\0'; part[0]='\0';
+
+					tmp = strstr(buffer, "CPU implementer");
+					sscanf(tmp, "CPU implementer  :  %7[^\n]s", impl);
+					tmp = strstr(buffer, "CPU architecture");
+					sscanf(tmp, "CPU architecture  :  %7[^\n]s", arch);
+					tmp = strstr(buffer, "CPU variant");
+					sscanf(tmp, "CPU variant  :  %7[^\n]s", variant);
+					tmp = strstr(buffer, "CPU part");
+					sscanf(tmp, "CPU part  :  %9[^\n]s", part);
+
+					if (!strcmp(impl, "0x42")
+					    && !strcmp(variant, "0x0")
+					    && !strcmp(part, "0x100")
+					    && !strcmp(arch, "8"))
+						strcpy(model, "Cortex A53 ARMv8");
+					else
+						sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s",impl, part, variant, arch);
 				}
 
+				count = sysconf(_SC_NPROCESSORS_CONF);
+				if (count > 1) {
+					tmp = nvram_safe_get("cpurev");
+					if (*tmp)
+						sprintf(result, "%s&nbsp;&nbsp;-&nbsp;&nbsp; Rev. %s (Cores: %d)", model, tmp, count);
+					else
+						sprintf(result, "%s&nbsp;&nbsp; (Cores: %d)", model, count);
+				} else {
+					strcpy(result, model);
+				}
+#elif defined(RTCONFIG_LANTIQ)
+				tmp = strstr(buffer, "system type");
+				if (tmp)
+					sscanf(tmp, "system type  :  %[^\n]", result);
+				else
+					strcpy(result, "GRX500 rev 1.2");
+#elif  defined(RTCONFIG_QCA)
+				char model[64];
+
+				char impl[8], arch[8], variant[8], part[10];
+				impl[0]='\0'; arch[0]='\0'; variant[0]='\0'; part[0]='\0';
+				tmp = strstr(buffer, "CPU implementer");
+				sscanf(tmp, "CPU implementer  :  %7[^\n]s", impl);
+				tmp = strstr(buffer, "CPU architecture");
+				sscanf(tmp, "CPU architecture  :  %7[^\n]s", arch);
+				tmp = strstr(buffer, "CPU variant");
+				sscanf(tmp, "CPU variant  :  %7[^\n]s", variant);
+				tmp = strstr(buffer, "CPU part");
+				sscanf(tmp, "CPU part  :  %9[^\n]s", part);
+
+				if (!strcmp(impl, "0x41")
+				    && !strcmp(variant, "0x0")
+				    && !strcmp(part, "0xc07")
+				    && !strcmp(arch, "7"))
+					strcpy(model, "IPQ4019");
+				else
+					sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s",impl, part, variant, arch);
 				strcpy(result, model);
+#endif
 				free(buffer);
 			}
 
 		} else if(strcmp(type,"cpu.freq") == 0) {
-
-			char freq[64];
+#if defined(RTCONFIG_BCMARM) || defined(HND_ROUTER)
+#if defined(HND_ROUTER)
+			int freq = 0;
 			char *buffer;
 
-			buffer = read_whole_file("/proc/cpuinfo");
+			buffer = read_whole_file("/sys/devices/system/cpu/bcm_arm_cpuidle/admin_max_freq");
 
 			if (buffer) {
-				tmp = strstr(buffer, "cpu MHz			:");
-				if (tmp)
-					sscanf(tmp, "cpu MHz			:%s", freq);
-				else {
-#if defined(RTCONFIG_LANTIQ)
-					strcpy(freq, "800");
-#elif  defined(RTCONFIG_QCA)
-					strcpy(freq, "700");
-#endif
-				}
-				strcpy(result, freq);
+				sscanf(buffer, "%d", &freq);
 				free(buffer);
+				sprintf(result, "%d", freq);
 			}
+			else
+#endif
+			{
+				tmp = nvram_get("clkfreq");
+				if (tmp)
+					sscanf(tmp,"%[^,]s", result);
+			}
+#elif defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)		
+			int freq = 0;
+			char *buffer;
+
+			buffer = read_whole_file("/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq");
+
+			if (buffer) {
+				sscanf(buffer, "%d", &freq);
+				free(buffer);
+				sprintf(result, "%d", (freq/1000));
+			}
+			else
+				strcpy(result, "0");//bug?
+
+#endif
 		} else if(strcmp(type,"memory.total") == 0) {
 			sysinfo(&sys);
 			sprintf(result,"%.2f",(sys.totalram/(float)MBYTES));
@@ -202,7 +303,6 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			if (mount_info) free(mount_info);
 
 		} else if(strncmp(type,"temperature",11) == 0) {
-
 			unsigned int temperature;
 			int radio;
 
@@ -210,7 +310,12 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				temperature = 0;
 			else
 			{
-				temperature = get_phy_temperature(radio);
+#ifdef RTCONFIG_QTN
+				if (radio == 5)
+					temperature = get_qtn_temperature();
+				else
+#endif
+					temperature = get_phy_temperature(radio);
 			}
 			if (temperature == 0)
 				strcpy(result,"<i>disabled</i>");
@@ -255,8 +360,10 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				fclose(fp);
 			}
 		} else if(strncmp(type,"conn.wifi",9) == 0) {
+#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 			strcpy(result,"<i>off</i>");
-/*			int count, radio;
+#elif defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+			int count, radio;
 			char command[10];
 
 			sscanf(type,"conn.wifi.%d.%9s", &radio, command);
@@ -274,9 +381,23 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				strcpy(result,"<i>off</i>");
 			else
 				sprintf(result,"%d",count);
-*/
+#endif
 		} else if(strcmp(type,"driver_version") == 0 ) {
-#if defined(RTCONFIG_LANTIQ)
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+			system("/usr/sbin/wl ver >/tmp/output.txt");
+
+			char *buffer = read_whole_file("/tmp/output.txt");
+
+			if (buffer) {
+				if ((tmp = strstr(buffer, "\n")))
+					strlcpy(result, tmp+1, sizeof result);
+				else
+					strlcpy(result, buffer, sizeof result);
+
+				free(buffer);
+			}
+			unlink("/tmp/output.txt");
+#elif defined(RTCONFIG_LANTIQ)
 			char *buffer = read_whole_file("/rom/opt/lantiq/etc/wave_components.ver");
 
 			if (buffer) {
@@ -284,19 +405,47 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				if (tmp)
 					sscanf(tmp, "wave_release_minor=%s", result);
 				else
-					strcpy(result,"K3C merlin");
+					strcpy(result,"Unknow");
 
 				free(buffer);
 			}
 			unlink("/rom/opt/lantiq/etc/wave_components.ver");
-#elif  defined(RTCONFIG_QCA)
+#elif defined(RTCONFIG_QCA)
 					strcpy(result,"Unknow");
+#endif
+#ifdef RTCONFIG_QTN
+                } else if(strcmp(type,"qtn_version") == 0 ) {
+
+			if (!get_qtn_version(result, sizeof(result)))
+				strcpy(result,"<unknown>");
+#endif
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+		} else if(strcmp(type,"cfe_version") == 0 ) {
+#if defined(RTCONFIG_CFEZ)
+			snprintf(result, sizeof result, "%s", nvram_get("bl_version"));
+#else
+			system("cat /dev/mtd0ro | grep bl_version >/tmp/output.txt");
+			char *buffer = read_whole_file("/tmp/output.txt");
+
+			strcpy(result,"Unknown");	// Default
+			if (buffer) {
+				tmp = strstr(buffer, "bl_version=");
+
+				if (tmp) {
+					sscanf(tmp, "bl_version=%s", result);
+				} else {
+					snprintf(result, sizeof result, "%s", nvram_get("bl_version"));
+				}
+				free(buffer);
+			}
+			unlink("/tmp/output.txt");
+#endif
 #endif
 		} else if(strncmp(type,"pid",3) ==0 ) {
 			char service[32];
 			sscanf(type, "pid.%31s", service);
 
-			if (strlen(service))
+			if (*service)
 				sprintf(result, "%d", pidof(service));
 
 		} else if(strncmp(type, "vpnip",5) == 0 ) {
@@ -330,7 +479,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 			sscanf(type,"vpnstatus.%9[^.].%d", service, &num);
 
-			if ((strlen(service)) && (num > 0) )
+			if ( (*service) && (num > 0) )
 			{
 				snprintf(buf, sizeof(buf), "vpn%s%d", service, num);
 				if (pidof(buf) > 0) {
@@ -353,10 +502,31 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 					}
 				}
 			}
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+		} else if(strcmp(type,"ethernet.rtk") == 0 ) {
+#ifdef RTCONFIG_EXT_RTL8365MB
+			int states[4];
 
+			states[0] = states[1] = states[2] = states[3] = 0;
+
+			GetPhyStatus_rtk((int *)&states);
+
+			snprintf(result, sizeof result, "[[\"%d\", \"%d\"],"
+			                                " [\"%d\", \"%d\"],"
+			                                " [\"%d\", \"%d\"],"
+			                                " [\"%d\", \"%d\"]]",
+			                                 5, states[0],
+			                                 6, states[1],
+			                                 7, states[2],
+			                                 8, states[3]);
+#else
+			strcpy(result, "[]");
+#endif
+#endif
 		} else if(strcmp(type,"ethernet") == 0 ) {
-			strcpy(result,"<i>off</i>");
-/*			int len, j;
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+#ifndef HND_ROUTER
+			int len, j;
 
 			system("/usr/sbin/robocfg showports >/tmp/output.txt");
 
@@ -378,23 +548,100 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
                                 free(buffer);
 
 			}
-			unlink("/tmp/output.txt");*/
-//		} else if(strcmp(type,"wifitxpower") == 0) {
-//			unsigned int txpower;
+			unlink("/tmp/output.txt");
+#else // HND lacks robocfg support
+			strcpy(result, "[]");
+#endif
+#elif defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+			strcpy(result,"<i>off</i>");
+#endif
 		} else {
 			strcpy(result,"Not implemented");
 		}
-
 	}
 
 	retval += websWrite(wp, result);
 	return retval;
 }
 
+#ifdef RTCONFIG_QTN
+unsigned int get_qtn_temperature(void)
+{
+        int temp_external, temp_internal, temp_bb;
+	if (!rpc_qtn_ready())
+		return 0;
+
+        if (qcsapi_get_temperature_info(&temp_external, &temp_internal, &temp_bb) >= 0)
+		return temp_internal / 1000000.0f;
+
+	return 0;
+}
+
+int GetPhyStatus_qtn(void)
+{
+	int ret;
+
+	if (!rpc_qtn_ready()) {
+		return -1;
+	}
+	ret = qcsapi_wifi_run_script("set_test_mode", "get_eth_1000m");
+	if (ret < 0) {
+		ret = qcsapi_wifi_run_script("set_test_mode", "get_eth_100m");
+		if (ret < 0) {
+			ret = qcsapi_wifi_run_script("set_test_mode", "get_eth_10m");
+			if (ret < 0) {
+				// fprintf(stderr, "ATE command error\n");
+				return 0;
+			}else{
+				return 10;
+			}
+		}else{
+			return 100;
+		}
+		return -1;
+	}else{
+		return 1000;
+	}
+	return 0;
+}
+
+unsigned int get_qtn_version(char *version, int len)
+{
+        if (!rpc_qtn_ready())
+                return 0;
+
+        if (qcsapi_firmware_get_version(version, len) >= 0)
+                return 1;
+
+        return 0;
+}
+#endif
 
 unsigned int get_phy_temperature(int radio)
 {
-#if defined(RTCONFIG_LANTIQ)
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+	int ret = 0;
+	unsigned int *temp;
+	char buf[WLC_IOCTL_SMLEN];
+	char *interface;
+
+	strcpy(buf, "phy_tempsense");
+
+	if (radio == 2) {
+		interface = nvram_get("wl0_ifname");
+	} else if (radio == 5) {
+		interface = nvram_get("wl1_ifname");
+	} else {
+		return 0;
+	}
+
+	if ((ret = wl_ioctl(interface, WLC_GET_VAR, buf, sizeof(buf)))) {
+		return 0;
+	} else {
+		temp = (unsigned int *)buf;
+		return *temp / 2 + 20;
+	}
+#elif defined(RTCONFIG_LANTIQ)
 	int temp = 0, retval = 0;
 	char *tmp;
 	if (radio == 2) {
@@ -427,11 +674,195 @@ unsigned int get_phy_temperature(int radio)
 	} else { retval = 99; }
 	unlink("/tmp/output.txt");
 	return retval;
-#elif  defined(RTCONFIG_QCA)
-    return 99;
+#elif defined(RTCONFIG_QCA)
+	int temp = 0, retval = 0;
+	if (radio == 2) {
+		system("thermaltool -i wifi0 -get |grep temperature | awk '{print $3}' >/tmp/output.txt");
+	} else if (radio == 5) {
+		system("thermaltool -i wifi1 -get |grep temperature | awk '{print $3}' >/tmp/output.txt");
+	} else if (radio == 7) {
+		retval = 0;
+	} else {
+		return retval;
+	}
+	char *buffer = read_whole_file("/tmp/output.txt");
+	if (buffer) {
+		if (radio != 7) {
+			sscanf(buffer, " %d,", &temp);
+			free(buffer);			
+			retval = temp;
+		}
+	} else { retval = 0; }
+	unlink("/tmp/output.txt");
+	return retval;
+#elif defined(RTCONFIG_RALINK)
+    return 0;
 #endif
 }
 
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)
+unsigned int get_wifi_clients(int unit, int querytype)
+{
+	char *name, prefix[8];
+	struct maclist *clientlist;
+	int max_sta_count, maclist_size;
+	int val, count = 0, subunit;
+#ifdef RTCONFIG_QTN
+	qcsapi_unsigned_int association_count = 0;
+#endif
+#ifdef RTCONFIG_WIRELESSREPEATER
+	int isrepeater = 0;
+#endif
+
+	/* buffers and length */
+	max_sta_count = 128;
+	maclist_size = sizeof(clientlist->count) + max_sta_count * sizeof(struct ether_addr);
+	clientlist = malloc(maclist_size);
+
+	if (!clientlist)
+		return 0;
+
+	for (subunit = 0; subunit < 4; subunit++) {
+#ifdef RTCONFIG_WIRELESSREPEATER
+		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER) && (unit == nvram_get_int("wlc_band"))) {
+			if (subunit == 0)
+				continue;
+			else if (subunit == 1)
+				isrepeater = 1;
+			else
+				break;
+		}
+#endif
+
+		if (subunit == 0)
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		else
+			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, subunit);
+
+		name = nvram_pf_safe_get(prefix, "ifname");
+		if (*name == '\0') continue;
+
+#ifdef RTCONFIG_QTN
+		if (unit == 1) {
+			if ((nvram_match("wl1_unit", "0")) || (!rpc_qtn_ready()))
+				count = -1;
+			else if ((querytype == SI_WL_QUERY_ASSOC) &&
+				 (qcsapi_wifi_get_count_associations(name, &association_count) >= 0))
+					count = association_count;
+			else	// All other queries aren't support by QTN
+				count = -1;
+
+			goto exit;
+		}
+#endif
+
+		if (subunit == 0) {
+			wl_ioctl(name, WLC_GET_RADIO, &val, sizeof(val));
+			if (val == 1) {
+				count = -1;	// Radio is disabled
+				goto exit;
+			}
+		}
+
+		if ((subunit > 0) &&
+#ifdef RTCONFIG_WIRELESSREPEATER
+			!isrepeater &&
+#endif
+			!nvram_pf_get_int(prefix, "bss_enabled"))
+				continue;	// Guest interface disabled
+
+		switch (querytype) {
+			case SI_WL_QUERY_AUTHE:
+				strcpy((char*)clientlist, "authe_sta_list");
+				if (!wl_ioctl(name, WLC_GET_VAR, clientlist, maclist_size))
+					count += clientlist->count;
+				break;
+			case SI_WL_QUERY_AUTHO:
+				strcpy((char*)clientlist, "autho_sta_list");
+				if (!wl_ioctl(name, WLC_GET_VAR, clientlist, maclist_size))
+					count += clientlist->count;
+				break;
+			case SI_WL_QUERY_ASSOC:
+				clientlist->count = max_sta_count;
+				if (!wl_ioctl(name, WLC_GET_ASSOCLIST, clientlist, maclist_size))
+					count += clientlist->count;
+				break;
+		}
+	}
+
+exit:
+	free(clientlist);
+	return count;
+}
+
+
+#ifdef RTCONFIG_EXT_RTL8365MB
+void GetPhyStatus_rtk(int *states)
+{
+	int model;
+	const int *o;
+	int fd = open(RTKSWITCH_DEV, O_RDONLY);
+
+	if (fd < 0) {
+		perror(RTKSWITCH_DEV);
+		return;
+	}
+
+	phyState pS;
+
+	pS.link[0] = pS.link[1] = pS.link[2] = pS.link[3] = 0;
+	pS.speed[0] = pS.speed[1] = pS.speed[2] = pS.speed[3] = 0;
+
+        switch(model = get_model()) {
+        case MODEL_RTAC5300:
+		{
+		/* RTK_LAN  BRCM_LAN  WAN  POWER */
+		/* R0 R1 R2 R3 B4 B0 B1 B2 B3 */
+		/* L8 L7 L6 L5 L4 L3 L2 L1 W0 */
+
+		const int porder[4] = {3,2,1,0};
+		o = porder;
+
+		break;
+		}
+        case MODEL_RTAC88U:
+		{
+		/* RTK_LAN  BRCM_LAN  WAN  POWER */
+		/* R3 R2 R1 R0 B3 B2 B1 B0 B4 */
+		/* L8 L7 L6 L5 L4 L3 L2 L1 W0 */
+
+		const int porder[4] = {0,1,2,3};
+		o = porder;
+
+		break;
+		}
+	default:
+		{
+		const int porder[4] = {0,1,2,3};
+		o = porder;
+
+		break;
+		}
+	}
+
+
+	if (ioctl(fd, GET_RTK_PHYSTATES, &pS) < 0) {
+		perror("rtkswitch ioctl");
+		close(fd);
+		return;
+	}
+
+	close(fd);
+
+	states[0] = (pS.link[o[0]] == 1) ? (pS.speed[o[0]] == 2) ? 1000 : 100 : 0;
+	states[1] = (pS.link[o[1]] == 1) ? (pS.speed[o[1]] == 2) ? 1000 : 100 : 0;
+	states[2] = (pS.link[o[2]] == 1) ? (pS.speed[o[2]] == 2) ? 1000 : 100 : 0;
+	states[3] = (pS.link[o[3]] == 1) ? (pS.speed[o[3]] == 2) ? 1000 : 100 : 0;
+}
+#endif
+#endif
+
+#if defined(RTCONFIG_LANTIQ)
 int ej_kool_info(int eid, webs_t wp, int argc, char_t ** argv)
 {
 	char *type;
@@ -484,5 +915,5 @@ int ej_kool_info(int eid, webs_t wp, int argc, char_t ** argv)
 	retval += websWrite(wp, result);
 	return retval;
 }
-
+#endif
 

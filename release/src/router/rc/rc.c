@@ -24,6 +24,20 @@
 #include <lp5523led.h>
 #endif
 
+#if defined(K3)
+#include "k3.h"
+#elif defined(R7900P) || defined(R8000P)
+#include "r7900p.h"
+#elif defined(K3C)
+#include "k3c.h"
+#elif defined(SBRAC1900P)
+#include "ac1900p.h"
+#elif defined(SBRAC3200P)
+#include "ac3200p.h"
+#else
+#include "merlinr.h"
+#endif
+
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
@@ -259,6 +273,11 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "rc_service")==0) {
 		notify_rc(argv[2]);
 	}
+#if defined(RTCONFIG_FRS_FEEDBACK)
+	else if (strcmp(argv[1], "sendfeedback")==0) {
+		start_sendfeedback();
+	}
+#endif
 #ifdef RTCONFIG_BCM_7114
 	else if (strcmp(argv[1], "spect")==0) {
 		start_dfs();
@@ -270,8 +289,23 @@ static int rctest_main(int argc, char *argv[])
 	}
 #endif
 	else if (strcmp(argv[1], "GetPhyStatus")==0) {
+#if defined(R7900P) || defined(R8000P)
+		printf("Get Phy status:%d\n", GetPhyStatus2(0));
+#elif defined(K3)
+		printf("Get Phy status:%d\n", GetPhyStatusk3(0));
+#else
 		printf("Get Phy status:%d\n", GetPhyStatus(0));
+#endif
 	}
+#if defined(K3) || defined(R7900P) || defined(R8000P)
+	else if (strcmp(argv[1], "Get_PhyStatus")==0) {
+#if defined(K3)
+		GetPhyStatusk3(1);
+#elif defined(R7900P) || defined(R8000P)
+		 GetPhyStatus2(1);
+#endif
+	}
+#endif
 	else if (strcmp(argv[1], "GetExtPhyStatus")==0) {
 		printf("Get Ext Phy status:%d\n", GetPhyStatus(atoi(argv[2])));
 	}
@@ -749,6 +783,9 @@ static const applets_t applets[] = {
 #endif
 #endif
 	{ "watchdog",			watchdog_main			},
+#ifdef RTCONFIG_CONNTRACK
+	{ "pctime",                     pctime_main                     },
+#endif
 #if ! (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
 	{ "watchdog02",			watchdog02_main			},
 #endif  /* ! (RTCONFIG_QCA || RTCONFIG_RALINK) */
@@ -766,6 +803,10 @@ static const applets_t applets[] = {
 #endif
 #if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
 	{ "obd",			obd_main			},
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
+	{ "obd_eth",		obdeth_main				},
+	{ "obd_monitor",	obd_monitor_main			},
 #endif
 #ifdef RTCONFIG_IPERF
 	{ "monitor",			monitor_main			},
@@ -843,6 +884,13 @@ static const applets_t applets[] = {
 	{ "disk_remove",		diskremove_main			},
 #endif
 	{ "firmware_check",		firmware_check_main		},
+#if defined(RTCONFIG_FRS_LIVE_UPDATE)
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK) || defined(RTCONFIG_HND_ROUTER)
+	{ "firmware_check_update",	merlinr_firmware_check_update_main	},
+#else
+	{ "firmware_check_update",	firmware_check_update_main	},
+#endif
+#endif
 #ifdef BUILD_READMEM
 	{ "readmem",			readmem_main			},
 #endif
@@ -870,10 +918,7 @@ static const applets_t applets[] = {
 #endif
 #endif
 #endif
-#ifdef RTCONFIG_TR069
-	{ "dhcpc_lease",		dhcpc_lease_main		},
-#endif
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_TR069) || defined(RTAC3200) || defined(RTCONFIG_QCA)
 	{ "dhcpc_lease",		dnsmasq_script_main		},
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
@@ -1965,3 +2010,4 @@ int main(int argc, char **argv)
 	printf("Unknown applet: %s\n", base);
 	return 0;
 }
+

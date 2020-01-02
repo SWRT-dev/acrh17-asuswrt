@@ -65,7 +65,6 @@
 #include "pc.h"
 #endif
 
-
 #define IFUP (IFF_UP | IFF_RUNNING | IFF_BROADCAST | IFF_MULTICAST)
 
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,2,0)
@@ -368,6 +367,14 @@ extern int setWlOffLed(void);
 #ifndef CONFIG_BCMWL5
 extern int IS_ATE_FACTORY_MODE(void);
 #endif
+extern int set_HwId(const char *HwId);
+extern int get_HwId(void);
+extern int set_HwVersion(const char *HwVer);
+extern int get_HwVersion(void);
+extern int set_HwBom(const char *HwBom);
+extern int get_HwBom(void);
+extern int set_DateCode(const char *DateCode);
+extern int get_DateCode(void);
 
 /* board API under sysdeps/ralink/ralink.c */
 #ifdef RTCONFIG_RALINK
@@ -859,6 +866,10 @@ extern void ip2class(char *lan_ip, char *netmask, char *buf);
 #ifdef RTCONFIG_WIFI_SON
 extern void set_cap_apmode_filter(void);
 #endif
+extern void write_extra_filter(FILE *fp);
+#ifdef RTCONFIG_IPV6
+extern void write_extra_filter6(FILE *fp);
+#endif
 
 /* pc.c */
 #ifdef RTCONFIG_PARENTALCTRL
@@ -1023,6 +1034,7 @@ extern void stop_jffs2(int stop);
 static inline void start_jffs2(void) { }
 static inline void stop_jffs2(int stop) { }
 #endif
+extern void userfs_prepare(const char *folder);
 
 // watchdog.c
 extern void led_control_normal(void);
@@ -1538,17 +1550,20 @@ extern void stop_dsl_diag(void);
 extern int start_dsl_diag(void);
 #endif
 #endif
-#ifdef RTCONFIG_PUSH_EMAIL
-extern void start_DSLsendmail(void);
+#ifdef RTCONFIG_FRS_LIVE_UPDATE
+extern int firmware_check_update_main(int argc, char *argv[]);
+#endif
+#ifdef RTCONFIG_FRS_FEEDBACK
+extern void start_sendfeedback(void);
 #ifdef RTCONFIG_DBLOG
 extern void start_senddblog(char *path);
 extern void start_dblog(int option);
 extern void stop_dblog(void);
 #endif /* RTCONFIG_DBLOG */
 #ifdef RTCONFIG_DSL_TCLINUX
-extern void start_DSLsenddiagmail(void);
+extern void start_sendDSLdiag(void);
 #endif
-#endif
+#endif /* RTCONFIG_FEEDBACK */
 #ifdef RTCONFIG_SNMPD
 extern void start_snmpd(void);
 extern void stop_snmpd(void);
@@ -1843,7 +1858,7 @@ extern int start_tr(void);
 extern void stop_tr(void);
 extern int dhcpc_lease_main(int argc, char *argv[]);
 #endif
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_QCA) || defined(RTAC3200)
 extern int dnsmasq_script_main(int argc, char **argv);
 #endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
@@ -1854,10 +1869,6 @@ extern int roam_assistant_main(int argc, char *argv[]);
 
 #ifdef RTCONFIG_DHCP_OVERRIDE
 extern int detectWAN_arp_main(int argc, char **argv);
-#endif
-
-#ifdef RTCONFIG_PUSH_EMAIL
-extern void am_send_mail(int type, char *path);
 #endif
 
 #if defined(RTCONFIG_KEY_GUARD)
@@ -2064,4 +2075,48 @@ extern void start_adtbw();
 extern void start_aae();
 #endif
 
+// private.c
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+extern void oauth_google_gen_token_email(void);
+extern void oauth_google_update_token(void);
+extern int oauth_google_send_message(const char* receiver, const char* subject, const char* message, const char* attached_files[], int attached_files_count);
+extern void oauth_google_check_token_status(void);
+#endif
+
+// private.c
+#ifdef RTCONFIG_UUPLUGIN
+extern void exec_uu();
+#endif
+
+// dsl_fb.c
+#ifdef RTCONFIG_FRS_FEEDBACK
+extern int do_feedback(const char* feedback_file, char* attach_cmd);
+#endif
+
+#if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+typedef struct probe_4366_param_s {
+	int bECode_2G;
+	int bECode_5G;
+	int bECode_5G_2;
+	int bECode_fabid;
+} probe_4366_param_t;
+#endif /* RTCONFIG_BCM_7114 || HND_ROUTER */
+
+#if defined(RTAX88U)
+typedef struct probe_PCIE_param_s {
+	int bPCIE_down;
+} probe_PCIE_param_t;
+#endif /* RTAX88U */
+
+#ifdef RTCONFIG_BCMARM
+typedef struct WiFi_temperature_s {
+	double t2g;
+	double t5g;
+	double t5g2;
+} WiFi_temperature_t;
+double get_cpu_temp();
+int get_wifi_temps(WiFi_temperature_t *wt);
+#endif /* RTCONFIG_BCMARM */
+
 #endif	/* __RC_H__ */
+

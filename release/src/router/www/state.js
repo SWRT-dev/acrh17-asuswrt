@@ -321,6 +321,15 @@ var is_CN = in_territory_code("CN");
 var is_TW_sku = in_territory_code("TW");
 var is_US_sku = in_territory_code("US");
 var is_UA_sku = in_territory_code("UA");
+var is_RU_sku = (function(){
+	var location = '<% nvram_get("location_code"); %>';
+	if(location != ''){
+		return (location.indexOf("RU") != -1);
+	}
+	else{
+		return in_territory_code("RU");
+	}
+})();
 
 //wireless
 var wl_nband_title = [];
@@ -485,12 +494,12 @@ function isSupport(_ptn){
 	}
 	else if(_ptn == "meoVoda"){
 		var meoVoda_support_models = ["RT-N14U", "BRT-AC828", "RT-AD7200", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC86U", "AC2900", "RT-AC87U", 
-							  "RT-AC68U", "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE", "RT-N800HP"];
+							"RT-AC68U", "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC59U", "RT-AC58U", "RT-AC56U", "RT-AC51U", "RT-N66U", "RT-N19", "RT-N18U", "BLUECAVE", "RT-N800HP"];
 		return (meoVoda_support_models.indexOf(based_modelid) >= 0)? true : false;
 	}
 	else if(_ptn == "movistarTriple"){
 		var movistarTriple_support_models = ["BRT-AC828", "RT-AC5300", "GT-AC5300", "RT-AC3200", "RT-AC3100", "RT-AC1200G+", "RT-AC88U", "RT-AC87U", "RT-AC68U", 
-									 "RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N18U", "BLUECAVE", "RT-N800HP"];
+							"RT-AC68A", "4G-AC68U", "RT-AC66U", "RT-AC59U", "RT-AC58U", "RT-AC56U", "RT-AC56S", "RT-AC51U", "RT-N66U", "RT-N19", "RT-N18U", "BLUECAVE", "RT-N800HP"];
 		return (movistarTriple_support_models.indexOf(based_modelid) >= 0)? true : false;
 	}
 	else if(_ptn == "dpi_mals" || _ptn == "dpi_vp" || _ptn == "dpi_cc" || _ptn == "adaptive_qos" || _ptn == "webs_filter" || _ptn == "apps_filter" || _ptn == "web_history" || _ptn == "bandwidth_monitor"){
@@ -644,6 +653,10 @@ var cfg_sync_support = isSupport("cfg_sync");
 var meoVoda_support = isSupport("meoVoda");
 var movistarTriple_support = isSupport("movistarTriple");
 var utf8_ssid_support = isSupport("utf8_ssid");
+if(based_modelid == "RT-AC3100" || based_modelid == "RT-AC3200")
+	var uu_support = 1;
+else
+	var uu_support = isSupport('uu_accel');
 
 var QISWIZARD = "QIS_wizard.htm";
 
@@ -656,6 +669,8 @@ var sdk_5 = sdk_version_array[0] == 5 ? true : false;
 var bcm_mumimo_support = isSupport("mumimo");		//Broadcom MU-MIMOs
 var nt_center_support = isSupport("nt_center");
 var dblog_support = isSupport("dblog");
+var qca_support = isSupport("qca");
+var geforceNow_support = isSupport("nvgfn");
 
 if(nt_center_support)
 	document.write('<script type="text/javascript" src="/client_function.js"></script>');
@@ -958,8 +973,8 @@ function show_banner(L3){// L3 = The third Level of Menu
 		banner_code +='</div>';
 		banner_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
 		if(is_CN){
-			Android_app_link = "http://www.wandoujia.com/apps/com.asus.aihome";
-			banner_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;font-size:24px;font-weight:bold;text-decoration:underline"><#WanDouJia#></div></a></div>';
+			Android_app_link = "https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/ASUSRouter_Android_Release.apk";
+			banner_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;font-size:24px;border:1px solid #BDBDBD;padding: 10px 4px;border-radius: 6px;">Android App</div></a></div>';
 		}
 		else{
 			banner_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:172px;height:60px;background:url(\'images/googleplay.png\') no-repeat;"></div></a></div>';
@@ -1230,7 +1245,8 @@ function submitenter(myfield,e)
 	else
 		return true;
 }
-
+var tabtitle = [""];
+var tablink = [""];
 function show_menu(){
 	var wan_pppoe_username = decodeURIComponent('<% nvram_char_to_ascii("", "wan0_pppoe_username"); %>');
 	var cht_pppoe = wan_pppoe_username.split("@");
@@ -1255,7 +1271,26 @@ function show_menu(){
 			menus: menuTree.exclude.menus(),
 			tabs: menuTree.exclude.tabs()
 		};
-
+		if (typeof menu_hook != "undefined") {
+			menu_hook();
+			for (var i = 0; i < tablink[0].length - 1; i++) {
+				menuList[menuList.length - 1].tab[i] = {
+					url: tablink[0][i + 1],
+					tabName: tabtitle[0][i + 1]
+				}
+			}
+			menuList[menuList.length - 1].tab[tablink[0].length - 1] = {
+				url: "NULL",
+				tabName: "__INHERIT__"
+			}
+		}else{
+			if(window.location.pathname.indexOf("Module_") != -1){
+				menuList[menuList.length - 1].tab[0] = {
+					url: window.location.pathname.split("/")[1],
+					tabName: window.location.pathname.split(".asp")[0].split("/Module_")[1]
+				}
+			}
+		}
 		Session.set("menuList", menuList);
 		Session.set("menuExclude", menuExclude);
 		showMenuTree(menuList, menuExclude);
@@ -3735,3 +3770,19 @@ var sort_by = function(field, reverse, primer){
 		return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
 	}
 }
+
+function getRadioValue(obj) {
+	for (var i=0; i<obj.length; i++) {
+		if (obj[i].checked)
+			return obj[i].value;
+	}
+	return 0;
+}
+
+function setRadioValue(obj,val) {
+	for (var i=0; i<obj.length; i++) {
+		if (obj[i].value==val)
+			obj[i].checked = true;
+	}
+}
+

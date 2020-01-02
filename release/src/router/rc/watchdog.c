@@ -76,7 +76,19 @@
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_event.h>
 #endif
-
+#if defined(K3)
+#include "k3.h"
+#elif defined(R7900P) || defined(R8000P)
+#include "r7900p.h"
+#elif defined(K3C)
+#include "k3c.h"
+#elif defined(SBRAC1900P)
+#include "ac1900p.h"
+#elif defined(SBRAC3200P)
+#include "ac3200p.h"
+#else
+#include "merlinr.h"
+#endif
 #define BCM47XX_SOFTWARE_RESET	0x40		/* GPIO 6 */
 #define RESET_WAIT		2		/* seconds */
 #define RESET_WAIT_COUNT	RESET_WAIT * 10 /* 10 times a second */
@@ -3727,20 +3739,24 @@ void timecheck(void)
 #ifdef RTCONFIG_REBOOT_SCHEDULE
 	/* Reboot Schedule */
 	char reboot_schedule[PATH_MAX];
-	if (nvram_match("ntp_ready", "1") && nvram_match("reboot_schedule_enable", "1"))
+	if (nvram_match("reboot_schedule_enable", "1"))
 	{
-		//SMTWTFSHHMM
-		//XXXXXXXXXXX
-		snprintf(reboot_schedule, sizeof(reboot_schedule), "%s", nvram_safe_get("reboot_schedule"));
-		if (strlen(reboot_schedule) == 11 && atoi(reboot_schedule) > 2359)
+		if (nvram_match("ntp_ready", "1"))
 		{
-			if (timecheck_reboot(reboot_schedule))
+			//SMTWTFSHHMM
+			//XXXXXXXXXXX
+			snprintf(reboot_schedule, sizeof(reboot_schedule), "%s", nvram_safe_get("reboot_schedule"));
+			if (strlen(reboot_schedule) == 11 && atoi(reboot_schedule) > 2359)
 			{
-				_dprintf("reboot plan alert...\n");
-				sleep(1);
-				eval("reboot");
+				if (timecheck_reboot(reboot_schedule))
+				{
+					logmessage("reboot scheduler", "[%s] The system is going down for reboot\n", __FUNCTION__);
+					kill(1, SIGTERM);
+				}
 			}
 		}
+		else
+			logmessage("reboot scheduler", "[%s] NTP sync error\n", __FUNCTION__);
 	}
 #endif
 
@@ -4031,7 +4047,7 @@ void fake_etlan_led(void)
 	}
 	allstatus = 1;
 #endif
-#ifdef defined(K3)
+#if defined(K3)
 	if (!GetPhyStatusk3(0)) {
 #else
 	if (!GetPhyStatus(0)) {
@@ -5271,6 +5287,18 @@ void dnsmasq_check()
 #endif
 	}
 }
+
+#if defined(RTCONFIG_SMARTDNS)
+extern void start_smartdns();
+void smartdns_check()
+{
+	if (!pids("smartdns")) {
+		start_smartdns();
+		logmessage("watchdog", "restart smartdns");
+	}
+}
+#endif
+
 #if defined(K3)
 void k3screen_check()
 {
@@ -5299,6 +5327,49 @@ void k3screen_check()
 			pid_t pid;
 			_eval(k3screenctrl_argv, NULL, 0, &pid);
 			logmessage("watchdog", "restart k3screenctrl");
+		}
+	}
+}
+#endif
+#if defined(RTCONFIG_SOFTCENTER)
+static void softcenter_sig_check()
+{
+	//1=wan,2=nat,3=mount
+	if(nvram_match("sc_installed", "1")){
+		if(!pids("perpd")){
+			char *perp_argv[] = { "perpboot", "-d",NULL };
+			pid_t pid;
+			_eval(perp_argv, NULL, 0, &pid);
+			if(f_exists("/jffs/.asusrouter"))
+				unlink("/jffs/.asusrouter");
+		}
+		if(nvram_match("sc_wan_sig", "1")) {
+			if(nvram_match("sc_mount", "1")) {
+				if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
+					softcenter_eval(SOFTCENTER_WAN);
+					nvram_set_int("sc_wan_sig", 0);
+				}
+			} else {
+				softcenter_eval(SOFTCENTER_WAN);
+				nvram_set_int("sc_wan_sig", 0);
+			}
+		}
+		if(nvram_match("sc_nat_sig", "1")) {
+			if(nvram_match("sc_mount", "1")) {
+				if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
+					softcenter_eval(SOFTCENTER_NAT);
+					nvram_set_int("sc_nat_sig", 0);
+				}
+			} else {
+				softcenter_eval(SOFTCENTER_NAT);
+				nvram_set_int("sc_nat_sig", 0);
+			}
+		}
+		if(nvram_match("sc_mount_sig", "1")) {
+			if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
+				softcenter_eval(SOFTCENTER_MOUNT);
+				nvram_set_int("sc_mount_sig", 0);
+			}
 		}
 	}
 }
@@ -5492,7 +5563,7 @@ void modem_log_check(void) {
 			while(fgets(var, 16, fp)) {
 				line = safe_atoi(var);
 			}
-			fclose(fp);
+			pclose(fp);
 
 			if (line > MAX_MODEMLOG_LINE) {
 				snprintf(cmd, 64, "cat %s |tail -n %d > %s-1", MODEMLOG_FILE, MAX_MODEMLOG_LINE, MODEMLOG_FILE);
@@ -5729,7 +5800,7 @@ static void auto_firmware_check()
 	int cycle = (cycle_manual > 1) ? cycle_manual : 2880;
 
 	time_t now;
-	struct tm *tm;
+	struct tm local;
 	static int rand_hr, rand_min;
 
 	if (!nvram_get_int("ntp_ready")){
@@ -5739,11 +5810,12 @@ static void auto_firmware_check()
 
 	if (!bootup_check && !periodic_check)
 	{
+		setenv("TZ", nvram_safe_get("time_zone_x"), 1);
 		time(&now);
-		tm = localtime(&now);
+		localtime_r(&now, &local);
 
-		if ((tm->tm_hour == (2 + rand_hr)) &&	// every 48 hours at 2 am + random offset
-		    (tm->tm_min == rand_min))
+		if ((local.tm_hour == (2 + rand_hr)) &&	// every 48 hours at 2 am + random offset
+		    (local.tm_min == rand_min))
 		{
 			periodic_check = 1;
 			period = -1;
@@ -6977,7 +7049,8 @@ void watchdog(int sig)
 #endif
 
 #if (defined(PLN12) || defined(PLAC56) || defined(PLAC66U))
-	client_check();
+	if (nvram_match("plc_sleep_enabled", "1"))
+		client_check();
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -7030,7 +7103,9 @@ void watchdog(int sig)
 	bs_pre = bs;
 #endif
 #endif
-
+#if defined(RTCONFIG_SOFTCENTER)
+	softcenter_sig_check();
+#endif
 	if (watchdog_period)
 		return;
 
@@ -7062,6 +7137,9 @@ wdp:
 	ddns_check();
 	networkmap_check();
 	httpd_check();
+#if defined(RTCONFIG_SMARTDNS)
+	smartdns_check();
+#endif
 	dnsmasq_check();
 #if defined(K3)
 	k3screen_check();
@@ -7316,3 +7394,4 @@ int wdg_monitor_main(int argc, char *argv[])
 	return 0;
 }
 #endif
+
