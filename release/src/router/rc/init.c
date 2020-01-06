@@ -5132,6 +5132,7 @@ int init_nvram(void)
 
 #if defined(RTAC82U)
 	case MODEL_RTAC82U:
+		qca_init();
 		nvram_set("boardflags", "0x100"); // although it is not used in ralink driver, set for vlan
 		//nvram_set("vlan1hwname", "et0");  // vlan. used to get "%smacaddr" for compare and find parent interface.
 		//nvram_set("vlan2hwname", "et0");  // vlan. used to get "%smacaddr" for compare and find parent interface.
@@ -11135,70 +11136,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			force_free_caches();
 #endif
 #if defined(RTACRH17)
-#ifdef RTCONFIG_SOFTCENTER
-	nvram_set("sc_wan_sig", "0");
-	nvram_set("sc_nat_sig", "0");
-	nvram_set("sc_mount_sig", "0");
-	if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh")){
-		doSystem("/usr/sbin/jffsinit.sh &");
-		logmessage("软件中心", "开始安装......");
-		logmessage("软件中心", "1分钟后完成安装");
-		_dprintf("....softcenter ok....\n");
-	}
-	eval("insmod", "nfnetlink");
-	eval("insmod", "ip_set");
-	eval("insmod", "ip_set_bitmap_ip");
-	eval("insmod", "ip_set_bitmap_ipmac");
-	eval("insmod", "ip_set_bitmap_port");
-	eval("insmod", "ip_set_hash_ip");
-	eval("insmod", "ip_set_hash_ipport");
-	eval("insmod", "ip_set_hash_ipportip");
-	eval("insmod", "ip_set_hash_ipportnet");
-	eval("insmod", "ip_set_hash_ipmac");
-	eval("insmod", "ip_set_hash_ipmark");
-	eval("insmod", "ip_set_hash_net");
-	eval("insmod", "ip_set_hash_netport");
-	eval("insmod", "ip_set_hash_netiface");
-	eval("insmod", "ip_set_hash_netnet");
-	eval("insmod", "ip_set_hash_netportnet");
-	eval("insmod", "ip_set_hash_mac");
-	eval("insmod", "ip_set_list_set");
-	eval("insmod", "nf_tproxy_core");
-	eval("insmod", "xt_TPROXY");
-	eval("insmod", "xt_set");
-#endif
 	qca_init_done();
 #endif
-	if(!nvram_get("modelname"))
-#if defined(K3)
-		nvram_set("modelname", "K3");
-#elif defined(K3C)
-		nvram_set("modelname", "K3C");
-#elif defined(SBRAC1900P)
-		nvram_set("modelname", "SBRAC1900P");
-#elif defined(SBRAC3200P)
-		nvram_set("modelname", "SBRAC3200P");
-#elif defined(R8000P) || defined(R7900P)
-		nvram_set("modelname", "R8000P");
-#elif defined(RTAC3100)
-		nvram_set("modelname", "RTAC3100");
-#elif defined(BULECAVE)
-		nvram_set("modelname", "BULECAVE");
-#elif defined(RTAC68U)
-		nvram_set("modelname", "RTAC68U");
-#elif defined(RTAC68P)
-		nvram_set("modelname", "RTAC68P");
-#elif defined(RTAC3200)
-		nvram_set("modelname", "RTAC3200");
-#elif defined(GTAC2900)
-		nvram_set("modelname", "GTAC2900");
-#elif defined(GTAC5300)
-		nvram_set("modelname", "GTAC5300");
-#elif defined(RTAC86U)
-		nvram_set("modelname", "RTAC86U");
-#elif defined(RTACRH17)
-		nvram_set("modelname", "RTACRH17");
-#endif
+
 
 #ifdef RTCONFIG_AMAS
 			nvram_set("start_service_ready", "1");

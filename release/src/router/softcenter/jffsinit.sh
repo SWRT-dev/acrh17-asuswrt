@@ -3,7 +3,7 @@
 
 SPACE_AVAL=$(df|grep jffs | awk '{print $2}')
 
-if [ "$SPACE_AVAL" -gt 51200 -a "$(nvram get sc_mount)" == 0 ];then
+if [ $SPACE_AVAL -gt 51200 -a "$(nvram get sc_mount)" == 0 ];then
 if [ ! -d /jffs/softcenter ]; then
 	mkdir -p /jffs/softcenter
 	cp -rf /rom/etc/softcenter/* /jffs/softcenter/
