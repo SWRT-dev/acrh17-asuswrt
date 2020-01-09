@@ -9320,13 +9320,11 @@ again:
 	}
 	else if(strcmp(script, "upgrade") == 0) {
 //we must make sure that usb can umount and do not start skipd again
+//don't delete scripts in init.d
 #if defined(RTCONFIG_SOFTCENTER)
-#if defined(RTCONFIG_LANTIQ)
-	if(nvram_get_int("k3c_enable"))
-		doSystem("/usr/sbin/plugin.sh stop");
-#elif defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
-	doSystem("/usr/sbin/plugin.sh stop");
-#endif
+//#if defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+//		doSystem("/usr/sbin/plugin.sh stop");
+//#endif
 #endif
 		if(action&RC_SERVICE_STOP) {
 			g_upgrade = 1;
