@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  *
- * Copyright 2019, paldier <paldier@hotmail.com>.
+ * Copyright 2019-2020, paldier <paldier@hotmail.com>.
  * All Rights Reserved.
  * 
  *
@@ -22,10 +22,8 @@
 
 #ifndef __MERLINR_H__
 #define __MERLINR_H__
-#if defined(RTACRH17) || defined(RTAC82U)
 extern void merlinr_init(void);
 extern void merlinr_init_done(void);
-#endif
 #ifdef RTCONFIG_UUPLUGIN
 extern void exec_uu(void);
 #endif

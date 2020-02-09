@@ -14,7 +14,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  *
- * Copyright 2019, paldier <paldier@hotmail.com>.
+ * Copyright 2019-2020, paldier <paldier@hotmail.com>.
  * All Rights Reserved.
  * 
  *
@@ -34,14 +34,6 @@
 #endif
 #include "merlinr.h"
 #include <curl/curl.h>
-
-#define FWUPDATE_DBG(fmt,args...) \
-        if(1) { \
-                char info[1024]; \
-                snprintf(info, sizeof(info), "echo \"[FWUPDATE][%s:(%d)]"fmt"\" >> /tmp/webs_upgrade.log", __FUNCTION__, __LINE__, ##args); \
-                system(info); \
-        }
-
 
 
 void merlinr_insmod(){
@@ -120,8 +112,8 @@ void merlinr_init_done()
 		nvram_set("modelname", "R8000P");
 #elif defined(RTAC3100)
 		nvram_set("modelname", "RTAC3100");
-#elif defined(BULECAVE)
-		nvram_set("modelname", "BULECAVE");
+#elif defined(BLUECAVE)
+		nvram_set("modelname", "BLUECAVE");
 #elif defined(RTAC68U)
 		nvram_set("modelname", "RTAC68U");
 #elif defined(RTAC68P)
