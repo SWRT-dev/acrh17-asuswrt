@@ -23,16 +23,14 @@
 #ifndef __MERLINR_H__
 #define __MERLINR_H__
 #if defined(RTACRH17) || defined(RTAC82U)
-extern void qca_init(void);
-extern void qca_init_done(void);
+extern void merlinr_init(void);
+extern void merlinr_init_done(void);
 #endif
 #ifdef RTCONFIG_UUPLUGIN
 extern void exec_uu(void);
 #endif
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
-#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_RALINK)
 extern int merlinr_firmware_check_update_main(int argc, char *argv[]);
-#endif
 #endif
 #if defined(RTCONFIG_SOFTCENTER)
 enum {

@@ -67,9 +67,9 @@ void merlinr_insmod(){
 	eval("insmod", "xt_TPROXY");
 	eval("insmod", "xt_set");
 }
-#if defined(RTACRH17) || defined(RTAC82U)
-void qca_init()
+void merlinr_init()
 {
+	_dprintf("############################ MerlinR init #################################\n");
 #if defined(RTCONFIG_SOFTCENTER)
 	nvram_set("sc_wan_sig", "0");
 	nvram_set("sc_nat_sig", "0");
@@ -77,24 +77,99 @@ void qca_init()
 #endif
 	merlinr_insmod();
 }
-void qca_init_done()
+void merlinr_init_done()
 {
-	if(!nvram_get("bl_ver"))
-		nvram_set("bl_ver", "1.0.0.0");
-	if(!nvram_get("modelname"))
-		nvram_set("modelname", "RTACRH17");
-#if defined(RTCONFIG_SOFTCENTER)
+	_dprintf("############################ MerlinR init done #################################\n");
+#ifdef RTCONFIG_SOFTCENTER
+	if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","0")){
+		doSystem("/usr/sbin/jffsinit.sh &");
+		logmessage("软件中心", "开始安装......");
+		logmessage("软件中心", "1分钟后完成安装");
+		_dprintf("....softcenter ok....\n");
+	} else if (f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","0"))
+		nvram_set("sc_installed","1");
+	else if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","1"))
+		nvram_set("sc_installed","0");
 	if(f_exists("/jffs/.asusrouter")){
 		unlink("/jffs/.asusrouter");
 		doSystem("sed -i '/softcenter-wan.sh/d' /jffs/scripts/wan-start");
 		doSystem("sed -i '/softcenter-net.sh/d' /jffs/scripts/nat-start");
 		doSystem("sed -i '/softcenter-mount.sh/d' /jffs/scripts/post-mount");
+
 	}
 #endif
-}
+#if defined(RTCONFIG_QCA)
+	if(!nvram_get("bl_ver"))
+		nvram_set("bl_ver", "1.0.0.0");
+#elif defined(RTCONFIG_LANTIQ)
+#if !defined(K3C)
+	if(!nvram_get("bl_ver"))
+		doSystem("nvram set bl_ver=`uboot_env --get --name bl_ver`");
 #endif
+#endif
+	if(!nvram_get("modelname"))
+#if defined(K3)
+		nvram_set("modelname", "K3");
+#elif defined(K3C)
+		nvram_set("modelname", "K3C");
+#elif defined(SBRAC1900P)
+		nvram_set("modelname", "SBRAC1900P");
+#elif defined(SBRAC3200P)
+		nvram_set("modelname", "SBRAC3200P");
+#elif defined(R8000P) || defined(R7900P)
+		nvram_set("modelname", "R8000P");
+#elif defined(RTAC3100)
+		nvram_set("modelname", "RTAC3100");
+#elif defined(BULECAVE)
+		nvram_set("modelname", "BULECAVE");
+#elif defined(RTAC68U)
+		nvram_set("modelname", "RTAC68U");
+#elif defined(RTAC68P)
+		nvram_set("modelname", "RTAC68P");
+#elif defined(RTAC3200)
+		nvram_set("modelname", "RTAC3200");
+#elif defined(GTAC2900)
+		nvram_set("modelname", "GTAC2900");
+#elif defined(GTAC5300)
+		nvram_set("modelname", "GTAC5300");
+#elif defined(RTAC86U)
+		nvram_set("modelname", "RTAC86U");
+#elif defined(RTACRH17)
+		nvram_set("modelname", "RTACRH17");
+#elif defined(TUFAX3000) || defined(RTAX58U)
+		nvram_set("modelname", "TUFAX3000");
+#elif defined(RTAX56U)
+		nvram_set("modelname", "RTAX56U");
+#elif defined(RTAX88U)
+		nvram_set("modelname", "RTAX88U");
+#elif defined(GTAX11000)
+		nvram_set("modelname", "GTAX11000");
+#elif defined(RAX20)
+		nvram_set("modelname", "RAX20");
+#elif defined(RAX80)
+		nvram_set("modelname", "RAX80");
+#elif defined(RAX200)
+		nvram_set("modelname", "RAX200");
+#elif defined(TUFAC1750)
+		nvram_set("modelname", "TUFAC1750");
+#elif defined(RTACRH26)
+		nvram_set("modelname", "RTACRH26");
+#elif defined(RTAC85P)
+		nvram_set("modelname", "RTAC85P");
+#endif
+#if defined(R8000P) || defined(R7900P)
+	nvram_set("ping_target","www.taobao.com");
+	nvram_commit();
+#endif
+}
 
 
+#define FWUPDATE_DBG(fmt,args...) \
+        if(1) { \
+                char info[1024]; \
+                snprintf(info, sizeof(info), "echo \"[FWUPDATE][%s:(%d)]"fmt"\" >> /tmp/webs_upgrade.log", __FUNCTION__, __LINE__, ##args); \
+                system(info); \
+        }
 
 int str_split(char* buf, char** s, int s_size) {
 	int curr = 0;
@@ -274,8 +349,6 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 	nvram_set("webs_state_error", "0");
 	nvram_set("webs_state_odm", "0");
 	nvram_set("webs_state_url", "");
-	nvram_set("cfg_check", "0");
-	nvram_set("cfg_upgrade", "0");
 	unlink("/tmp/webs_upgrade.log");
 	unlink("/tmp/wlan_update.txt");
 	unlink("/tmp/release_note0.txt");
@@ -301,11 +374,11 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 			sscanf(buffer,"%[A-Z0-9-]#%[A-Z0-9]#%[0-9]#%[A-Z0-9.]#%[a-z0-9]",model,modelname,fsver,fwver,tag);
 			_dprintf("%s#%s#%s#%s\n",model,modelname,fsver,fwver);
 			if(!strcmp(model, nvram_get("productid")) && !strcmp(modelname, nvram_safe_get("modelname"))){
-				if((strstr(cur_fwver, "B") && strstr(fwver, "B"))||(strstr(cur_fwver, "R") && strstr(fwver, "R"))){
+				if((strstr(cur_fwver, "B") && strstr(fwver, "B"))||(strstr(cur_fwver, "R") && strstr(fwver, "R"))||(strstr(cur_fwver, "X") && strstr(fwver, "X"))){
 					//_dprintf("%s#%s\n",fwver,cur_fwver);
 					if(versioncmp((cur_fwver+1),(fwver+1))==1){
 						nvram_set("webs_state_url", "");
-#if defined(SBRAC3200P) || defined(RTACRH17) || defined(RTAC3200)
+#if defined(SBRAC3200P) || defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
 						snprintf(info,sizeof(info),"3004_382_%s_%s-%s",modelname,fwver,tag);
 #else
 						snprintf(info,sizeof(info),"3004_384_%s_%s-%s",modelname,fwver,tag);
@@ -316,10 +389,7 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 						nvram_set("webs_state_REQinfo", info);
 						nvram_set("webs_state_flag", "1");
 						nvram_set("webs_state_update", "1");
-#ifdef RTCONFIG_AMAS
-//						nvram_set("cfg_check", "9");
-//						nvram_set("cfg_upgrade", "0");
-#endif
+
 						memset(url,'\0',sizeof(url));
 						memset(log,'\0',sizeof(log));
 						char releasenote_file[100];
@@ -338,8 +408,6 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 							FWUPDATE_DBG("---- download real release note %s/%s ----", serverurl, releasenote_file);
 							curl_download_file(curlhandle , url,releasenote,8,3);
 						}
-						curl_easy_cleanup(curlhandle);
-						curl_global_cleanup();
 						FWUPDATE_DBG("---- firmware check update finish ----");
 						return 0;
 #if 0
@@ -360,7 +428,7 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 	curl_global_cleanup();
 
 GODONE:
-#if defined(SBRAC3200P) || defined(RTACRH17) || defined(RTAC3200)
+#if defined(SBRAC3200P) || defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
 	snprintf(info,sizeof(info),"3004_382_%s",nvram_get("extendno"));
 #else
 	snprintf(info,sizeof(info),"3004_384_%s",nvram_get("extendno"));
