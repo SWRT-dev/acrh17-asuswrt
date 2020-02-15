@@ -80,8 +80,8 @@ void merlinr_init_done()
 		_dprintf("....softcenter ok....\n");
 	} else if (f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","0"))
 		nvram_set("sc_installed","1");
-	else if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","1"))
-		nvram_set("sc_installed","0");
+	//else if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","1"))
+		//nvram_set("sc_installed","0");
 	if(f_exists("/jffs/.asusrouter")){
 		unlink("/jffs/.asusrouter");
 		doSystem("sed -i '/softcenter-wan.sh/d' /jffs/scripts/wan-start");
@@ -151,8 +151,8 @@ void merlinr_init_done()
 #endif
 #if defined(R8000P) || defined(R7900P)
 	nvram_set("ping_target","www.taobao.com");
-	nvram_commit();
 #endif
+	nvram_commit();
 }
 
 

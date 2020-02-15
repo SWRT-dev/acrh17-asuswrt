@@ -79,13 +79,15 @@ KVER=`uname -r`
 if [ "$ARCH" == "armv7l" ]; then
 	if [ "$KVER" == "4.1.52" -o "$KVER" == "4.1.49" ];then
 		dbus set softcenter_arch="armng"
-	elif [ "$KVER" == "3.14.77" ];then
-		dbus set softcenter_arch="armqca"
 	else
 		dbus set softcenter_arch="$ARCH"
 	fi
 else
-	dbus set softcenter_arch="$ARCH"
+	if [ "$KVER" == "3.10.14" ];then
+		dbus set softcenter_arch="mipsle"
+	else
+		dbus set softcenter_arch="$ARCH"
+	fi
 fi
 
 dbus set softcenter_api=`cat /jffs/softcenter/.soft_ver`
@@ -94,6 +96,7 @@ if [ "`nvram get model`" == "GT-AC5300" ] || [ "`nvram get model`" == "GT-AC2900
 	cp -rf /rom/etc/softcenter/ROG/res/* /jffs/softcenter/res/
 fi
 nvram set sc_installed=1
+nvram commit
 # creat wan-start file
 mkdir -p /jffs/scripts
 
