@@ -105,8 +105,8 @@ else
 RCSTRING=""
 RC_EXT_NO=0
 endif
-EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)
-
+#EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)
+EXTENDNO1=0
 ifeq ($(BRANCH),)
 include ./router/extendno.conf
 else
@@ -444,7 +444,7 @@ ifeq ($(HND_ROUTER),y)
 
 	$(MAKE) buildimage
 else
-	@-mkdir image
+	@-mkdir -p image
 
 	$(MAKE) -C router all
 ifneq ($(PLATFORM_ROUTER),)
@@ -857,7 +857,7 @@ cleanimage: rtk_clean_img
 	@rm -f router/.config
 	@touch router/.config
 ifneq ($(HND_ROUTER),y)
-	@-mkdir image
+	@-mkdir -p image
 endif
 
 cleantools:

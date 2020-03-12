@@ -13,7 +13,15 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
+ *
+ * Copyright 2018-2020, paldier <paldier@hotmail.com>.
+ * All Rights Reserved.
+ * 
  */
 
-extern int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t **argv);
-
+#ifndef _merlinr_h_
+#define _merlinr_h_
+extern int get_lang_num_merlinr();
+extern int check_lang_support_merlinr(char *lang);
+extern int change_preferred_lang_merlinr(int finish);
+#endif

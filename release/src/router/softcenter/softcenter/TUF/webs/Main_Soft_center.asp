@@ -133,14 +133,21 @@ input[type=button]:focus {
 }
 .show-install-btn,
 .show-uninstall-btn{
-	border: none;
-	background: #444;
+	border: 1px solid #91071f;
+	background: none;
 	color: #fff;
 	padding: 10px 20px;
 	border-radius: 5px 5px 0px 0px;
+	border: 1px solid #92650F;
 }
 .active {
-	background: #444f53;
+	background: #91071f;
+	border: 1px solid #91071f;
+	background: linear-gradient(to bottom, #92650F  0%, #92650F 100%); /* W3C */
+	border: 1px solid #92650F;
+}
+#IconContainer {
+	border:1px solid #92650F;
 }
 .install-status-1 .uninstall-btn {
 	display: block;
@@ -566,11 +573,11 @@ $(function() {
 			        db_softcenter_["softcenter_home_url"] = "https://sc.paldier.com";
 			if(db_softcenter_["softcenter_arch"] == "mips")//for grx500
 				scarch="mips";
-			else if (db_softcenter_["softcenter_arch"] == "armv7l")//for bcm4709/qca4019
+			else if (db_softcenter_["softcenter_arch"] == "armv7l")//for bcm4709
 				scarch="arm";
-			else if (db_softcenter_["softcenter_arch"] == "armng")//for bcm6750
+			else if (db_softcenter_["softcenter_arch"] == "armng")//for bcm6750/ipq4019
 				scarch="armng";
-			else if (db_softcenter_["softcenter_arch"] == "aarch64")//for bcm4908
+			else if (db_softcenter_["softcenter_arch"] == "aarch64")//for bcm4908/bcm6710
 				scarch="arm64";
 			else if (db_softcenter_["softcenter_arch"] == "mipsle")//for mtk7621
 				scarch="mipsle";
@@ -680,19 +687,19 @@ function notice_show(){
 				<div id="tabMenu" class="submenuBlock"></div>
 					<table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 						<tr>
-							<td align="left" valign="top">
+							<td bgcolor="#4D595D" align="left" valign="top">
 								<div>
 									<table width="760px" border="0" cellpadding="5" cellspacing="0" bordercolor="#6b8fa3" class="FormTitle" id="FormTitle">
 										<tr>
-											<td bgcolor="#4D595D" colspan="3" valign="top">
+											<td colspan="3" valign="top">
 												<div>&nbsp;</div>
 												<div id="modelid" class="formfonttitle"></div>
 												<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 													<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
 													</table>
 													<table width="100%" height="150px" style="border-collapse:collapse;">
-														<tr bgcolor="#444f53">
-															<td colspan="5" bgcolor="#444f53" class="cloud_main_radius">
+														<tr>
+															<td colspan="5" class="cloud_main_radius">
 																<div style="padding:10px;width:95%;font-style:italic;font-size:14px;">
 																	<br/><br/>
 																	<table width="100%">
@@ -715,7 +722,7 @@ function notice_show(){
 																						<h4 id="push_content4"></h4>
 																					</li>
 																					<li style="margin-top:-5px;">
-																						<h5>当前版本：<span id="spnCurrVersion"></span> 在线版本：<span id="spnOnlineVersion"></span>
+																						<h5><font color='#1E90FF'>当前版本：</font><span id="spnCurrVersion"></span>&nbsp;&nbsp;<font color='#1E90FF'>在线版本：</font><span id="spnOnlineVersion"></span>
 																						<input type="button" id="updateBtn" value="更新" style="display:none" /></h5>
 																					</li>
 																				</ul>
@@ -728,7 +735,7 @@ function notice_show(){
 														<tr height="10px">
 															<td colspan="3"></td>
 														</tr>
-														<tr bgcolor="#444f53" id="install_status" style="display: none;" width="235px">
+														<tr id="install_status" style="display: none;" width="235px">
 															<td>
 																<div style="padding:10px;width:95%;font-size:14px;" id="appInstallInfo">
 																</div>
@@ -745,7 +752,7 @@ function notice_show(){
 																<input class="show-uninstall-btn" type="button" value="未安装"/>
 															</td>
 														</tr>
-														<tr bgcolor="#444f53" width="235px">
+														<tr width="100%">
 															<td colspan="4" id="IconContainer">
 																<div id="software_center_message" style="text-align:center; line-height: 4em;">更新中...</div>
 															</td>
@@ -755,7 +762,7 @@ function notice_show(){
 														</tr>
 													</table>
 												<div class="KoolshareBottom">论坛技术支持： <a href="http://www.koolshare.cn" target="_blank"> <i><u>koolshare.cn</u></i> </a>
-													<br/>Github项目： <a href="https://github.com/koolshare/armsoft" target="_blank"> <i><u>github.com/koolshare</u></i> </a>
+													<br/>Github项目： <a href="https://github.com/koolshare/rogsoft" target="_blank"> <i><u>github.com/koolshare</u></i> </a>
 													<br/>Shell & Web by： <a href="mailto:sadoneli@gmail.com"> <i>sadoneli</i> </a>, <i>Xiaobao</i>
 													<br/>修改版 by： <i>paldier</i>
 													<br/>Github项目： <a href="https://github.com/paldier/softcenter" target="_blank"> <i><u>https://github.com/paldier</u></i> </a>

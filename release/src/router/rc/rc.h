@@ -1568,7 +1568,8 @@ extern void start_sendDSLdiag(void);
 extern void start_snmpd(void);
 extern void stop_snmpd(void);
 #endif
-int ddns_custom_updated_main(int argc, char *argv[]);
+extern int ddns_custom_updated_main(int argc, char *argv[]);
+extern void setup_leds(void);
 #ifdef RTCONFIG_TIMEMACHINE
 extern int start_timemachine(void);
 extern void stop_timemachine(void);

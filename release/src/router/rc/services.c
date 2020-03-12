@@ -3352,7 +3352,7 @@ asusddns_unregister(void)
 	}
 #endif
 
-	memset(wan_ifname, sizeof(wan_ifname), 0);
+	memset(wan_ifname, 0, sizeof(wan_ifname));
 	snprintf(wan_ifname, sizeof(wan_ifname),  get_wan_ifname(unit));
 	nvram_set("ddns_return_code", "ddns_unregister");
 
@@ -4115,7 +4115,8 @@ start_smartdns(void)
 	fprintf(fp, "server-name MerlinR-smartdns\n");
 	fprintf(fp, "conf-file /etc/blacklist-ip.conf\n");
 	fprintf(fp, "conf-file /etc/whitelist-ip.conf\n");
-	fprintf(fp, "bind [::]:9053\n");
+	//fprintf(fp, "conf-file /etc/seconddns.conf\n");
+	fprintf(fp, "bind [::]:9053 -no-speed-check\n");
 	//fprintf(fp, "bind-tcp [::]:5353\n");
 	fprintf(fp, "cache-size 9999\n");
 	//fprintf(fp, "prefetch-domain yes\n");
@@ -4124,13 +4125,11 @@ start_smartdns(void)
 	//fprintf(fp, "whitelist-ip 1.0.0.0/16\n");
 	//fprintf(fp, "ignore-ip 1.0.0.0/16\n");
 	//fprintf(fp, "force-AAAA-SOA yes\n");
-	//fprintf(fp, "dualstack-ip-selection yes\n");
 	//fprintf(fp, "edns-client-subnet 1.0.0.0/16\n");
 	//fprintf(fp, "rr-ttl 300\n");
 	//fprintf(fp, "rr-ttl-min 60\n");
 	//fprintf(fp, "rr-ttl-max 86400\n");
-	fprintf(fp, "log-level info\n");
-	//fprintf(fp, "log-level %s\n",nvram_get("smartdns_loglevel"));
+	fprintf(fp, "log-level warn\n");
 	//fprintf(fp, "log-file /var/log/smartdns.log\n");
 	//fprintf(fp, "log-size 128k\n");
 	//fprintf(fp, "log-num 2\n");
@@ -4158,7 +4157,11 @@ start_smartdns(void)
 	//fprintf(fp, "server %s\n", nvram_get("wan_dns2_x"));
 	fprintf(fp, "server-tcp 8.8.8.8\n");
 	fprintf(fp, "server-tcp 8.8.4.4\n");
+	fprintf(fp, "tcp-idle-time 120\n");
+	fprintf(fp, "server-tls 8.8.8.8:853\n");
 	//fprintf(fp, "server-https https://cloudflare-dns.com/dns-query\n");
+	//fprintf(fp, "speed-check-mode none\n");
+	//fprintf(fp, "dualstack-ip-selection no\n");
 	fclose(fp);
 	//logmessage(LOGNAME, "start smartdns:%d", pid);
 	_eval(smartdns_argv, NULL, 0, &pid);
@@ -10439,6 +10442,7 @@ _dprintf("multipath(%s): unit_now: (%d, %d, %s), unit_next: (%d, %d, %s).\n", mo
 #endif
 #endif
 		}
+		setup_leds();
 		nvram_set("restart_wifi", "0");
 	}
 #if defined(RTCONFIG_POWER_SAVE)
@@ -10490,30 +10494,10 @@ check_ddr_done:
 	}
 #endif
 	else if (strcmp(script, "set_wltxpower") == 0) {
-		switch (get_model()) {
-		case MODEL_RTAC66U:
-		case MODEL_RTAC56S:
-		case MODEL_RTAC56U:
-		case MODEL_RTAC3200:
-		case MODEL_RTAC68U:
-		case MODEL_DSLAC68U:
-		case MODEL_RTAC87U:
-		case MODEL_RTN12HP:
-		case MODEL_RTN12HP_B1:
-		case MODEL_APN12HP:
-		case MODEL_RTN66U:
-		case MODEL_RTN18U:
-		case MODEL_RTAC5300:
-		case MODEL_GTAC5300:
-		case MODEL_RTAC3100:
-		case MODEL_RTAC88U:
-		case MODEL_RTAC86U:
-			set_wltxpower();
-			break;
-		default:
+		if (!nvram_contains_word("rc_support", "pwrctrl"))
 			dbG("\n\tDon't do this!\n\n");
-			break;
-		}
+		else
+			set_wltxpower();
 	}
 #endif
 #ifdef RTCONFIG_FANCTRL
@@ -12175,6 +12159,9 @@ retry_wps_enr:
 		_dprintf("%s: shell: %s\n", __FUNCTION__, cmd[1]);
 		if(cmd[1]) system(cmd[1]);
 	}
+	else if (strcmp(script, "leds") == 0) {
+		setup_leds();
+	}
 	else if (strcmp(script, "app") == 0) {
 #if defined(RTCONFIG_APP_PREINSTALLED) || defined(RTCONFIG_APP_NETINSTALLED)
 		if(action & RC_SERVICE_STOP)
@@ -13788,6 +13775,94 @@ int service_main(int argc, char *argv[])
 	notify_rc(argv[1]);
 	printf("\nDone.\n");
 	return 0;
+}
+
+void setup_leds()
+{
+	int model;
+
+	model = get_model();
+
+	if (nvram_get_int("led_disable") == 1) {
+		if ((model == MODEL_RTAC56U) || (model == MODEL_RTAC56S) ||
+		    (model == MODEL_RTAC68U) || (model == MODEL_RTAC87U) ||
+		    (model == MODEL_RTAC3200) || (model == MODEL_RTAC88U) ||
+		    (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300) ||
+#if defined(GTAC5300)
+			(model == MODEL_GTAC5300) || 
+#endif
+		    (model == MODEL_RTAC86U)) {
+			setAllLedOff();
+			if (model == MODEL_RTAC87U)
+				led_control_atomic(LED_5G, LED_OFF);
+		} else {        // TODO: Can other routers also use the same code?
+			led_control_atomic(LED_2G, LED_OFF);
+			led_control_atomic(LED_5G, LED_OFF);
+			led_control_atomic(LED_POWER, LED_OFF);
+			led_control_atomic(LED_SWITCH, LED_OFF);
+#if !defined(HND_ROUTER) 
+			led_control_atomic(LED_LAN, LED_OFF);
+#endif
+#ifdef RTCONFIG_LAN4WAN_LED
+			led_control_atomic(LED_LAN1, LED_OFF);
+			led_control_atomic(LED_LAN2, LED_OFF);
+			led_control_atomic(LED_LAN3, LED_OFF);
+			led_control_atomic(LED_LAN4, LED_OFF);
+#endif
+			led_control_atomic(LED_WAN, LED_OFF);
+		}
+#ifdef RTCONFIG_USB
+		stop_usbled();
+		led_control_atomic(LED_USB, LED_OFF);
+#endif
+
+	} else {
+#ifdef RTCONFIG_USB
+		start_usbled();
+#endif
+#ifdef RTCONFIG_LED_ALL
+		led_control_atomic(LED_ALL, LED_ON);
+#endif
+
+/* LAN */
+#if defined(HND_ROUTER) && defined(RTCONFIG_LAN4WAN_LED)
+		setLANLedOn();
+#endif
+
+/* WAN */
+#if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
+#ifndef HND_ROUTER
+		eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01ff");
+		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01ff");
+#else
+		led_control(LED_WAN_NORMAL, LED_ON);
+#endif
+#else
+		eval("et", "robowr", "0", "0x18", "0x01ff");
+		eval("et", "robowr", "0", "0x1a", "0x01ff");
+#endif
+
+/* Wifi */
+		if (nvram_match("wl1_radio", "1")
+#if defined(RTAC3200) || defined(RTAC5300)
+		    || nvram_match("wl2_radio", "1")
+#endif
+		   ) {
+			led_control_atomic(LED_5G_FORCED, LED_ON);
+		}
+		if (nvram_match("wl0_radio", "1")) {
+			led_control_atomic(LED_2G, LED_ON);
+		}
+#ifdef RTCONFIG_QTN
+		setAllLedOn_qtn();
+#endif
+		led_control_atomic(LED_SWITCH, LED_ON);
+		led_control_atomic(LED_POWER, LED_ON);
+
+#if defined(RTAC3200) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300)
+		kill_pidfile_s("/var/run/wanduck.pid", SIGUSR2);
+#endif
+	}
 }
 
 // Takes one argument:  0 = update failure

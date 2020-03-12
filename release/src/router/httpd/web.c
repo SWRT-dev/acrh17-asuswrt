@@ -189,9 +189,6 @@ extern int ssl_stream_fd;
 
 #include <iboxcom.h>
 #include "sysinfo.h"
-#if defined(BCMARM)
-#include "data_arrays.h"
-#endif
 #ifdef RTCONFIG_SOFTCENTER
 #include "dbapi.h"
 #endif
@@ -283,6 +280,8 @@ extern int upgrade_rc(char *action, char *autoreboot, char *reset, int wait);
 extern void unescape(char *s);
 
 void response_nvram_config(webs_t wp, char *config_name, json_object *res, json_object *root);
+extern int get_lang_num();
+extern int get_lang_num_merlinr();
 
 #if 0
 static int nvram_check_and_set(char *name, char *value);
@@ -1675,18 +1674,23 @@ websWriteCh(webs_t wp, char *ch, int count)
    return (ret);
 }
 
-#ifdef RTCONFIG_LANTIQ
 int skip_log(char *message)
 {
+	if(strstr(message, "net_ratelimit") != NULL) return 1;
+#ifdef RTCONFIG_LANTIQ
 	if(strstr(message, "drvhlpr") != NULL) return 1;
 	if(strstr(message, "mtlk") != NULL) return 1;
 	if(strstr(message, "libhelper") != NULL) return 1;
 	if(strstr(message, "mtdump") != NULL) return 1;
 	if(strstr(message, "hostapd") != NULL) return 1;
 	if(strstr(message, "mcastd") != NULL) return 1;
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+	if(strstr(message, "own address as source") != NULL) return 1;
+#endif
 	return 0;
 }
-#endif
+
 
 static int dump_file(webs_t wp, char *filename)
 {
@@ -1708,10 +1712,8 @@ static int dump_file(webs_t wp, char *filename)
 	{
 	    int len;
 	    len = strlen(buf); // fgets() would fill the '\0' at the last character in buffer.
-#ifdef RTCONFIG_LANTIQ
 		if(skip_log(buf) == 0)
-#endif
-	    ret += websWriteData(wp, buf, len);
+			ret += websWriteData(wp, buf, len);
 	}
 
 	fclose(fp);
@@ -5823,6 +5825,12 @@ static int get_cpu_temperature(int eid, webs_t wp, int argc, char_t **argv)
 	}
 
 	return websWrite(wp, "%3.3f", (double) temperature / 1000);
+#elif defined(RTCONFIG_QCA)
+	char temperature[6] = { 0 };
+
+	if (f_read_string("/sys/class/thermal/thermal_zone0/temp", temperature, sizeof(temperature)) <= 0)
+		*temperature = '\0';
+	return websWrite(wp, "%d", safe_atoi(temperature));
 #elif  defined(RTCONFIG_LANTIQ)
 	FILE *fp;
 	int temperature;
@@ -5962,7 +5970,7 @@ ej_dhcpLeaseMacList(int eid, webs_t wp, int argc, char_t **argv)
 			buf = (char *)malloc(name_len);
 			if (buf == NULL) {
 				csprintf("No memory.\n");
-				return 0;
+				break;
 			}
 		}
 
@@ -6104,9 +6112,7 @@ static int compare_back(FILE *fp, int current_line, char *buffer);
 static int check_mac_previous(char *mac);
 static char *value(FILE *fp, int line, int token);
 static void find_hostname_by_mac(char *mac, char *hostname);
-#if !defined(BCMARM)
 static void get_ipv6_client_info();
-#endif
 static int total_lines = 0;
 
 /* Init File and clear the content */
@@ -6290,11 +6296,8 @@ static void find_hostname_by_mac(char *mac, char *hostname)
 END:
 	strcpy(hostname, "");
 }
-#if defined(BCMARM)
-void get_ipv6_client_info()
-#else
+
 static void get_ipv6_client_info()
-#endif
 {
 	FILE *fp;
 	char buffer[128], ipv6_addr[128], mac[32];
@@ -6335,11 +6338,7 @@ static void get_ipv6_client_info()
 	fclose(fp);
 }
 
-#if defined(BCMARM)
-void get_ipv6_client_list()
-#else
 static void get_ipv6_client_list(void)
-#endif
 {
 	FILE *fp;
 	int line_index = 1;
@@ -6564,11 +6563,7 @@ const static struct {
 };
 
 #ifdef RTCONFIG_IPV6
-#if defined(BCMARM)
-int inet_raddr6_pton(const char *src, void *dst, void *buf)
-#else
 static int inet_raddr6_pton(const char *src, void *dst, void *buf)
-#endif
 {
 	char *sptr = (char *) src;
 	char *dptr = buf;
@@ -7261,6 +7256,12 @@ static int check_internetState(char *timeList) {
 						break;
 					}
 				}
+				else if(week_start == 0 && week_end == 0 && system_week == 7) {//for sunday
+					if(hour_start <= system_hour && hour_end > system_hour) {
+						state = 1;
+						break;
+					}
+				}
 			}
 		}
 	}
@@ -7875,7 +7876,9 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 		else
 			strlcpy(dev_name, (const char *)p_client_info_tab->device_name[i], sizeof(dev_name));
 
+#ifndef RTCONFIG_AMAS
 		if(p_client_info_tab->device_flag[i]&(1<<FLAG_EXIST)) {
+#endif
 			len = strlen(dev_name);
 			for (j = 0; (j < len) && (j < LINE_SIZE-1); j++) {
 				character = dev_name[j];
@@ -7894,6 +7897,14 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 			p_client_info_tab->mac_addr[i][2],p_client_info_tab->mac_addr[i][3],
 			p_client_info_tab->mac_addr[i][4],p_client_info_tab->mac_addr[i][5]
 			);
+#ifdef RTCONFIG_AMAS
+			/* replace client mac if needed */
+			if (allClientList)
+				get_amas_client_mac(allClientList, ipaddr, mac_buf, sizeof(mac_buf));
+
+			if (is_re_node(mac_buf, 1))
+				continue;
+#endif
 			json_object_array_add(macArray, json_object_new_string(mac_buf));
 
 			sprintf(type, "%d", p_client_info_tab->type[i]);
@@ -7920,7 +7931,19 @@ static int get_client_detail_info(struct json_object *clients, struct json_objec
 			json_object_object_add(client, "dpiDevice", json_object_new_string((const char *) p_client_info_tab->apple_model[i]));
 			json_object_object_add(client, "vendor", json_object_new_string((const char *) p_client_info_tab->vendor_name[i]));
 			json_object_object_add(client, "isWL", json_object_new_string(wireless));
+#ifndef RTCONFIG_AMAS
 			json_object_object_add(client, "isOnline", json_object_new_string("1"));
+#else
+			//check nmp shm on RP/MB mode(no CFG)
+			if(!nvram_match("re_mode", "1") && nvram_get_int("sw_mode") != SW_MODE_ROUTER) {
+				if(p_client_info_tab->device_flag[i]&(1<<FLAG_EXIST))
+					json_object_object_add(client, "isOnline", json_object_new_string("1"));
+				else
+					json_object_object_add(client, "isOnline", json_object_new_string("0"));
+			}
+			else
+				json_object_object_add(client, "isOnline", json_object_new_string("0"));
+#endif
 			json_object_object_add(client, "ssid", json_object_new_string(p_client_info_tab->ssid[i]));
 			if(!strcmp(ipaddr, nvram_safe_get("login_ip_str"))){
 				json_object_object_add(client, "isLogin", json_object_new_string("1"));
@@ -9951,6 +9974,7 @@ static int ej_usb_is_exist(int eid, webs_t wp, int argc, char_t **argv){
 #endif
 
 int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
+	struct language_table *pLang = NULL;
 	char lang[4];
 	int len;
 #ifdef RTCONFIG_AUTODICT
@@ -9971,7 +9995,7 @@ int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
 	memset(lang, 0, 4);
 	strcpy(lang, nvram_safe_get("preferred_lang"));
 
-	if(get_lang_num() == 1){
+	if(get_lang_num_merlinr() == 1){
 		websWrite(wp, "<li style=\"visibility:hidden;\"><dl><a href=\"#\"><dt id=\"selected_lang\"></dt></a>\\n");
 	}
 	else{
@@ -9982,7 +10006,7 @@ int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
 	#ifdef RTCONFIG_AUTODICT
 				if (memcmp(buffer, header, 3) == 0) offset = 3;
 	#endif
-				if (strncmp(follow_info+offset, "LANG_", 5) || !strncmp(follow_info+offset, "LANG_select", 11))    // 5 = strlen("LANG_")
+				if (strncmp(follow_info+offset, "LANG_", 5))    // 5 = strlen("LANG_")
 					continue;
 
 				follow_info += 5;
@@ -9991,14 +10015,18 @@ int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
 				memset(key, 0, sizeof(key));
 				strncpy(key, follow_info, len);
 
-				follow_info = follow_info_end+1;
-				follow_info_end = strstr(follow_info, "\n");
-				len = follow_info_end-follow_info;
-				memset(target, 0, sizeof(target));
-				strncpy(target, follow_info, len);
-
-				if (check_lang_support(key) && strcmp(key,lang))
-					websWrite(wp, "<dd><a onclick=\"submit_language(this)\" id=\"%s\">%s</a></dd>\\n", key, target);
+				for (pLang = language_tables; pLang->Lang != NULL; ++pLang){
+					if (strcmp(key, pLang->Target_Lang))
+						continue;
+					follow_info = follow_info_end+1;
+					follow_info_end = strstr(follow_info, "\n");
+					len = follow_info_end-follow_info;
+					memset(target, 0, sizeof(target));
+					strncpy(target, follow_info, len);
+					if (check_lang_support_merlinr(key) && strcmp(key,lang))
+						websWrite(wp, "<dd><a onclick=\"submit_language(this)\" id=\"%s\">%s</a></dd>\\n", key, target);
+					break;
+				}
 			}
 			else
 				break;
@@ -11581,7 +11609,7 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 	int count, cnt;
 	long filelen;
 	int offset;
-#if defined(K3) || defined(K3C) || defined(SBRAC1900P) || defined(SBRAC3200P)
+#if defined(K3) || defined(K3C) || defined(SBRAC1900P) || defined(SBRAC3200P) || defined(R8000P) || defined(R7900P) || defined(RAX20)
 	int checkname=0;
 #endif
 #ifndef RTCONFIG_SMALL_FW_UPDATE
@@ -11631,11 +11659,17 @@ do_upgrade_post(char *url, FILE *stream, int len, char *boundary)
 #elif defined(SBRAC3200P)
 		if (strstr(buf, "SBRAC3200P"))
 			checkname=1;
+#elif defined(R8000P) || defined(R7900P)
+		if (strstr(buf, "R7900P")||strstr(buf, "R8000P"))
+			checkname=1;
+#elif  defined(RAX20)
+		if (strstr(buf, "RAX20"))
+			checkname=1;
 #endif
 		if (!strncasecmp(buf, "Content-Disposition:", 20) && strstr(buf, "name=\"file\""))
 			break;
 	}
-#if defined(K3) || defined(K3C) || defined(SBRAC1900P) || defined(SBRAC3200P)
+#if defined(K3) || defined(K3C) || defined(SBRAC1900P) || defined(SBRAC3200P) || defined(R8000P) || defined(R7900P) || defined(RAX20)
 	if(checkname==0)
 		goto err;
 #endif
@@ -13077,8 +13111,6 @@ do_ipsecupload_post(char *url, FILE *stream, int len, char *boundary)
 	nvram_set("ipsec_profile_item", "");
 	
 	/* Look for our part */
-	_dprintf("Skt len:%d\n", len);
-	
 	while (len > 0) {
 		if (!fgets(post_buf, MIN(len + 1, sizeof(post_buf)), stream)) {
 			goto err;
@@ -19455,7 +19487,7 @@ void ej_cgi_get(int eid, webs_t wp, int argc, char **argv)
 {
 	const char *v;
 	int i;
-	int ret;
+	int ret=0;
 
 	for (i = 0; i < argc; ++i) {
 		v = get_cgi(argv[i]);
@@ -21951,8 +21983,6 @@ static int check_wired_client_connected_node(char *nodeMac, char *wiredMac, json
 	int count = 100;
 	char selectedNode[18] = {0};
 
-	_dprintf("nodeMac (%s), wiredMac (%s)\n", nodeMac, wiredMac);
-
 	if (!wiredClietListObj && !wiredInfoObj) {
 		fprintf(stderr, "wiredClietListObj/wiredInfoObj is NULL\n");
 		return 0;
@@ -22787,11 +22817,14 @@ ej_get_header_info(int eid, webs_t wp, int argc, char **argv)
 	json_object_object_add(item,"host", json_object_new_string(host_name_temp));
 	json_object_object_add(item,"current_page", json_object_new_string(current_page_name_temp));
 
+#if defined(RTCONFIG_HTTPS)
 	if(do_ssl){
 		json_object_object_add(item,"protocol", json_object_new_string("https"));
 		json_object_object_add(item,"port", json_object_new_int(nvram_get_int("https_lanport")));
 	}
-	else{
+	else
+#endif
+	{
 		json_object_object_add(item,"protocol", json_object_new_string("http"));
 		json_object_object_add(item,"port", json_object_new_int(nvram_get_int("http_lanport")));
 	}
@@ -23129,7 +23162,12 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv)
 	if (wanLanStatus == NULL || wanLanLinkSpeed == NULL || wanLanCount == NULL)
 		goto error;
 
+#if defined(K3) || defined(R8000P) || defined(R7900P)
+	fp = popen("rc Get_PhyStatus", "r");
+#else
 	fp = popen("ATE Get_WanLanStatus", "r");
+#endif
+
 	if (fp == NULL)
 		goto error;
 
@@ -23332,7 +23370,7 @@ struct ej_handler ej_handlers[] = {
 #ifdef RTCONFIG_FANCTRL
 	{ "get_fanctrl_info", get_fanctrl_info},
 #endif
-#ifdef RTCONFIG_BCMARM
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_FANCTRL)
 	{ "get_cpu_temperature", get_cpu_temperature},
 #endif
 	{ "get_machine_name" , get_machine_name},
@@ -23515,26 +23553,6 @@ struct ej_handler ej_handlers[] = {
 	{ "radio_status", ej_radio_status},
 	{ "asus_sysinfo", ej_sysinfo},
 	{ "sysinfo", ej_show_sysinfo},
-#if defined(BCMARM)	
-	{ "iptraffic", ej_iptraffic},
-	{ "iptmon", ej_iptmon},
-	{ "ipt_bandwidth", ej_ipt_bandwidth},
-#ifdef RTCONFIG_IPV6
-#ifdef RTCONFIG_IGD2
-	{ "ipv6_pinholes",  ej_ipv6_pinhole_array},
-#endif
-	{ "get_ipv6net_array", ej_lan_ipv6_network_array},
-#endif
-	{ "get_leases_array", ej_get_leases_array},
-	{ "get_vserver_array", ej_get_vserver_array},
-	{ "get_upnp_array", ej_get_upnp_array},
-	{ "get_route_array", ej_get_route_array},
-	{ "get_tcclass_array", ej_tcclass_dump_array},
-#else
-#if defined(BLUECAVE)
-	{ "kool_info", ej_kool_info},
-#endif
-#endif
 #ifdef RTCONFIG_OPENVPN
 	{ "vpn_server_get_parameter", ej_vpn_server_get_parameter},
 	{ "vpn_client_get_parameter", ej_vpn_client_get_parameter},

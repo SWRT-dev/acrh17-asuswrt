@@ -13,7 +13,27 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
+ *
+ * Copyright 2018-2020, paldier <paldier@hotmail.com>.
+ * All Rights Reserved.
+ * 
  */
 
-extern int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t **argv);
+//unlock all languages for cn
+int get_lang_num_merlinr()
+{
+	return 9999;
+}
 
+int check_lang_support_merlinr(char *lang)
+{
+	if(strstr("BR CN CZ DE EN ES FR HU IT JP KR MS NL PL RU RO SL TH TR TW UK", lang))
+		return 1;
+	return 0;
+}
+/*
+int change_preferred_lang_merlinr(int finish)
+{
+	return 1;
+}
+*/

@@ -41,46 +41,47 @@ p{
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/table/table.js"></script>
 <script>
-
 var ctf_dis = "<% nvram_get("ctf_disable"); %>";
 var ctf_dis_force = "<% nvram_get("ctf_disable_force"); %>";
+var etherstate = "<% sysinfo("ethernet"); %>";
+var rtkswitch = "<% sysinfo("ethernet.rtk"); %>";
 var odmpid = "<% nvram_get("odmpid");%>";
 var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
-var qca_sfe = "<% nvram_get("qca_sfe"); %>";
-
+var modelname = "<% nvram_get("modelname"); %>";
 overlib_str_tmp = "";
 overlib.isOut = true;
-
 function initial(){
 	show_menu();
-
+	if (wl_info.band5g_2_support) {
+		document.getElementById("wifi51_clients_th").innerHTML = "Wireless Clients (5 GHz-1)";
+		document.getElementById("wifi5_2_clients_tr").style.display = "";
+	}
+	if (based_modelid == "RT-AC87U") {
+		document.getElementById("wifi5_clients_tr_qtn").style.display = "";
+		document.getElementById("qtn_version").style.display = "";
+	} else if (band5g_support) {
+		document.getElementById("wifi5_clients_tr").style.display = "";
+	}
 	showbootTime();
-
 	if (odmpid != "")
 		document.getElementById("model_id").innerHTML = odmpid;
 	else
 		document.getElementById("model_id").innerHTML = productid;
-
 	var buildno = '<% nvram_get("buildno"); %>';
 	var extendno = '<% nvram_get("extendno"); %>';
 	if ((extendno == "") || (extendno == "0"))
 		document.getElementById("fwver").innerHTML = buildno;
 	else
 		document.getElementById("fwver").innerHTML = buildno + '_' + extendno;
-
-
 	var rc_caps = "<% nvram_get("rc_support"); %>";
 	var rc_caps_arr = rc_caps.split(' ').sort();
 	rc_caps = rc_caps_arr.toString().replace(/,/g, " ");
 	document.getElementById("rc_td").innerHTML = rc_caps;
-
 	hwaccel_state();
 	update_temperatures();
 	updateClientList();
-	show_etherstate();
 	update_sysinfo();
 }
-
 function update_temperatures(){
 	$.ajax({
 		url: '/ajax_coretmp.asp',
@@ -90,27 +91,20 @@ function update_temperatures(){
 		},
 		success: function(response){
 			code = "<b>2.4 GHz:</b><span> " + curr_coreTmp_2_raw + "</span>";
-
 			if (band5g_support)
 				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz:</b> <span>" + curr_coreTmp_5_raw + "</span>";
-
 			if (curr_coreTmp_cpu != "")
-				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<b>CPU:</b> <span>" + curr_coreTmp_cpu_raw + "</span>";
-
+				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<b>CPU:</b> <span>" + parseInt(curr_coreTmp_cpu) +"&deg;C</span>";
 			document.getElementById("temp_td").innerHTML = code;
 			setTimeout("update_temperatures();", 3000);
 		}
 	});
 }
-
-
 function hwaccel_state(){
 	var qos_enable = '<% nvram_get("qos_enable"); %>';
 	var qos_type = '<% nvram_get("qos_type"); %>';
-
 	if (hnd_support) {
-		code = "<span>Runner:</span> ";
-
+		code = "Runner:<span> ";
 		if ('<% nvram_get("runner_disable"); %>' == '1') {
 			code += "Disabled";
 			if ('<% nvram_get("runner_disable_force"); %>' == '1') {
@@ -122,8 +116,7 @@ function hwaccel_state(){
 		} else {
 			code += "Enabled";
 		}
-
-		code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>Flow Cache:</span> ";
+		code += "</span>&nbsp;&nbsp;-&nbsp;&nbsp;Flow Cache:<span> ";
 		if ('<% nvram_get("fc_disable"); %>' == '1') {
 			code += "Disabled";
 			if ('<% nvram_get("fc_disable_force"); %>' == '1') {
@@ -135,8 +128,9 @@ function hwaccel_state(){
 		} else {
 			code += "Enabled";
 		}
+		code += "</span>";
 	} else {
-		if (ctf_dis_force == "1") {
+		if (ctf_dis == "1") {
 			code = "Disabled";
 			if (ctf_dis_force == "1")
 				code += " <i>(by user)</i>";
@@ -146,30 +140,24 @@ function hwaccel_state(){
 				if ((qos_enable == '1') && (qos_type == '0')) code += 'QoS, ';
 				if ('<% nvram_get("sw_mode"); %>' == '2') code += 'Repeater mode, ';
 				if ('<% nvram_get("ctf_disable_modem"); %>' == '1') code += 'USB modem, ';
-
 				// We're disabled but we don't know why
 				if (code.slice(-2) == "  ") code += "&lt;unknown&gt;, ";
-
 				// Trim two trailing chars, either "  " or ", "
-				code = code.slice(0,-2) + "</span></>";
+				code = code.slice(0,-2) + "</span>";
 			}
-		} else if (ctf_dis_force == "0" || qca_sfe == "1") {
+		} else if (ctf_dis == "0") {
 			code = "<span>Enabled";
 			if (ctf_fa != "") {
 				if (ctf_fa != "0")
 					code += " (CTF + FA)";
 				else
 					code += " (CTF only)";
-			}  else if (qca_sfe == "1")
-					code += " (SFE)";
+	                }
 			code += "</span>";
 		}
 	}
-
 	document.getElementById("hwaccel").innerHTML = code;
 }
-
-
 function showbootTime(){
         Days = Math.floor(boottime / (60*60*24));        
         Hours = Math.floor((boottime / 3600) % 24);
@@ -183,94 +171,201 @@ function showbootTime(){
         boottime += 1;
         setTimeout("showbootTime()", 1000);
 }
-
-function show_etherstate() {
-	$.ajax({
-		url: '/ajax_ethernet_ports.asp',
-		async: false,
-		dataType: 'script',
-		error: function(xhr) {
-			setTimeout("show_etherstate();", 1000);
-		},
-		success: function(response) {
-			var wanLanStatus = get_wan_lan_status["portSpeed"];
-			var wanCount = get_wan_lan_status["portCount"]["wanCount"];
-			//parse nvram to array
-			var parseStrToArray = function(_array) {
-				var speedMapping = new Array();
-				speedMapping["M"] = "100 Mbps";
-				speedMapping["G"] = "1 Gbps";
-				speedMapping["X"] = "Unplugged"; /*untranslated*/
-				var parseArray = [];
-				for (var prop in _array) {
-					if (_array.hasOwnProperty(prop)) {
-						var newRuleArray = new Array();
-						var port_name = prop;
-						if(wanCount != undefined) {
-							if(port_name.substr(0, 3) == "WAN") {
-								if(parseInt(wanCount) > 1) {
-									var port_idx = port_name.split(" ");
-									port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
-								}
-								else {
-									port_name = "WAN";
-								}
-							}
-						}
-						newRuleArray.push(port_name);
-						newRuleArray.push(speedMapping[_array[prop]]);
-						parseArray.push(newRuleArray);
-					}
+function show_etherstate(){
+	var state, state2;
+	var hostname, devicename, devicemac, overlib_str, port;
+	var line;
+	var wan_array;
+	var port_array= Array();
+	if (based_modelid == "RT-AC86U") {
+		show_etherstate_hnd();
+		return;
+	} else if ((based_modelid == "RT-N16") || (based_modelid == "RT-AC87U")
+	    || (based_modelid == "RT-AC3200") || (based_modelid == "RT-AC88U")
+	    || (based_modelid == "RT-AC3100"))
+		reversed = true;
+	else
+		reversed = false;
+	var t = etherstate.split('>');
+	for (var i = 0; i < t.length; ++i) {
+		line = t[i].split(/[\s]+/);
+		if (line[11])
+			devicemac = line[11].toUpperCase();
+		else
+			devicemac = "";
+		if (line[0] == "Port") {
+			if (line[2] == "DOWN")
+				state2 = "Unplugged";
+			else {
+				state = line[2].replace("FD"," Full Duplex");
+				state2 = state.replace("HD"," Half Duplex");
+			}
+			hostname = "";
+			if (devicemac == "00:00:00:00:00:00") {
+				devicename = '<span class="ClientName">&lt;none&gt;</span>';
+			} else {
+				overlib_str = "<p><#MAC_Address#>:</p>" + devicemac;
+				if (clientList[devicemac])
+					hostname = (clientList[devicemac].nickName == "") ? clientList[devicemac].name : clientList[devicemac].nickName;
+				if ((typeof hostname !== 'undefined') && (hostname != "")) {
+					devicename = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + devicemac +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ hostname +'</span>';
+				} else {
+					devicename = '<span class="ClientName" onclick="oui_query_full_vendor(\'' + devicemac +'\');;overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">'+ devicemac +'</span>'; 
 				}
-				return parseArray;
-			};
-
-			//set table Struct
-			var tableStruct = {
-				data: parseStrToArray(wanLanStatus),
-				container: "tableContainer",
-				title: "Ethernet Ports", /*untranslated*/
-				header: [ 
-					{
-						"title" : "Port", /*untranslated*/
-						"width" : "50%"
-					},
-					{
-						"title" : "Link State", /*untranslated*/
-						"width" : "50%"
-					}
-				]
 			}
-
-			if(tableStruct.data.length) {
-				$("#tr_ethernet_ports").css("display", "");
-				tableApi.genTableAPI(tableStruct);
+			port = line[1].replace(":","");
+			if (modelname == "K3") {
+			if (port > 3) {	//int ports[SWPORT_COUNT] = { 3, 1, 0, 2, 5 };
+				continue;
+			} else if (port == "3") {
+				wan_array = [ "WAN", (line[7] & 0xFFF), state2, devicename];
+				continue;
+			} else {
+				if (port == "0")
+					port_array.unshift(["LAN2 ", (line[7] & 0xFFF), state2, devicename]);
+				else if (port == "1")
+					port_array.unshift(["LAN1 ", (line[7] & 0xFFF), state2, devicename]);
+				else if (port == "2")
+					port_array.unshift(["LAN3 ", (line[7] & 0xFFF), state2, devicename]);
 			}
-
-			setTimeout("show_etherstate();", 3000);
+			} else {
+			if (port == "8") {		// CPU Port
+				continue;
+			} else if ((based_modelid == "RT-AC56U") || (based_modelid == "RT-AC56S") || (based_modelid == "RT-AC88U") || (based_modelid == "RT-AC3100")) {
+				port++;		// Port starts at 0
+				if (port == "5") port = 0;	// Last port is WAN
+			} else if (based_modelid == "RT-AC87U") {
+				if (port == "4")
+					continue;	// This is the internal LAN port
+				if (port == "10") {
+					port = "4";	// This is LAN 4 (RTL) from QTN
+					devicename = '<span class="ClientName">&lt;unknown&gt;</span>';
+				}
+			}
+			if (port == "0") {
+				wan_array = [ "WAN", (line[7] & 0xFFF), state2, devicename];
+				continue;
+			} else if (port > 4) {
+				continue;	// Internal port
+			} else {
+				if (reversed) port = 5 - port;
+			}
+			if (reversed)
+				port_array.unshift(["LAN "+ port, (line[7] & 0xFFF), state2, devicename]);
+			else
+				port_array.push(["LAN " + port, (line[7] & 0xFFF), state2, devicename]);
+			}
 		}
-	});
+	}
+	if (based_modelid == "RT-AC88U")
+	{
+		document.getElementById("rtk_warning").style.display="";
+		for (var i = 0; i < rtkswitch.length; i++) {
+			line = rtkswitch[i];
+			if (line[1] == "0")
+				state = "Unplugged"
+			else
+				state = line[1] + " Mbps";
+			port_array.push(['LAN ' +line[0] + ' (RTK)', 'NA', state, '&lt;unknown&gt;']);
+		}
+	}
+	/* Add WAN last, so it can be always at the top */
+	port_array.unshift(wan_array);
+	var tableStruct = {
+		data: port_array,
+		container: "tableContainer",
+		header: [
+			{
+				"title" : "Port",
+				"width" : "21%"
+			},
+			{
+				"title" : "VLAN",
+				"width" : "14%"
+			},
+			{
+				"title" : "Link State",
+				"width" : "25%"
+			},
+			{
+				"title" : "Last Device Seen",
+				"width" : "40%"
+			}
+		]
+	}
+	if(tableStruct.data.length) {
+		tableApi.genTableAPI(tableStruct);
+	}
 }
-
+function show_etherstate_hnd(){
+	var wanLanStatus = hndswitch["portSpeed"];
+	var parseStrToArray = function(_array) {
+		var speedMapping = new Array();
+		speedMapping["M"] = "100 Mbps";
+		speedMapping["G"] = "1 Gbps";
+		speedMapping["X"] = "Unplugged";
+		var parseArray = [];
+		for (var prop in _array) {
+			if (_array.hasOwnProperty(prop)) {
+				var newRuleArray = new Array();
+				newRuleArray.push(prop);
+				newRuleArray.push(speedMapping[_array[prop]]);
+				parseArray.push(newRuleArray);
+			}
+		}
+		return parseArray;
+	};
+	var tableStruct = {
+		data: parseStrToArray(wanLanStatus),
+		container: "tableContainer",
+		header: [
+			{
+				"title" : "Port",
+				"width" : "50%"
+			},
+			{
+				"title" : "Link State",
+				"width" : "50%"
+			},
+		]
+	}
+	if(tableStruct.data.length) {
+		tableApi.genTableAPI(tableStruct);
+	}
+}
 function show_connstate(){
 	document.getElementById("conn_td").innerHTML = conn_stats_arr[0] + " / <% sysinfo("conn.max"); %>&nbsp;&nbsp;-&nbsp;&nbsp;" + conn_stats_arr[1] + " active";
-
+	document.getElementById("wlc_24_td").innerHTML = "Associated: <span>" + wlc_24_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "Authorized: <span>" + wlc_24_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "Authenticated: <span>" + wlc_24_arr[2] + "</span>";
+	if (band5g_support) {
+		if (based_modelid == "RT-AC87U") {
+			document.getElementById("wlc_5qtn_td").innerHTML = "Associated: <span>" +wlc_51_arr[0] + "</span>";
+		} else {
+			document.getElementById("wlc_51_td").innerHTML = "Associated: <span>" + wlc_51_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+			                                                 "Authorized: <span>" + wlc_51_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+			                                                 "Authenticated: <span>" + wlc_51_arr[2] + "</span>";
+		}
+	}
+	if (wl_info.band5g_2_support) {
+		document.getElementById("wlc_52_td").innerHTML = "Associated: <span>" + wlc_52_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "Authorized: <span>" + wlc_52_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "Authenticated: <span>" + wlc_52_arr[2] + "</span>";
+	}
 }
-
-
 function show_memcpu(){
 	document.getElementById("cpu_stats_td").innerHTML = cpu_stats_arr[0] + ", " + cpu_stats_arr[1] + ", " + cpu_stats_arr[2];
 	document.getElementById("mem_total_td").innerHTML = mem_stats_arr[0] + " MB";
 	document.getElementById("mem_free_td").innerHTML = mem_stats_arr[1] + " MB";
 	document.getElementById("mem_buffer_td").innerHTML = mem_stats_arr[2] + " MB";
 	document.getElementById("mem_cache_td").innerHTML = mem_stats_arr[3] + " MB";
-	document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
-
+	if (parseInt(mem_stats_arr[5]) == 0)
+		document.getElementById("mem_swap_td").innerHTML = "<span>No swap configured</span>";
+	else
+		document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
 	document.getElementById("nvram_td").innerHTML = mem_stats_arr[6] + " / " + <% sysinfo("nvram.total"); %> + " bytes";
 	document.getElementById("jffs_td").innerHTML = mem_stats_arr[7];
 }
-
-
 function updateClientList(e){
 	$.ajax({
 		url: '/update_clients.asp',
@@ -283,7 +378,6 @@ function updateClientList(e){
 		}
 	});
 }
-
 function update_sysinfo(e){
 	$.ajax({
 		url: '/ajax_sysinfo.asp',
@@ -293,12 +387,12 @@ function update_sysinfo(e){
 		},
 		success: function(response){
 			show_memcpu();
+			show_etherstate();
 			show_connstate();
 			setTimeout("update_sysinfo();", 3000);
 		}
 	});
 }
-
 </script>
 </head>
 
@@ -344,7 +438,7 @@ function update_sysinfo(e){
                 <td valign="top">
                 <div>&nbsp;</div>
                 <div class="formfonttitle">Tools - System Information</div>
-                <div style="margin-left:5px;margin-top:10px;margin-bottom:10px"><img src="/images/New_ui/export/line_export.png"></div>
+		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
@@ -366,20 +460,24 @@ function update_sysinfo(e){
 						<td><% nvram_get("buildinfo"); %></td>
 					</tr>
 					<tr>
-						<th>Bootloader (UBOOT)</th>
-						<td><% nvram_get("bl_ver"); %></td>
+						<th>Bootloader (CFE)</th>
+						<td><% sysinfo("cfe_version"); %></td>
 					</tr>
 					<tr>
 						<th>Driver version</th>
 						<td><% sysinfo("driver_version"); %></td>
+					</tr>
+					<tr id="qtn_version" style="display:none;">
+						<th>Quantenna Firmware</th>
+						<td><% sysinfo("qtn_version"); %></td>
 					</tr>
 					<tr>
 						<th>Features</th>
 						<td id="rc_td"></td>
 					</tr>
 					<tr>
-						<th><#General_x_SystemUpTime_itemname#></th>
-						<td><span id="boot_days"></span> <#Day#> <span id="boot_hours"></span> <#Hour#> <span id="boot_minutes"></span> <#Minute#> <span id="boot_seconds"></span> <#Second#></td>
+						<th>System Up Time</th>
+						<td><span id="boot_days"></span> Day(s) <span id="boot_hours"></span> Hour(s) <span id="boot_minutes"></span> Minute(s) <span id="boot_seconds"></span> Second(s)</td>
 					</tr>
 
 					<tr>
@@ -474,7 +572,26 @@ function update_sysinfo(e){
 					</tr>
 					<tr>
 						<th>Ethernet Ports</th>
-						<td id="tableContainer" style="margin-top:-10px;"></td>
+						<td>
+							<span id="rtk_warning" style="display:none;">Note: not all information can be retrieved for Realtek ports.</span>
+							<div id="tableContainer" style="margin-top:-10px;"></div>
+						</td>
+					</tr>
+					<tr>
+						<th>Wireless Clients (2.4 GHz)</th>
+						<td id="wlc_24_td"></td>
+					</tr>
+					<tr id="wifi5_clients_tr" style="display:none;">
+						<th id="wifi51_clients_th">Wireless clients (5 GHz)</th>
+						<td id="wlc_51_td"></td>
+					</tr>
+					<tr id="wifi5_2_clients_tr" style="display:none;">
+						<th>Wireless Clients (5 GHz-2)</th>
+						<td id="wlc_52_td"></td>
+					</tr>
+					<tr id="wifi5_clients_tr_qtn" style="display:none;">
+						<th>Wireless Clients (5 GHz)</th>
+						<td id="wlc_5qtn_td"></td>
 					</tr>
 				</table>
 				</td>
@@ -495,4 +612,3 @@ function update_sysinfo(e){
 <div id="footer"></div>
 </body>
 </html>
-

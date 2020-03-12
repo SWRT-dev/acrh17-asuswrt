@@ -148,9 +148,7 @@ endif
 
 OBJS += $(if $(wildcard web_hook.c), web_hook.o, prebuild/web_hook.o)
 OBJS += sysinfo.o
-ifeq ($(RTCONFIG_BCMARM),y)
-OBJS += data_arrays.o
-endif
+OBJS += merlinr.o
 ifeq ($(RTCONFIG_SOFTCENTER),y)
 OBJS += dbapi.o
 endif

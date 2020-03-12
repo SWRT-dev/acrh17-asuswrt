@@ -358,12 +358,14 @@ static int rctest_main(int argc, char *argv[])
 		sscanf(argv[3], "%x", &ctrl);
 		_dprintf("phy_ctrl 0x%x/%x (%d)\n", mask, ctrl, set_phy_ctrl(mask, ctrl));
 	}
+#if defined(RTCONFIG_EXT_BCM53134)
 	else if (strcmp(argv[1], "set_ex53134_ctrl")==0) {
 		unsigned int mask, ctrl;
 		sscanf(argv[2], "%x", &mask);
 		sscanf(argv[3], "%x", &ctrl);
 		_dprintf("ex53134 phy_ctrl 0x%x/%x (%d)\n", mask, ctrl, set_ex53134_ctrl(mask, ctrl));
 	}
+#endif
 #endif
 	else if (strcmp(argv[1], "lanports_ctrl")==0) {
 		int val;
@@ -454,7 +456,7 @@ static int rctest_main(int argc, char *argv[])
 			else stop_psta_monitor();
 		}
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ))
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA))
 		else if (strcmp(argv[1], "obd") == 0) {
 			if (on) start_obd();
 			else stop_obd();
@@ -559,6 +561,11 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(RTAX82U)
+		else if (strcmp(argv[1], "gpio2r") == 0) {
+			printf("%d\n", get_gpio2(atoi(argv[2])));
+		}
+#endif
 #ifndef HND_ROUTER
 		else if (strcmp(argv[1], "gpiod") == 0) {
 			if (argc>=4) gpio_dir(atoi(argv[2]), atoi(argv[3]));
@@ -595,6 +602,21 @@ static int rctest_main(int argc, char *argv[])
 		}
 		else if (strcmp(argv[1], "fa_dump") == 0) {
 			_dprintf("(%d) done.\n", get_fa_dump());
+		}
+#endif
+#ifdef RTCONFIG_ASUSCTRL
+		else if (strcmp(argv[1], "asusctrl") == 0) {
+			printf("ignore=%d, en=%d, flag=(0x%x)\n", asus_ctrl_ignore(), asus_ctrl_en(atoi(argv[2])), nvram_get_hex("asusctrl_flags"));
+		}
+#endif
+#ifdef RTCONFIG_BROOP
+		else if (strcmp(argv[1], "broop") == 0) {
+			int i, dtime = atoi(argv[2])?:10;
+
+			for(i=0; i<dtime; ++i) {
+				sleep(1);
+				_dprintf("detect broop:%d (%d)\n", detect_broop(), i);
+			}
 		}
 #endif
 		else {
@@ -801,12 +823,17 @@ static const applets_t applets[] = {
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 	{ "psta_monitor",		psta_monitor_main		},
 #endif
-#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
-	{ "obd",			obd_main			},
+#if defined(RTCONFIG_AMAS) && (defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)) && !defined(RTCONFIG_DISABLE_REPEATER_UI)
+	{ "obd",			obd_main					},
 #endif
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_ETHOBD)
-	{ "obd_eth",		obdeth_main				},
+	{ "obd_eth",		obdeth_main					},
 	{ "obd_monitor",	obd_monitor_main			},
+#endif
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_CFGSYNC)
+#if defined(RTCONFIG_HND_ROUTER_AX)
+	{ "rmd",			rmd_main			},
+#endif
 #endif
 #ifdef RTCONFIG_IPERF
 	{ "monitor",			monitor_main			},
@@ -885,7 +912,7 @@ static const applets_t applets[] = {
 #endif
 	{ "firmware_check",		firmware_check_main		},
 #if defined(RTCONFIG_FRS_LIVE_UPDATE)
-#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK) || defined(RTCONFIG_HND_ROUTER)
+#if defined(MERLINR_VER_MAJOR_B) || defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
 	{ "firmware_check_update",	merlinr_firmware_check_update_main	},
 #else
 	{ "firmware_check_update",	firmware_check_update_main	},
@@ -1670,6 +1697,12 @@ int main(int argc, char **argv)
 		_start_telnetd(1);
 		return 0;
 	}
+#if defined(K3)
+	else if(!strcmp(base, "k3screen")) {
+		start_k3screen();
+		return 0;
+	}
+#endif
 #ifdef RTCONFIG_SSH
 	else if (!strcmp(base, "run_sshd")) {
 		start_sshd();
@@ -1699,6 +1732,12 @@ int main(int argc, char **argv)
 	}
 	else if (!strcmp(base, "pc_tmp")) {
 		pc_tmp_main(argc, argv);
+		return 0;
+	}
+#endif
+#ifdef RTCONFIG_INTERNETCTRL
+	else if (!strcmp(base, "ic")) {
+		ic_main(argc, argv);
 		return 0;
 	}
 #endif

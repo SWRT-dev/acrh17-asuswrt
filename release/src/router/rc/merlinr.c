@@ -59,6 +59,7 @@ void merlinr_insmod(){
 	eval("insmod", "xt_TPROXY");
 	eval("insmod", "xt_set");
 }
+
 void merlinr_init()
 {
 	_dprintf("############################ MerlinR init #################################\n");
@@ -66,6 +67,11 @@ void merlinr_init()
 	nvram_set("sc_wan_sig", "0");
 	nvram_set("sc_nat_sig", "0");
 	nvram_set("sc_mount_sig", "0");
+#endif
+#if defined(TUFAX3000)
+//only an idiot would use 160 in china
+	if(!nvram_get("wl1_bw_160"))
+		nvram_set("wl1_bw_160", "0");
 #endif
 	merlinr_insmod();
 }
@@ -80,8 +86,6 @@ void merlinr_init_done()
 		_dprintf("....softcenter ok....\n");
 	} else if (f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","0"))
 		nvram_set("sc_installed","1");
-	//else if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","1"))
-		//nvram_set("sc_installed","0");
 	if(f_exists("/jffs/.asusrouter")){
 		unlink("/jffs/.asusrouter");
 		doSystem("sed -i '/softcenter-wan.sh/d' /jffs/scripts/wan-start");
@@ -151,8 +155,12 @@ void merlinr_init_done()
 #endif
 #if defined(R8000P) || defined(R7900P)
 	nvram_set("ping_target","www.taobao.com");
-#endif
 	nvram_commit();
+#endif
+#if defined(TUFAX3000) && defined(MERLINR_VER_MAJOR_X)
+//tufax3000=ax82u,ax58u=ax3000
+	//enable_4t4r();
+#endif
 }
 
 
@@ -528,7 +536,7 @@ void exec_uu()
 	}
 }
 #endif
-#if !defined(RTAC68U) && !defined(GTAC5300) && !defined(GTAC2900) && !defined(RTAC86U)
+#if !defined(RTAC68U) && !defined(GTAC5300) && !defined(GTAC2900) && !defined(RTAC86U)&& !defined(TUFAX3000)
 void start_sendfeedback(void)
 {
 
@@ -557,3 +565,4 @@ void softcenter_eval(int sig)
 	_eval(eval_argv, NULL, 0, &pid);
 }
 #endif
+

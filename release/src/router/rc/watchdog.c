@@ -398,6 +398,14 @@ int init_toggle(void)
 		case MODEL_RTAC88U:
 		case MODEL_RTAC86U:
 		case MODEL_RTAC3100:
+		case MODEL_RTAX88U:
+		case MODEL_GTAX11000:
+		case MODEL_RTAX92U:
+		case MODEL_RTAX95Q:
+		case MODEL_RTAX58U:
+		case MODEL_RTAX56U:
+		case MODEL_RTAX86U:
+		case MODEL_RTAX68U:
 			nvram_set("btn_ez_radiotoggle", "1");
 			return BTN_WIFI_TOG;
 #endif
@@ -4602,6 +4610,12 @@ void led_check(int sig)
 		case MODEL_RTAC88U:
 		case MODEL_RTAC86U:
 		case MODEL_RTAC3100:
+		case MODEL_RTAX88U:
+		case MODEL_GTAX11000:
+		case MODEL_RTAX92U:
+		case MODEL_RTAX95Q:
+		case MODEL_RTAX58U:
+		case MODEL_RTAX56U:
 		default:
 			snprintf(p1_node, sizeof(p1_node), "%s", nvram_safe_get("usb_path1_node"));
 			snprintf(p2_node, sizeof(p2_node), "%s", nvram_safe_get("usb_path2_node"));
@@ -5336,12 +5350,12 @@ static void softcenter_sig_check()
 {
 	//1=wan,2=nat,3=mount
 	if(nvram_match("sc_installed", "1")){
-		if(!pids("perpd")){
+		//if(!pids("perpd")){
 			//char *perp_argv[] = { "/jffs/softcenter/perp/perp.sh", "start",NULL };
 			//pid_t pid;
 			//_eval(perp_argv, NULL, 0, &pid);
-			doSystem("sh /jffs/softcenter/perp/perp.sh start &");
-		}
+			//doSystem("sh /jffs/softcenter/perp/perp.sh start &");
+		//}
 		if(nvram_match("sc_wan_sig", "1")) {
 			if(nvram_match("sc_mount", "1")) {
 				if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
@@ -5373,6 +5387,28 @@ static void softcenter_sig_check()
 	}
 }
 #endif
+#if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(SBRAC1900P) || defined(RAX20)
+#if defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
+static void check_auth_code()
+{
+	static int i;
+	if (i==0)
+#if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(RAX20)
+		i=auth_code_check(cfe_nvram_get("et0macaddr"), nvram_get("uuid"));
+#elif defined(SBRAC1900P)
+		i=auth_code_check(cfe_nvram_get("et2macaddr"), nvram_get("uuid"));
+#endif
+	if (i==0){
+		static int count;
+		logmessage(LOGNAME, "*** verify failed, Reboot after %d min ***",((21-count)/2));
+		++count;
+		if (count > 21)
+			doSystem("reboot");
+	}
+}
+#endif
+#endif
+
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 void roamast_check()
 {
@@ -7169,7 +7205,7 @@ wdp:
 #endif
 #endif
 #ifdef RTCONFIG_FORCE_AUTO_UPGRADE
-	//auto_firmware_check();
+	auto_firmware_check();
 #endif
 #ifdef RTCONFIG_BWDPI
 	auto_sig_check();		// libbwdpi.so
@@ -7207,10 +7243,20 @@ wdp:
 	amas_ctl_check();
 #endif
 #ifdef RTCONFIG_CFGSYNC
+#if defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
 	cfgsync_check();
+#endif
 #endif
 #ifdef RTCONFIG_TUNNEL
 	mastiff_check();
+#endif
+#if defined(RTCONFIG_AMAS)
+	amaslib_check();
+#endif
+#if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(SBRAC1900P) || defined(RAX20)
+#if defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
+	check_auth_code();
+#endif
 #endif
 }
 

@@ -31,6 +31,7 @@
 #include <dmalloc.h>
 #endif
 #include <rtconfig.h>
+#include "merlinr.h"
 
 /* DEBUG DEFINE */
 #define HTTPD_DEBUG             "/tmp/HTTPD_DEBUG"

@@ -991,6 +991,12 @@ enum led_id {
 	LED_ID_MAX,	/* last item */
 };
 
+// Outside of enum to avoid conflicting with Asus's code
+enum led_merlin_id {
+	LED_SWITCH = LED_ID_MAX + 1,
+	LED_5G_FORCED,
+};
+
 enum led_fan_mode_id {
 	LED_OFF = 0,
 	LED_ON,
@@ -1383,6 +1389,7 @@ extern int set_pwr_modem(int boolOn);
 #endif
 extern int button_pressed(int which);
 extern int led_control(int which, int mode);
+extern int led_control_atomic(int which, int mode);
 
 /* api-*.c */
 extern uint32_t gpio_dir(uint32_t gpio, int dir);
@@ -2359,3 +2366,4 @@ static inline int get_sw_mode(void)
 extern int get_discovery_ssid(char *ssid_g, int size);
 extern int get_chance_to_control(void);
 #endif	/* !__SHARED_H__ */
+
