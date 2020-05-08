@@ -1319,8 +1319,6 @@ handle_request(void)
 					&& !strstr(file, "ss_conf")
 					&& !strstr(file, "ss_status")
 					&& !strstr(file, "dbconf")
-					&& !strstr(file, "Main_S")
-					&& !strstr(file, "Module_")
 #endif
 					){
 				send_error( 404, "Not Found", (char*) 0, "File not found." );

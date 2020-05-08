@@ -25,7 +25,7 @@
 extern void merlinr_init(void);
 extern void merlinr_init_done(void);
 #ifdef RTCONFIG_UUPLUGIN
-extern void exec_uu(void);
+extern void exec_uu_merlinr(void);
 #endif
 #ifdef RTCONFIG_FRS_LIVE_UPDATE
 extern int merlinr_firmware_check_update_main(int argc, char *argv[]);
@@ -34,7 +34,9 @@ extern int merlinr_firmware_check_update_main(int argc, char *argv[]);
 enum {
 	SOFTCENTER_WAN=1,
 	SOFTCENTER_NAT,
-	SOFTCENTER_MOUNT
+	SOFTCENTER_MOUNT,
+	SOFTCENTER_SERVICES,
+	SOFTCENTER_UNMOUNT
 };
 extern void softcenter_eval(int sig);
 #endif

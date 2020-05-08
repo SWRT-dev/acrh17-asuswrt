@@ -3534,5 +3534,7 @@ AURA_Event_Login_desc=当路由器管理页面登入失败时，LED 灯会显示
 AURA_Event_Attack=攻击防护
 AURA_Event_Attack_desc=当系统成功帮您挡下一个潜在攻击事件，LED 灯号将会显示红色彗星。
 AURA_Event_Note=<b>注意：</b>开启 Event 模式后，系统会依照目前的事件显示灯号，您将无法控制 LED 的灯效与颜色。
+UU_Accelerator=网易UU加速器
+UU_Accelerator_desc=UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！
 Softcenter=软件中心
 Softcenter_tool=工具箱

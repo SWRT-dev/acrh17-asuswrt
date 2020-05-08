@@ -69,6 +69,14 @@ define(function(){
 				] 
 			},
 			{
+				menuName: "<#UU_Accelerator#>",
+				index: "menu_UU", 
+				tab: [
+					{url: "UUAccelerator.asp", tabName: "<#UU_Accelerator#>"},
+					{url: "NULL", tabName: "__INHERIT__"}
+				] 
+			},
+			{
 				menuName: "<#Parental_Control#>",
 				index: "menu_ParentalControl", 
 				tab: [
@@ -117,7 +125,7 @@ define(function(){
 				index: "menu_Tools",
 				tab: [
 					{url: "Tools_Sysinfo.asp", tabName: "Sysinfo"},
-					{url: "Softcenter.asp", tabName: "<#Softcenter#>"},
+					{url: "Softcenter.asp", tabName: "<#Softcenter_tool#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -262,7 +270,7 @@ define(function(){
 				index: "menu_Softcenter",
 				tab: [
 					{url: "Main_Soft_center.asp", tabName: "<#Softcenter#>"},
-					{url: "Main_Soft_setting.asp", tabName: "ManualInstall"},
+					{url: "Main_Soft_setting.asp", tabName: "Offline Mode"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			}
@@ -314,6 +322,9 @@ define(function(){
 					retArray.push("menu_GameBoost");
 				}
 
+				if(!uu_support){
+					retArray.push("menu_UU");
+				}
 				/* Operation Mode */
 				if(isSwMode("re")){
 					retArray.push("menu_ParentalControl");
@@ -379,7 +390,7 @@ define(function(){
 						retArray.push("menu_Wireless");
 					}
 				}
-				else if (<% nvram_get("sc_mount"); %> == "0"){
+				else if (<% nvram_get("sc_installed"); %> == "0"){
 					retArray.push("menu_Softcenter");
 				}
 

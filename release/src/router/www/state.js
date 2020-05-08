@@ -395,10 +395,15 @@ var wl_info = {
 			})()
 };
 //wireless end
-
+var rc_support = '<% nvram_get("rc_support"); %>';
 function uiSupport(_ptn){
 	var ui_support = [<% get_ui_support(); %>][0];
-
+	if(_ptn == "uu_accel"){
+		if(rc_support.search("uu_accel") != -1)
+			return true;
+		else if ('<% nvram_get("uu_enable"); %>' == 0)
+			return false;
+	}
 	if(ui_support[_ptn])
 		return ui_support[_ptn];
 	else
@@ -406,7 +411,7 @@ function uiSupport(_ptn){
 }
 
 // parsing rc_support
-var rc_support = '<% nvram_get("rc_support"); %>';
+
 function isSupport(_ptn){
 	if(_ptn == "rog"){
 		var hasRogClient = false;
@@ -653,10 +658,7 @@ var cfg_sync_support = isSupport("cfg_sync");
 var meoVoda_support = isSupport("meoVoda");
 var movistarTriple_support = isSupport("movistarTriple");
 var utf8_ssid_support = isSupport("utf8_ssid");
-if(based_modelid == "RT-AC3100" || based_modelid == "RT-AC3200")
-	var uu_support = 1;
-else
-	var uu_support = isSupport('uu_accel');
+var uu_support = uiSupport('uu_accel');
 
 var QISWIZARD = "QIS_wizard.htm";
 

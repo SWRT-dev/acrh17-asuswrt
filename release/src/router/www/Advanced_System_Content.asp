@@ -1699,6 +1699,20 @@ function pullPingTargetList(obj){
 						<input type="radio" name="btn_ez_radiotoggle" id="turn_LED" class="input" style="display:none;" value="0" <% nvram_match_x("", "btn_ez_mode", "1", "checked"); %>><label for="turn_LED" id="turn_LED_str">Turn LED On/Off</label>
 					</td>
 				</tr>
+				<tr id="disabled_led_tr" style="display:none">
+					<th><#CTL_close#> LEDs</th>
+					<td>
+						<input type="radio" name="led_disable" class="input" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="led_disable" class="input" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
+				<tr id="uu_enable_tr" style="display:none">
+					<th><#CTL_Enabled#> UU</th>
+					<td>
+						<input type="radio" name="uu_enable" class="input" value="1" <% nvram_match_x("", "uu_enable", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="uu_enable" class="input" value="0" <% nvram_match_x("", "uu_enable", "0", "checked"); %>><#checkbox_No#>
+					</td>
+				</tr>
 				<tr id="pwrsave_tr">
 					<th align="right">Power Save Mode<!--untranslated--></th>
 					<td>
@@ -1946,3 +1960,4 @@ function pullPingTargetList(obj){
 <div id="footer"></div>
 </body>
 </html>
+

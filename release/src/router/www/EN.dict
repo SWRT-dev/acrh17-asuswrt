@@ -3534,5 +3534,7 @@ AURA_Event_Login_desc=When failing to log-in, you will see Comet in Red on the L
 AURA_Event_Attack=Attack Block
 AURA_Event_Attack_desc=When the system successfully blocks a potential attack, the LED shows Comet in Red.
 AURA_Event_Note=<b>Note:</b> Once selecting Event, the system will show different LED effects based on the current detected events. You cannot control the LED effect when selecting this function.
+UU_Accelerator=网易UU加速器
+UU_Accelerator_desc=UU路由器插件为三大主机PS4、Switch、Xbox One提供加速。可实现多台主机同时加速，NAT类型All Open。畅享全球联机超快感！
 Softcenter=Softcenter
 Softcenter_tool=Tools

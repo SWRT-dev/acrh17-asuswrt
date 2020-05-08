@@ -19,6 +19,9 @@
  * 
  */
 
+#include<stdlib.h>
+#include<string.h>
+
 //unlock all languages for cn
 int get_lang_num_merlinr()
 {
