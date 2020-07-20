@@ -4130,9 +4130,19 @@ start_smartdns(void)
 	//fprintf(fp, "log-file /var/log/smartdns.log\n");
 	//fprintf(fp, "log-size 128k\n");
 	//fprintf(fp, "log-num 2\n");
-	fprintf(fp, "server 114.114.114.114\n");
-	fprintf(fp, "server 119.29.29.29\n");
-	fprintf(fp, "server 223.5.5.5\n");
+#if !defined(K3C) && !defined(K3) && !defined(SBRAC1900P) && !defined(SBRAC3200P) && !defined(R8000P)
+	if(!strncmp(nvram_get("territory_code"), "CN",2)){
+#endif
+		fprintf(fp, "server 114.114.114.114\n");
+		fprintf(fp, "server 119.29.29.29\n");
+		fprintf(fp, "server 223.5.5.5\n");
+#if !defined(K3C) && !defined(K3) && !defined(SBRAC1900P) && !defined(SBRAC3200P) && !defined(R8000P)
+	} else {
+		fprintf(fp, "server 8.8.8.8\n");
+		fprintf(fp, "server 208.67.222.222\n");
+		fprintf(fp, "server 1.1.1.1\n");
+	}
+#endif
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
 		char *wan_xdns;
 		char wan_xdns_buf[sizeof("255.255.255.255 ")*2];

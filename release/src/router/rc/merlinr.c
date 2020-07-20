@@ -81,12 +81,12 @@ void merlinr_init_done()
 {
 	_dprintf("############################ MerlinR init done #################################\n");
 #ifdef RTCONFIG_SOFTCENTER
-	if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","0")){
+	if (!f_exists("/jffs/softcenter/scripts/ks_tar_install.sh") && nvram_match("sc_mount","0")){
 		doSystem("/usr/sbin/jffsinit.sh &");
 		logmessage("Softcenter/软件中心", "Installing/开始安装......");
 		logmessage("Softcenter/软件中心", "Wait a minute/1分钟后完成安装");
 		_dprintf("....softcenter ok....\n");
-	} else if (f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","0"))
+	} else if (f_exists("/jffs/softcenter/scripts/ks_tar_install.sh") && nvram_match("sc_mount","0"))
 		nvram_set("sc_installed","1");
 	//else if (!f_exists("/jffs/softcenter/scripts/ks_tar_intall.sh") && nvram_match("sc_mount","1"))
 		//nvram_set("sc_installed","0");
@@ -97,11 +97,9 @@ void merlinr_init_done()
 		doSystem("sed -i '/softcenter-mount.sh/d' /jffs/scripts/post-mount");
 
 	}
+	doSystem("dbus set softcenter_firmware_version=`nvram get extendno|cut -d \"_\" -f2|cut -d \"-\" -f1|cut -c2-6`");
 #endif
-#if defined(RTCONFIG_QCA)
-	if(!nvram_get("bl_ver"))
-		nvram_set("bl_ver", "1.0.0.0");
-#elif defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 	if(!nvram_get("bl_ver"))
 		nvram_set("bl_ver", nvram_get("blver"));
 #elif defined(RTCONFIG_LANTIQ)
@@ -169,6 +167,10 @@ void merlinr_init_done()
 #if defined(TUFAX3000) && defined(MERLINR_VER_MAJOR_X)
 //tufax3000=ax82u,ax58u=ax3000
 	//enable_4t4r();
+#elif defined(GTAC2900) && defined(MERLINR_VER_MAJOR_X)
+//ac86u <--> gtac2900
+	patch_ac86();
+	//patch_gt2900();
 #endif
 }
 
@@ -391,9 +393,9 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 					//_dprintf("%s#%s\n",fwver,cur_fwver);
 					if(versioncmp((cur_fwver+1),(fwver+1))==1){
 						nvram_set("webs_state_url", "");
-#if defined(SBRAC3200P) || defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
+#if defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
 						snprintf(info,sizeof(info),"3004_382_%s_%s-%s",modelname,fwver,tag);
-#elif defined(RTAC68U)
+#elif defined(RTAC68U) || defined(RTAC3100) || defined(RTAC88U)
 						snprintf(info,sizeof(info),"3004_385_%s_%s-%s",modelname,fwver,tag);
 #else
 						snprintf(info,sizeof(info),"3004_384_%s_%s-%s",modelname,fwver,tag);
@@ -446,9 +448,9 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 	curl_global_cleanup();
 
 GODONE:
-#if defined(SBRAC3200P) || defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
+#if defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
 	snprintf(info,sizeof(info),"3004_382_%s",nvram_get("extendno"));
-#elif defined(RTAC68U)
+#elif defined(RTAC68U) || defined(RTAC3100) || defined(RTAC88U)
 	snprintf(info,sizeof(info),"3004_385_%s",nvram_get("extendno"));
 #else
 	snprintf(info,sizeof(info),"3004_384_%s",nvram_get("extendno"));
@@ -586,7 +588,7 @@ void softcenter_eval(int sig)
 	//	snprintf(path, sizeof(path), "%s/softcenter-unmount.sh", sc);
 	//	snprintf(action, sizeof(action), "unmount");
 	} else {
-		logmessage("Softcenter", "sig=%s, bug?",sig);
+		logmessage("Softcenter", "sig=%d, bug?",sig);
 		return;
 	}
 	char *eval_argv[] = { path, action, NULL };
