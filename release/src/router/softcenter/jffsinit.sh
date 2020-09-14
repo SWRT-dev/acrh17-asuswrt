@@ -24,7 +24,9 @@ else
 if [ "$(nvram get sc_mount)" == 1 ];then
 	mdisk=`nvram get sc_disk`
 	usb_disk="/tmp/mnt/$mdisk"
-	[ -n "$(mount |grep $usb_disk |grep tfat)" ] && logger "Unsupport TFAT!" && exit 1
+	fat=$(mount |grep $usb_disk |grep tfat)
+	fat1=$(mount |grep $usb_disk |grep vfat)
+	[ -n "$fat" -o -n "$fat1" ] && logger "Unsupport TFAT!" && exit 1
 	if [ ! -e "$usb_disk" ]; then
 		nvram set sc_mount="0"
 		nvram commit
@@ -67,8 +69,11 @@ elif [ "$TUF" == "1" ]; then
 	cp -rf /rom/etc/softcenter/ROG/res/* /jffs/softcenter/res/
 	sed -i 's/3e030d/3e2902/g;s/91071f/92650F/g;s/680516/D0982C/g;s/cf0a2c/c58813/g;s/700618/74500b/g;s/530412/92650F/g' /jffs/softcenter/res/*.css >/dev/null 2>&1
 fi
-[ ! -L "/jffs/softcenter/bin/base64_decode" ] && cd /jffs/softcenter/bin && ln -sf base64_encode base64_decode
-[ ! -L "/jffs/softcenter/scripts/ks_app_remove.sh" ] && cd /jffs/softcenter/scripts && ln -sf ks_app_install.sh ks_app_remove.sh
+cd /jffs/softcenter/bin && ln -sf /usr/sbin/base64_encode base64_encode
+cd /jffs/softcenter/bin && ln -sf /usr/sbin/base64_encode base64_decode
+cd /jffs/softcenter/bin && ln -sf /usr/sbin/versioncmp versioncmp
+cd /jffs/softcenter/bin && ln -sf /usr/sbin/resolveip resolveip
+cd /jffs/softcenter/scripts && ln -sf ks_app_install.sh ks_app_remove.sh
 chmod 755 /jffs/softcenter/scripts/*.sh
 chmod 755 /jffs/softcenter/configs/*.sh
 chmod 755 /jffs/softcenter/bin/*
@@ -77,8 +82,8 @@ chmod 755 /jffs/softcenter/perp/*
 chmod 755 /jffs/softcenter/perp/.boot/*
 chmod 755 /jffs/softcenter/perp/.control/*
 chmod 755 /jffs/softcenter/automount.sh
-echo 1.2.7 > /jffs/softcenter/.soft_ver
-dbus set softcenter_api="1.1"
+echo 1.3.0 > /jffs/softcenter/.soft_ver
+dbus set softcenter_api="1.5"
 dbus set softcenter_version=`cat /jffs/softcenter/.soft_ver`
 dbus set softcenter_firmware_version=`nvram get extendno|cut -d "_" -f2|cut -d "-" -f1|cut -c2-6`
 nvram set sc_installed=1

@@ -730,10 +730,8 @@ obj-y += smartdns
 endif
 ifeq ($(RTCONFIG_SOFTCENTER),y)
 obj-y += skipdbv2 libev-4.22 softcenter libiconv-1.14
-obj-y += ipset libmnl libnfnetlink
-ifeq ($(RTCONFIG_SOFTCENTER_EXT),y)
-obj-y += httpdb
-endif
+#obj-y += httpdb mbedtls-2.6.0
+obj-y += ipset libmnl-1.0.4 libnfnetlink-1.0.1
 endif
 obj-y += dbus-1.8.8 libpcap
 obj-y += readline-6.2
@@ -2390,6 +2388,48 @@ stress-1.x-install:
 stress-1.x-clean:
 	[ ! -f stress-1.x/Makefile ] || $(MAKE) -C stress-1.x clean
 	@rm -f stress-1.x/Makefile
+libnfnetlink-1.0.1: libnfnetlink-1.0.1/Makefile
+	$(MAKE) -C libnfnetlink-1.0.1
+
+libnfnetlink-1.0.1/Makefile:
+	$(MAKE) libnfnetlink-1.0.1-configure
+
+libnfnetlink-1.0.1-configure:
+	( cd libnfnetlink-1.0.1 && autoreconf -i -f ; \
+		$(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+	)
+
+libnfnetlink-1.0.1-install:
+	install -D libnfnetlink-1.0.1/src/.libs/libnfnetlink.so $(INSTALLDIR)/libnfnetlink-1.0.1/usr/lib/libnfnetlink.so.0
+	$(STRIP) $(INSTALLDIR)/libnfnetlink-1.0.1/usr/lib/libnfnetlink.so.0
+
+libnfnetlink-1.0.1-clean:
+	-@$(MAKE) -C  libnfnetlink-1.0.1 clean
+
+libmnl-1.0.4: libmnl-1.0.4/Makefile
+	$(MAKE) -C libmnl-1.0.4
+
+libmnl-1.0.4/Makefile:
+	(cd libmnl-1.0.4 && autoreconf -i -f)
+	$(MAKE) libmnl-1.0.4-configure
+
+libmnl-1.0.4-configure:
+	( cd libmnl-1.0.4 ; \
+		$(CONFIGURE) \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib \
+	)
+
+libmnl-1.0.4-install:
+	install -D libmnl-1.0.4/src/.libs/libmnl.so $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
+	$(STRIP) $(INSTALLDIR)/libmnl-1.0.4/usr/lib/libmnl.so.0
+
+libmnl-1.0.4-clean:
+	-@$(MAKE) -C libmnl-1.0.4 clean
 
 www-install:
 ifeq ($(HND_ROUTER),y)
@@ -2919,10 +2959,52 @@ libev-4.22-install:
 		ln -sf libev.so.4.0.0 libev.so.4 && \
 		ln -sf libev.so.4.0.0 libev.so
 
+mbedtls-2.6.0/stamp-h1:
+	cd mbedtls-2.6.0 && cmake -DCMAKE_INSTALL_PREFIX=/usr \
+	-DUSE_SHARED_MBEDTLS_LIBRARY=ON \
+	-DENABLE_TESTING=OFF \
+	-DENABLE_PROGRAMS=ON
+
+mbedtls-2.6.0: mbedtls-2.6.0/stamp-h1
+	$(MAKE) -C $@
+
+mbedtls-2.6.0-clean:
+	[ ! -f mbedtls-2.16.3/Makefile ] || $(MAKE) -C mbedtls-2.16.3 -f Makefile clean
+
+mbedtls-2.6.0-install: mbedtls-2.6.0
+	install -D mbedtls-2.6.0/library/libmbedtls.so.2.6.0 $(INSTALLDIR)/mbedtls-2.6.0/usr/lib/libmbedtls.so.2.6.0
+	install -D mbedtls-2.6.0/library/libmbedcrypto.so.2.6.0 $(INSTALLDIR)/mbedtls-2.6.0/usr/lib/libmbedcrypto.so.2.6.0
+	install -D mbedtls-2.6.0/library/libmbedx509.so.2.6.0 $(INSTALLDIR)/mbedtls-2.6.0/usr/lib/libmbedx509.so.2.6.0
+	$(STRIP) $(INSTALLDIR)/mbedtls-2.6.0/usr/lib/libmbedtls.so.2.6.0
+	$(STRIP) $(INSTALLDIR)/mbedtls-2.6.0/usr/lib/libmbedcrypto.so.2.6.0
+	$(STRIP) $(INSTALLDIR)/mbedtls-2.6.0/usr/lib/libmbedx509.so.2.6.0
+	cd $(INSTALLDIR)/mbedtls-2.6.0/usr/lib && ln -sf libmbedtls.so.2.6.0 libmbedtls.so.10 && \
+		ln -sf libmbedtls.so.2.6.0 libmbedtls.so && ln -sf libmbedcrypto.so.2.6.0 libmbedcrypto.so.0 && \
+		ln -sf libmbedcrypto.so.2.6.0 libmbedcrypto.so && ln -sf libmbedx509.so.2.6.0 libmbedx509.so.0 && \
+		ln -sf libmbedx509.so.2.6.0 libmbedx509.so
+
+httpdb/Makefile: mbedtls-2.6.0
+	cd httpdb && cmake -DCMAKE_INSTALL_PREFIX=/usr \
+	-DCMAKE_BUILD_TYPE=Release \
+	-DMBEDTLS="$(TOP)/mbedtls-2.6.0/"
+
+httpdb: httpdb/Makefile
+	$(MAKE) -C $@
+
+httpdb-clean:
+	[ ! -f httpdb/Makefile ] || $(MAKE) -C httpdb -f Makefile clean
+	@rm -f httpdb/Makefile
+
+httpdb-install: httpdb
+	install -D httpdb/bin/httpdb $(INSTALLDIR)/httpdb/usr/sbin/httpdb
+	$(STRIP) $(INSTALLDIR)/httpdb/usr/sbin/httpdb
+
 skipdbv2/Makefile: skipdbv2/CMakeLists.txt
 	cd skipdbv2 && cmake -DCMAKE_INSTALL_PREFIX=/usr \
 	-DCMAKE_BUILD_TYPE=Release \
-	-DCMAKE_EXE_LINKER_FLAGS="-L$(STAGEDIR)/usr/lib -lev" 
+	-DCMAKE_EXE_LINKER_FLAGS="-L$(STAGEDIR)/usr/lib -lev" \
+	-DLIBEV_INCLUDE_DIRS="$(TOP)/libev-4.22" \
+	-DLIBEV_LIBRARIES="$(TOP)/libev-4.22/.libs"
 
 skipdbv2: libev-4.22 skipdbv2/Makefile
 	$(MAKE) -C $@
@@ -2942,37 +3024,34 @@ skipdbv2-install: skipdbv2
 	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/sbin/skipd
 	$(STRIP) $(INSTALLDIR)/skipdbv2/usr/sbin/dbus
 
-libmnl/stamp-h1:
-	cd $(TOP)/libmnl && CC=$(CC) STRIP="$(STRIP)" \
-	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
-	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-	$(CONFIGURE) --prefix=/usr
-	touch libmnl/stamp-h1
+ifeq ($(MERLINR_NAME),K3)
+k3screenctrl/Makefile:
+	cd k3screenctrl && autoreconf -i -f && CC=$(CC) STRIP=$(STRIP) \
+		CFLAGS=" -std=gnu99 -D_GNU_SOURCE $(EXTRACFLAGS) -I$(TOP)/nvram${BCMEX} -I$(TOP)/shared -I$(SRCBASE)/shared/bcmwifi/include -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -I$(TOP)/curl-7.21.7/include -I$(TOP)/json-c -I$(TOP)/openssl/include" \
+		LDFLAGS="$(EXTRALDFLAGS) -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared -L$(TOP)/curl-7.21.7/lib/.libs -lcurl -L$(TOP)/json-c/.libs -ljson-c -L$(TOP)/openssl -lcrypto -lssl -ldl" \
+		$(CONFIGURE) --target=arm-linux --host=arm-linux --build=x86_64-linux-gnu --prefix=""
 
-libmnl: libmnl/stamp-h1
-	$(MAKE) -C libmnl
-	$(MAKE) -C libmnl DESTDIR=$(TOP)/libmnl/staged install
+k3screenctrl: k3screenctrl/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage 
 
-libmnl-install: libmnl
-	install -d $(INSTALLDIR)/libmnl/usr/lib/
-	install libmnl/src/.libs/libmnl.so.0.1.0 $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
-	$(STRIP) $(INSTALLDIR)/libmnl/usr/lib/libmnl.so.0.1.0
-	cd $(INSTALLDIR)/libmnl/usr/lib/ && \
-		ln -sf libmnl.so.0.1.0 libmnl.so.0 && \
-		ln -sf libmnl.so.0.1.0 libmnl.so
+k3screenctrl-clean:
+	[ ! -f k3screenctrl/Makefile ] || $(MAKE) -C k3screenctrl -f Makefile distclean
 
-libmnl-clean:
-	-@$(MAKE) -C libmnl clean
-	-@rm -rf libmnl/staged
+k3screenctrl-install: k3screenctrl
+	install -D k3screenctrl/src/k3screenctrl $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenctrl
+	install -D k3screenctrl/src/k3screend $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screend
+	$(STRIP) $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screenctrl
+	$(STRIP) $(INSTALLDIR)/k3screenctrl/usr/sbin/k3screend
+endif
 
-ipset/stamp-h1: libmnl
-	cd $(TOP)/ipset && CC=$(CC) STRIP="$(STRIP)" \
+ipset/stamp-h1: libmnl-1.0.4
+	cd $(TOP)/ipset && CC=$(CC) \
 	autoreconf -i -f && \
 	CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
 	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-	libmnl_CFLAGS="-I$(TOP)/libmnl/staged/usr/include" \
-	libmnl_LIBS="-L$(TOP)/libmnl/staged/usr/lib -lmnl" \
-	$(CONFIGURE) --prefix=/usr --with-kmod=yes --with-kbuild=$(LINUXDIR)
+	libmnl_CFLAGS="-I$(TOP)/libmnl-1.0.4/include" \
+	libmnl_LIBS="-L$(TOP)/libmnl-1.0.4/src/.libs -lmnl" \
+	$(CONFIGURE) --prefix=/usr --with-kmod=no --with-kbuild=$(LINUXDIR)
 	touch ipset/stamp-h1
 
 ipset: ipset/stamp-h1
@@ -2993,24 +3072,6 @@ ipset-clean:
 	-@$(MAKE) -C ipset clean
 	-@$(MAKE) -C ipset modules_clean
 	-@rm -rf ipset/Makefile ipset/stamp-h1
-
-libnfnetlink/stamp-h1:
-	cd $(TOP)/libnfnetlink && CC=$(CC) STRIP="$(STRIP)" \
-		CFLAGS="-Os -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections" \
-		LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		$(CONFIGURE) --prefix=/usr --enable-shared --enable-static
-	touch libnfnetlink/stamp-h1
-
-libnfnetlink: libnfnetlink/stamp-h1
-	@$(SEP)
-	$(MAKE) -C libnfnetlink
-
-libnfnetlink-install:
-	install -D libnfnetlink/src/.libs/libnfnetlink.so.0.2.0 $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
-	$(STRIP) -s $(INSTALLDIR)/libnfnetlink/usr/lib/libnfnetlink.so.0.2.0
-	cd $(INSTALLDIR)/libnfnetlink/usr/lib/ && \
-		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so.0 && \
-		ln -sf libnfnetlink.so.0.2.0 libnfnetlink.so
 endif
 
 ifeq ($(RTCONFIG_SMARTDNS),y)
@@ -3336,10 +3397,17 @@ ifeq ($(ALPINE)$(LANTIQ),y)
 		LDFLAGS="-L$(STAGEDIR)/usr/lib" \
 		WITHOUT_XATTR=1 -C $@
 else
+ifeq ($(HND_ROUTER),y)
+	$(MAKE) CPPFLAGS="-I$(STAGEDIR)/usr/include" \
+		CFLAGS+="-I$(TOP)/mtd-utils/include -I$(TOP)/mtd-utils/ubi-utils/include" \
+		LDFLAGS="-L$(STAGEDIR)/usr/lib" \
+		WITHOUT_XATTR=1 -C $@
+else
 	$(MAKE) CPPFLAGS="-I$(STAGEDIR)/usr/include" \
 		CFLAGS="-I$(TOP)/mtd-utils/include -I$(TOP)/mtd-utils/ubi-utils/include" \
 		LDFLAGS="-L$(STAGEDIR)/usr/lib" \
 		WITHOUT_XATTR=1 -C $@
+endif
 endif
 
 mtd-utils-install:

@@ -746,7 +746,7 @@ function notice_show(){
 																<input sclang class="show-uninstall-btn" type="button" value="Online"/>
 															</td>
 														</tr>
-														<tr bgcolor="#444f53" width="235px">
+														<tr width="100%">
 															<td colspan="4" id="IconContainer">
 																<div id="software_center_message" style="text-align:center; line-height: 4em;" sclang>loading...</div>
 															</td>
