@@ -132,40 +132,45 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				int count = 0;
 				char model[64];
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA)
-#if !defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTCONFIG_QCA)
-				tmp = strstr(buffer, "Processor");
-				if (tmp)
-					sscanf(tmp, "Processor  :  %[^\n]", model);
-				else
-#endif
-				 {	// BCM490x
-					char impl[8], arch[8], variant[8], part[10];
+					char impl[8], arch[8], variant[8], part[10], revision[4];
 					impl[0]='\0'; arch[0]='\0'; variant[0]='\0'; part[0]='\0';
+					strcpy(revision,"0");
 
 					tmp = strstr(buffer, "CPU implementer");
-					sscanf(tmp, "CPU implementer  :  %7[^\n]s", impl);
+					if (tmp) sscanf(tmp, "CPU implementer  :  %7[^\n]s", impl);
 					tmp = strstr(buffer, "CPU architecture");
-					sscanf(tmp, "CPU architecture  :  %7[^\n]s", arch);
+					if (tmp) sscanf(tmp, "CPU architecture  :  %7[^\n]s", arch);
 					tmp = strstr(buffer, "CPU variant");
-					sscanf(tmp, "CPU variant  :  %7[^\n]s", variant);
+					if (tmp) sscanf(tmp, "CPU variant  :  %7[^\n]s", variant);
 					tmp = strstr(buffer, "CPU part");
-					sscanf(tmp, "CPU part  :  %9[^\n]s", part);
-#if defined(RTCONFIG_QCA) || (defined(RTCONFIG_HND_ROUTER_AX_675X) && !defined(RTCONFIG_HND_ROUTER_AX_6710))
+					if (tmp) sscanf(tmp, "CPU part  :  %9[^\n]s", part);
+					tmp = strstr(buffer,"CPU revision");
+					if (tmp) sscanf(tmp, "CPU revision  :  %3[^\n]s", revision);
+#if defined(RTCONFIG_QCA)
 					if (!strcmp(impl, "0x41")
 					    && !strcmp(variant, "0x0")
 					    && !strcmp(part, "0xc07")
 					    && !strcmp(arch, "7"))
-						strcpy(model, "Cortex A7 ARMv7l");
-#else//490x or 671x
+						sprintf(model, "IPQ401x - Cortex A7 ARMv7 revision %s", revision);
+#else
 					if (!strcmp(impl, "0x42")
 					    && !strcmp(variant, "0x0")
 					    && !strcmp(part, "0x100")
 					    && !strcmp(arch, "8"))
-						strcpy(model, "Cortex A53 ARMv8");
+						sprintf(model, "BCM490x - Cortex A53 ARMv8 revision %s", revision);
+					else if (!strcmp(impl, "0x41")
+					    && !strcmp(variant, "0x0")
+					    && !strcmp(part, "0xc07")
+					    && !strcmp(arch, "7"))
+						sprintf(model, "BCM675x - Cortex A7 ARMv7 revision %s", revision);
+					else if (!strcmp(impl, "0x41")
+					    && !strcmp(variant, "0x3")
+					    && !strcmp(part, "0xc09")
+					    && !strcmp(arch, "7"))
+						sprintf(model, "BCM470x - Cortex A7 ARMv7 revision %s", revision);
 #endif
 					else
-						sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s",impl, part, variant, arch);
-				}
+						sprintf(model, "Implementer: %s, Part: %s, Variant: %s, Arch: %s, Rev: %s",impl, part, variant, arch, revision);
 #elif defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
 				tmp = strstr(buffer, "system type");
 				if (tmp)
@@ -174,7 +179,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #if defined(RTCONFIG_LANTIQ)
 					strcpy(model, "GRX500 rev 1.2");
 #elif defined(RTCONFIG_RALINK)
-					strcpy(model, "MT7621");
+					strcpy(model, "mt7621a");
 #endif
 #endif
 				count = sysconf(_SC_NPROCESSORS_CONF);
@@ -192,9 +197,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			}
 
 		} else if(strcmp(type,"cpu.freq") == 0) {
-#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710)
-			strcpy(result, "1500");
-#elif defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_BCMARM)
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_BCMARM)
 #if defined(RTCONFIG_HND_ROUTER)
 			int freq = 0;
 			char *buffer;
@@ -206,11 +209,25 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				free(buffer);
 				sprintf(result, "%d", freq);
 			}
+#if defined(RTCONFIG_HND_ROUTER_AX_675X)
+			else if (
+#if defined(RTAX55) || defined(RTAX1800)
+					get_model() == MODEL_RTAX55
+#elif defined(RTAX56U)
+					get_model() == MODEL_RTAX56U
+#elif defined(RTAX58U) || defined(TUFAX3000)
+					get_model() == MODEL_RTAX58U
+#elif defined(RTAX82U)
+					get_model() == MODEL_RTAX82U
+#endif
+					)
+				strcpy(result, "1500");
+#endif
 			else
 #endif
 			{
-				tmp = nvram_get("clkfreq");
-				if (tmp)
+				tmp = nvram_safe_get("clkfreq");
+				if (*tmp)
 					sscanf(tmp,"%[^,]s", result);
 			}
 #elif defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_QCA)
@@ -404,8 +421,15 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				free(buffer);
 			}
 			unlink("/rom/opt/lantiq/etc/wave_components.ver");
-#elif defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
-					strcpy(result,"Unknow");
+#elif defined(RTCONFIG_QCA)
+			strcpy(result,"Unknow");
+#elif defined(RTCONFIG_RALINK)
+			char buffer[16];
+			if(get_mtk_wifi_driver_version(buffer, strlen(buffer))>0){
+				if(*buffer)
+					strcpy(result,buffer);
+			} else
+				strcpy(result,"5.0.4.0");
 #endif
 #ifdef RTCONFIG_QTN
                 } else if(strcmp(type,"qtn_version") == 0 ) {
@@ -622,9 +646,13 @@ unsigned int get_phy_temperature(int radio)
 	strcpy(buf, "phy_tempsense");
 
 	if (radio == 2) {
-		interface = nvram_get("wl0_ifname");
+		interface = nvram_safe_get("wl0_ifname");
 	} else if (radio == 5) {
-		interface = nvram_get("wl1_ifname");
+		interface = nvram_safe_get("wl1_ifname");
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300) || defined(RTAX89U) || defined(GTAX11000) || defined(RTAX92U)
+	} else if (radio == 52) {
+		interface = nvram_safe_get("wl2_ifname");
+#endif
 	} else {
 		return 0;
 	}
@@ -637,36 +665,33 @@ unsigned int get_phy_temperature(int radio)
 	}
 #elif defined(RTCONFIG_LANTIQ)
 	int temp = 0, retval = 0;
-	char *tmp;
-	if (radio == 2) {
-		system("iwpriv wlan0 gTemperature >/tmp/output.txt");
-	} else if (radio == 5) {
-		system("iwpriv wlan2 gTemperature >/tmp/output.txt");
-	} else if (radio == 7) {
-		system("cut -c25-26 /sys/kernel/debug/ltq_tempsensor/allsensors >/tmp/output.txt");
-	} else {
-		return retval;
-	}
-	char *buffer = read_whole_file("/tmp/output.txt");
+	FILE *fp;
 
-	if (buffer) {
-		if (radio == 7) {
-			sscanf(buffer, "%d", &temp);
-			free(buffer);
-			retval = temp;
-		} else {
-			tmp = strstr(buffer, "gTemperature:");
-			if (tmp) {
-				sscanf(tmp, "gTemperature:%d", &temp);
-				free(buffer);			
-				retval = temp;
-			} else {
-				free(buffer);
-				retval = 0;
-			}
+	if (radio == 2 || radio == 5) {
+		char buffer[99];
+		char iw[]="iwpriv wlan0 gTemperature";
+		char s[]="wlan0     gTemperature:%%d %%*[0-9 ]";
+		if (radio == 2) {
+			snprintf(iw, sizeof(iw), "iwpriv wlan0 gTemperature");
+			snprintf(s, sizeof(s), "wlan0     gTemperature:%%d %%*[0-9 ]");
+		} else if (radio == 5) {
+			snprintf(iw, sizeof(iw), "iwpriv wlan2 gTemperature");
+			snprintf(s, sizeof(s), "wlan2     gTemperature:%%d %%*[0-9 ]");
 		}
-	} else { retval = 99; }
-	unlink("/tmp/output.txt");
+		if ((fp = popen(iw, "r")) != NULL) {
+			if(fgets(buffer, 99, fp) != NULL) {
+				sscanf(buffer, s, &temp);
+			}
+			pclose(fp);
+			retval = temp;
+		}
+	} else if (radio == 7) {
+		if ((fp = fopen("/sys/kernel/debug/ltq_tempsensor/allsensors", "r")) != NULL) {
+			fscanf(fp, "TS_CODE= %*[0-9]; TEMP   = %d; CH_SEL = %*[0-9]", &temp);
+			fclose(fp);
+			retval = (temp/1000);
+		}
+	}
 	return retval;
 #elif defined(RTCONFIG_QCA)
 	int temp = 0, retval = 0;
@@ -674,11 +699,10 @@ unsigned int get_phy_temperature(int radio)
 		system("thermaltool -i wifi0 -get |grep temperature | awk '{print $3}' >/tmp/output.txt");
 	} else if (radio == 5) {
 		system("thermaltool -i wifi1 -get |grep temperature | awk '{print $3}' >/tmp/output.txt");
-	} else if (radio == 7) {
-		retval = 0;
 	} else {
-		return retval;
+		return retval;//4019 not support
 	}
+
 	char *buffer = read_whole_file("/tmp/output.txt");
 	if (buffer) {
 		if (radio != 7) {
@@ -738,7 +762,7 @@ unsigned int get_wifi_clients(int unit, int querytype)
 
 #ifdef RTCONFIG_QTN
 		if (unit == 1) {
-			if ((nvram_match("wl1_unit", "0")) || (!rpc_qtn_ready()))
+			if ((nvram_match("wl1_radio", "0")) || (!rpc_qtn_ready()))
 				count = -1;
 			else if ((querytype == SI_WL_QUERY_ASSOC) &&
 				 (qcsapi_wifi_get_count_associations(name, &association_count) >= 0))
