@@ -33,10 +33,6 @@ else
 export HND_ROUTER := n
 endif
 
-ifeq ($(MERLINR_NAME),RT-ACRH17)
-export PATH := /opt/openwrt-gcc463.arm/bin:$(PATH)
-endif
-
 include common.mak
 ifneq ($(HND_ROUTER),y)
 include $(SRCBASE)/.config

@@ -14,7 +14,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  *
- * Copyright 2019-2020, paldier <paldier@hotmail.com>.
+ * Copyright 2019-2021, paldier <paldier@hotmail.com>.
+ * Copyright 2019-2021, lostlonger<lostlonger.g@gmail.com>.
  * All Rights Reserved.
  * 
  *
@@ -161,6 +162,8 @@ void merlinr_init_done()
 		nvram_set("modelname", "RTACRH26");
 #elif defined(RTAC85P)
 		nvram_set("modelname", "RTAC85P");
+#elif defined(RMAC2100)
+		nvram_set("modelname", "RMAC2100");
 #endif
 #if defined(R8000P) || defined(R7900P)
 	nvram_set("ping_target","www.taobao.com");
@@ -395,10 +398,10 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 					//_dprintf("%s#%s\n",fwver,cur_fwver);
 					if(versioncmp((cur_fwver+1),(fwver+1))==1){
 						nvram_set("webs_state_url", "");
-#if defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
+#if (defined(RTAC82U) && !defined(RTCONFIG_AMAS)) || defined(RTAC3200) || defined(RTAC85P) || defined(RMAC2100)
 						snprintf(info,sizeof(info),"3004_382_%s_%s-%s",modelname,fwver,tag);
-#elif defined(RTAC68U) || defined(RTAC3100) || defined(RTAC88U)
-						snprintf(info,sizeof(info),"3004_385_%s_%s-%s",modelname,fwver,tag);
+#elif (defined(RTAC82U) && defined(RTCONFIG_AMAS)) || defined(RTAC95U) || defined(RTAX56_XD4) || defined(RTAX95Q) ||  defined(RTAC68U) || defined(RTAC3100) || defined(RTAC88U) || defined(RTAC86U) || defined(GTAC2900) || defined(GTAC5300)
+						snprintf(info,sizeof(info),"3004_386_%s_%s-%s",modelname,fwver,tag);
 #else
 						snprintf(info,sizeof(info),"3004_384_%s_%s-%s",modelname,fwver,tag);
 #endif
@@ -450,10 +453,10 @@ int merlinr_firmware_check_update_main(int argc, char *argv[])
 	curl_global_cleanup();
 
 GODONE:
-#if defined(RTACRH17) || defined(RTAC3200) || defined(RTAC85P)
+#if (defined(RTAC82U) && !defined(RTCONFIG_AMAS)) || defined(RTAC3200) || defined(RTAC85P) || defined(RMAC2100)
 	snprintf(info,sizeof(info),"3004_382_%s",nvram_get("extendno"));
-#elif defined(RTAC68U) || defined(RTAC3100) || defined(RTAC88U)
-	snprintf(info,sizeof(info),"3004_385_%s",nvram_get("extendno"));
+#elif (defined(RTAC82U) && defined(RTCONFIG_AMAS)) || defined(RTAC95U) || defined(RTAX56_XD4) || defined(RTAX95Q) ||  defined(RTAC68U) || defined(RTAC3100) || defined(RTAC88U) || defined(RTAC86U) || defined(GTAC2900) || defined(GTAC5300)
+	snprintf(info,sizeof(info),"3004_386_%s",nvram_get("extendno"));
 #else
 	snprintf(info,sizeof(info),"3004_384_%s",nvram_get("extendno"));
 #endif
@@ -472,7 +475,7 @@ GODONE:
 	FWUPDATE_DBG("---- firmware check update finish ----");
 	return 0;
 }
-#if !defined(BLUECAVE)
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_RALINK)
 void exec_uu_merlinr()
 {
 	FILE *fp;
@@ -541,7 +544,7 @@ void exec_uu_merlinr()
 	}
 }
 #endif
-#if !defined(RTAC68U) && !defined(GTAC5300) && !defined(GTAC2900) && !defined(RTAC86U)&& !defined(TUFAX3000)
+#if defined(RTAC82U)
 void start_sendfeedback(void)
 {
 
@@ -577,4 +580,53 @@ void softcenter_eval(int sig)
 	_eval(eval_argv, NULL, 0, &pid);
 }
 #endif
+
+
+static int
+reset_sc(int all)
+{
+	if(all){
+		killall_tk("skipd");
+		doSystem("rm -rf /jffs/db");
+		if(strcmp(nvram_get("preferred_lang"), "CN"))
+			printf("Database has been cleared.\n");
+		else
+			printf("数据库已清空！\n");
+	}
+	doSystem("rm -rf /jffs/softcenter/bin/*");
+	doSystem("rm -rf /jffs/softcenter/scripts/*");
+	doSystem("rm -rf /jffs/softcenter/webs/*");
+	doSystem("rm -rf /jffs/softcenter/res/*");
+	doSystem("rm -rf /jffs/softcenter");
+	doSystem("rm -rf /jffs/configs");
+	doSystem("rm -rf /jffs/scripts/dnsmasq.postconf");
+	doSystem("service restart_dnsmasq >/dev/null 2>&1");
+	sleep(1);
+	doSystem("jffsinit.sh >/dev/null 2>&1");
+	if(strcmp(nvram_get("preferred_lang"), "CN"))
+		printf("Software Center reset is complete, Please clear your browser cache and reopen the website page of the software center!\n");
+	else
+		printf("软件中心重置完成，请清空浏览器缓存后重新进入软件中心！\n");
+	return 0;
+}
+
+
+int
+merlinr_toolbox(int argc, char **argv)
+{
+
+	if (argc == 1) {
+		show_help();
+	} else {
+		if (argv[1] && !strcmp(argv[1], "reset")) {
+			if(argv[2] && !strcmp(argv[2], "all"))
+				reset_sc(1);
+			else
+				reset_sc(0);
+		} else {
+			show_help();
+		}
+	}
+	return 0;
+}
 

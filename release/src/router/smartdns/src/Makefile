@@ -28,7 +28,7 @@ else
 CFLAGS +=-O2 -g -Wall -Wstrict-prototypes -fno-omit-frame-pointer -Wstrict-aliasing 
 endif
 CFLAGS +=-I./include -I$(TOP)/openssl/include
-ifeq ($(MERLINR_NAME), $(filter $(MERLINR_NAME), RTACRH17 RTAC82U))
+ifeq ($(RTCONFIG_QCA),y)
 LDFLAGS +=-ldl
 endif
 

@@ -20,11 +20,8 @@ install:
 	install -d $(INSTALLDIR)/usr/bin
 	install -d $(INSTALLDIR)/usr/share
 	install -d $(INSTALLDIR)/usr/lib
-ifeq ($(MERLINR_NAME), $(filter $(MERLINR_NAME), K3 XWR3100))
 ifeq ($(MERLINR_NAME), $(filter $(MERLINR_NAME), K3))
 	install -d $(INSTALLDIR)/mcu
-endif
-	install -d $(INSTALLDIR)/rom/cfe/
 endif
 	install -d $(INSTALLDIR)/rom/etc
 ifeq ($(HND_ROUTER), y)
@@ -47,8 +44,6 @@ endif
 	install -d $(INSTALLDIR)/rom/etc/softcenter/webs
 	install -d $(INSTALLDIR)/rom/etc/softcenter/perp
 	install -d $(INSTALLDIR)/rom/etc/softcenter/scripts
-	install -d $(INSTALLDIR)/rom/etc/softcenter/perp/.boot
-	install -d $(INSTALLDIR)/rom/etc/softcenter/perp/.control
 ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 TUF-AX3000))
 	install -d $(INSTALLDIR)/rom/etc/softcenter/ROG/res
 endif
@@ -64,15 +59,6 @@ endif
 	install -m 0755 softcenter/bin/softcenter-wan.sh $(INSTALLDIR)/rom/etc/softcenter/bin
 	install -m 0755 softcenter/bin/softcenter-services.sh $(INSTALLDIR)/rom/etc/softcenter/bin
 	install -m 0755 softcenter/bin/softcenter-unmount.sh $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perpboot $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perpctl $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perpd $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perphup $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perpls $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perpok $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/perpstat $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/sissylog $(INSTALLDIR)/rom/etc/softcenter/bin
-	install -m 0755 softcenter/bin/tinylog $(INSTALLDIR)/rom/etc/softcenter/bin
 	install -m 0755 softcenter/res/sc1CN.json $(INSTALLDIR)/rom/etc/softcenter/res
 	install -m 0755 softcenter/res/sc1EN.json $(INSTALLDIR)/rom/etc/softcenter/res
 	install -m 0755 softcenter/res/sc1TW.json $(INSTALLDIR)/rom/etc/softcenter/res
@@ -94,9 +80,6 @@ endif
 	install -m 0755 softcenter/webs/Main_Soft_center.asp $(INSTALLDIR)/rom/etc/softcenter/webs
 	install -m 0755 softcenter/webs/Main_Soft_setting.asp $(INSTALLDIR)/rom/etc/softcenter/webs
 	install -m 0755 softcenter/perp/perp.sh $(INSTALLDIR)/rom/etc/softcenter/perp
-	install -m 0755 softcenter/perp/.boot/rc.log $(INSTALLDIR)/rom/etc/softcenter/perp/.boot
-	install -m 0755 softcenter/perp/.boot/rc.perp $(INSTALLDIR)/rom/etc/softcenter/perp/.boot
-	install -m 0755 softcenter/perp/.control/perpd.pid $(INSTALLDIR)/rom/etc/softcenter/perp/.control
 	install -m 0755 softcenter/scripts/base.sh $(INSTALLDIR)/rom/etc/softcenter/scripts
 	install -m 0755 softcenter/scripts/dummy_script.sh $(INSTALLDIR)/rom/etc/softcenter/scripts
 	install -m 0755 softcenter/scripts/ks_app_install.sh $(INSTALLDIR)/rom/etc/softcenter/scripts
@@ -119,10 +102,6 @@ ifeq ($(MERLINR_NAME), $(filter $(MERLINR_NAME), K3))
 	install -m 0755 uhmi $(INSTALLDIR)/usr/sbin
 	install -m 0755 weather $(INSTALLDIR)/usr/sbin
 	install -m 0755 wl_cr $(INSTALLDIR)/usr/sbin
-	install -m 0644 cfe.bin $(INSTALLDIR)/rom/cfe/
-endif
-ifeq ($(MERLINR_NAME), $(filter $(MERLINR_NAME), XWR3100))
-	install -m 0644 xwr.bin $(INSTALLDIR)/rom/cfe/
 endif
 	install -m 0755 plugin.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 helper.sh $(INSTALLDIR)/usr/sbin
@@ -148,15 +127,21 @@ else ifeq ($(K3),y)
 	install -m 0755 sysinfo/k3/Tools_Sysinfo.asp $(INSTALLDIR)/www
 else ifeq ($(R7000P),y)
 	install -m 0755 sysinfo/r7000p/Tools_Sysinfo.asp $(INSTALLDIR)/www
-else ifeq ($(or $(R8000P),$(R7900P)),y)
-	install -m 0755 sysinfo/r8000p/Tools_Sysinfo.asp $(INSTALLDIR)/www/www
+else ifeq ($(or $(EA6700),$(DIR868L)),y)
+	install -m 0755 sysinfo/ea6700/Tools_Sysinfo.asp $(INSTALLDIR)/www
 else ifeq ($(HND_ROUTER), y)
 	install -m 0755 sysinfo/Tools_Sysinfo.asp $(INSTALLDIR)/www/www
-else ifeq ($(EA6700),y)
-	install -m 0755 sysinfo/ea6700/Tools_Sysinfo.asp $(INSTALLDIR)/www
 else
 	install -m 0755 sysinfo/Tools_Sysinfo.asp $(INSTALLDIR)/www
 endif
-
+ifeq ($(or $(MERLINR_VER_MAJOR_R),$(MERLINR_VER_MAJOR_X)),y)
+ifeq ($(or $(K3),$(R8500),$(XWR3100),$(TY6201_RTK),$(TY6201_BCM)),y)
+ifeq ($(HND_ROUTER), y)
+	install -m 0755 key.asp $(INSTALLDIR)/www/www
+else
+	install -m 0755 key.asp $(INSTALLDIR)/www
+endif
+endif
+endif
 clean:
 
