@@ -70,7 +70,7 @@ export PATH := $(RELEASEDIR)/tools:$(SRCBASE)/ctools:$(PATH)
 #K3C/K3/SBRAC1900P/SBRAC3200P/R7000/R8000/R7900P/R8000P
 export MERLINR_NAME := RTACRH17
 export MERLINR_VER_MAJOR :=B
-export MERLINR_VER_MINOR :=5.1.4b2
+export MERLINR_VER_MINOR :=5.1.4
 export MERLINR_VER := $(MERLINR_VER_MAJOR)$(MERLINR_VER_MINOR)
 export MERLINRVER := $(MERLINR_NAME)_$(MERLINR_VER)
 ifeq ($(MERLINR_NAME), $(filter $(MERLINR_NAME), RTACRH17 RTAX89X))
@@ -2642,6 +2642,20 @@ define RouterOptions
 	if [ "$(SMARTDNS)" = "y" ]; then \
 	sed -i "/RTCONFIG_SMARTDNS/d" $(1); \
 	echo "RTCONFIG_SMARTDNS=y" >>$(1); \
+	fi; \
+	if [ "$(VHT160)" = "y" ]; then \
+		sed -i "/RTCONFIG_VHT160/d" $(1); \
+		echo "RTCONFIG_VHT160=y" >>$(1); \
+	else \
+		sed -i "/RTCONFIG_VHT160/d" $(1); \
+		echo "# RTCONFIG_VHT160 is not set" >>$(1); \
+	fi; \
+	if [ "$(VHT80_80)" = "y" ]; then \
+		sed -i "/RTCONFIG_VHT80_80/d" $(1); \
+		echo "RTCONFIG_VHT80_80=y" >>$(1); \
+	else \
+		sed -i "/RTCONFIG_VHT80_80/d" $(1); \
+		echo "# RTCONFIG_VHT80_80 is not set" >>$(1); \
 	fi; \
 	)
 	$(call platformRouterOptions, $(1))

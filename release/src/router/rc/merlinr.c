@@ -99,12 +99,9 @@ void merlinr_init_done()
 	}
 	doSystem("dbus set softcenter_firmware_version=`nvram get extendno|cut -d \"_\" -f2|cut -d \"-\" -f1|cut -c2-6`");
 #endif
-#if defined(RTCONFIG_QCA)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
 	if(!nvram_get("bl_ver"))
-		nvram_set("bl_ver", "1.0.0.0");
-#elif defined(RTCONFIG_RALINK)
-	if(!nvram_get("bl_ver"))
-		nvram_set("bl_ver", nvram_get("blver"));
+		nvram_set("bl_ver", nvram_safe_get("blver"));
 #elif defined(RTCONFIG_LANTIQ)
 #if !defined(K3C)
 	if(!nvram_get("bl_ver"))
