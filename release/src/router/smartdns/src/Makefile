@@ -28,13 +28,10 @@ else
 CFLAGS +=-O2 -g -Wall -Wstrict-prototypes -fno-omit-frame-pointer -Wstrict-aliasing 
 endif
 CFLAGS +=-I./include -I$(TOP)/openssl/include
-ifeq ($(RTCONFIG_QCA),y)
-LDFLAGS +=-ldl
-endif
 
 CFLAGS += -DBASE_FILE_NAME=\"$(notdir $<)\"
 LDFLAGS +=-L$(TOP)/openssl -lssl -lcrypto
-CFLAGS += -DSMARTDNS_VERION=\"$(MERLINR_VER_MINOR)\"
+CFLAGS += -DSMARTDNS_VERION=\"$(SWRT_VER_MINOR)\"
 CXXFLAGS=-O2 -g -Wall -std=c++11 
 CXXFLAGS +=-Iinclude
 #ifeq ($(STATIC), yes)

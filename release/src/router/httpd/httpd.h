@@ -31,7 +31,7 @@
 #include <dmalloc.h>
 #endif
 #include <rtconfig.h>
-#include "merlinr.h"
+#include "swrt.h"
 
 /* DEBUG DEFINE */
 #define HTTPD_DEBUG             "/tmp/HTTPD_DEBUG"
@@ -87,6 +87,10 @@ struct REPLACE_PRODUCTID_S {
         char *replace_name;
 };
 #endif
+
+struct REPLACE_MODELNAME_S {
+        char *modelname;
+};
 
 #define MIME_EXCEPTION_NOAUTH_ALL 	1<<0
 #define MIME_EXCEPTION_NOAUTH_FIRST	1<<1

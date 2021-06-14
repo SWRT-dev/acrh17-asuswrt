@@ -76,18 +76,9 @@
 #ifdef RTCONFIG_CFGSYNC
 #include <cfg_event.h>
 #endif
-#if defined(K3)
-#include "k3.h"
-#elif defined(R7900P) || defined(R8000P)
-#include "r7900p.h"
-#elif defined(K3C)
-#include "k3c.h"
-#elif defined(SBRAC1900P)
-#include "ac1900p.h"
-#elif defined(SBRAC3200P)
-#include "ac3200p.h"
-#else
-#include "merlinr.h"
+
+#if defined(RTCONFIG_SWRT)
+#include "swrt.h"
 #endif
 #define BCM47XX_SOFTWARE_RESET	0x40		/* GPIO 6 */
 #define RESET_WAIT		2		/* seconds */
@@ -5396,28 +5387,6 @@ static void softcenter_sig_check()
 	}
 }
 #endif
-#if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(SBRAC1900P) || defined(RAX20)
-#if defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
-static void check_auth_code()
-{
-	static int i;
-	if (i==0)
-#if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(RAX20)
-		i=auth_code_check(cfe_nvram_get("et0macaddr"), nvram_get("uuid"));
-#elif defined(SBRAC1900P)
-		i=auth_code_check(cfe_nvram_get("et2macaddr"), nvram_get("uuid"));
-#endif
-	if (i==0){
-		static int count;
-		logmessage(LOGNAME, "*** verify failed, Reboot after %d min ***",((21-count)/2));
-		++count;
-		if (count > 21)
-			doSystem("reboot");
-	}
-}
-#endif
-#endif
-
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 void roamast_check()
 {
@@ -7252,7 +7221,7 @@ wdp:
 	amas_ctl_check();
 #endif
 #ifdef RTCONFIG_CFGSYNC
-#if defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
+#if defined(SWRT_VER_MAJOR_R) || defined(SWRT_VER_MAJOR_X)
 	cfgsync_check();
 #endif
 #endif
@@ -7263,7 +7232,7 @@ wdp:
 	amaslib_check();
 #endif
 #if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(SBRAC1900P) || defined(RAX20)
-#if defined(MERLINR_VER_MAJOR_R) || defined(MERLINR_VER_MAJOR_X)
+#if defined(SWRT_VER_MAJOR_R) || defined(SWRT_VER_MAJOR_X)
 	check_auth_code();
 #endif
 #endif

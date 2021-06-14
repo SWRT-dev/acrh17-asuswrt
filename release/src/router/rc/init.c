@@ -71,6 +71,9 @@
 
 #define SHELL "/bin/sh"
 #define LOGIN "/bin/login"
+#if defined(RTCONFIG_SWRT)
+#include "swrt.h"
+#endif
 
 static int fatalsigs[] = {
 	SIGILL,
@@ -98,9 +101,9 @@ static char *defenv[] = {
 	"HOME=/",
 	//"PATH=/usr/bin:/bin:/usr/sbin:/sbin",
 #ifdef RTCONFIG_LANTIQ
-	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/rom/opt/lantiq/bin:/rom/opt/lantiq/usr/sbin:/jffs/softcenter/bin:/jffs/softcenter/scripts",
+	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/rom/opt/lantiq/bin:/rom/opt/lantiq/usr/sbin",
 #else
-	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin:/jffs/softcenter/bin:/jffs/softcenter/scripts",
+	"PATH=/opt/usr/bin:/opt/bin:/opt/usr/sbin:/opt/sbin:/usr/bin:/bin:/usr/sbin:/sbin",
 #endif
 #ifdef HND_ROUTER
 	"LD_LIBRARY_PATH=/lib:/usr/lib:/lib/aarch64",
@@ -109,10 +112,7 @@ static char *defenv[] = {
 #endif
 #endif
 #ifdef RTCONFIG_LANTIQ
-	"LD_LIBRARY_PATH=/lib:/usr/lib:/opt/lantiq/usr/lib:/opt/lantiq/usr/sbin/:/tmp/wireless/lantiq/usr/lib/:/jffs/softcenter/lib",
-#endif
-#if (!defined(HND_ROUTER) && defined(RTCONFIG_BCMARM)) || defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
-	"LD_LIBRARY_PATH=/lib:/usr/lib:/jffs/softcenter/lib",
+	"LD_LIBRARY_PATH=/lib:/usr/lib:/opt/lantiq/usr/lib:/opt/lantiq/usr/sbin/:/tmp/wireless/lantiq/usr/lib/",
 #endif
 	"SHELL=" SHELL,
 	"USER=root",
@@ -5132,7 +5132,7 @@ int init_nvram(void)
 
 #if defined(RTAC82U)
 	case MODEL_RTAC82U:
-		merlinr_init();
+		swrt_init();
 		nvram_set("boardflags", "0x100"); // although it is not used in ralink driver, set for vlan
 		//nvram_set("vlan1hwname", "et0");  // vlan. used to get "%smacaddr" for compare and find parent interface.
 		//nvram_set("vlan2hwname", "et0");  // vlan. used to get "%smacaddr" for compare and find parent interface.
@@ -9992,7 +9992,9 @@ static void sysinit(void)
 		"/tmp/etc/rc.d",
 #endif
 		"/tmp/var/tmp",
-		"/tmp/etc/dnsmasq.user",	// ssr and adbyby
+#if defined(RTCONFIG_SOFTCENTER)
+		"/tmp/etc/dnsmasq.user",
+#endif
 		NULL
 	};
 	umask(0);
@@ -11135,24 +11137,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			nvram_set("success_start_service", "1");
 			force_free_caches();
 #endif
-#if defined(K3)
-			k3_init_done();
-#elif defined(K3C)
-			k3c_init_done();
-#elif defined(SBRAC1900P)
-			ac1900p_init_done();
-#elif defined(SBRAC3200P)
-			ac3200p_init_done();
-#elif defined(R8000P) || defined(R7900P)
-			r8000p_init_done();
-#elif defined(RTAC68U) && !defined(SBRAC1900P)
-			ac68u_init_done();
-#elif defined(BLUECAVE) && !defined(K3C)
-			lantiq_init_done();
-#else
-			merlinr_init_done();
+#if defined(RTCONFIG_SWRT)
+			swrt_init_done();
 #endif
-
 
 #ifdef RTCONFIG_AMAS
 			nvram_set("start_service_ready", "1");

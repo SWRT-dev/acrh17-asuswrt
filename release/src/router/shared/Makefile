@@ -63,7 +63,7 @@ CFLAGS += -I$(TOP)/libqcsapi_client -I$(TOP)/httpd -I./sysdeps/qtn
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-ifeq ($(or $(MERLINR_VER_MAJOR_R),$(MERLINR_VER_MAJOR_X)),y)
+ifeq ($(or $(SWRT_VER_MAJOR_R),$(SWRT_VER_MAJOR_X)),y)
 LDFLAGS += -L$(TOP)/openssl -lssl -lcrypto
 endif
 

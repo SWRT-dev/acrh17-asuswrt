@@ -1157,11 +1157,6 @@ void start_dnsmasq(void)
 			}
 		}
 #endif
-#if defined(RTCONFIG_SOFTCENTER)
-//anti dns hijacking
-		fprintf(fp, "121.40.153.145 wufan.softcenter.site\n");
-		fprintf(fp, "123.56.45.194 sc.softcenter.site\n");
-#endif
 		fclose(fp);
 	} else
 		perror("/etc/hosts");
@@ -4109,11 +4104,11 @@ start_smartdns(void)
 		logmessage(LOGNAME, "start smartdns failed\n");
 		return;
 	}
-	fprintf(fp, "server-name MerlinR-smartdns\n");
+	fprintf(fp, "server-name SWRT-smartdns\n");
 	fprintf(fp, "conf-file /etc/blacklist-ip.conf\n");
 	fprintf(fp, "conf-file /etc/whitelist-ip.conf\n");
 	//fprintf(fp, "conf-file /etc/seconddns.conf\n");
-	fprintf(fp, "bind [::]:9053\n");
+	fprintf(fp, "bind [::]:9053 -group master\n");
 	//fprintf(fp, "bind-tcp [::]:5353\n");
 	fprintf(fp, "cache-size 9999\n");
 	//fprintf(fp, "prefetch-domain yes\n");
@@ -4130,17 +4125,17 @@ start_smartdns(void)
 	//fprintf(fp, "log-file /var/log/smartdns.log\n");
 	//fprintf(fp, "log-size 128k\n");
 	//fprintf(fp, "log-num 2\n");
-#if !defined(K3C) && !defined(K3) && !defined(SBRAC1900P) && !defined(SBRAC3200P) && !defined(R8000P)
+#if !defined(K3) && !defined(R8000P) && !defined(R7000P) && !defined(XWR3100)
 	if(!strncmp(nvram_get("territory_code"), "CN",2)){
 #endif
-		fprintf(fp, "server 114.114.114.114\n");
-		fprintf(fp, "server 119.29.29.29\n");
-		fprintf(fp, "server 223.5.5.5\n");
-#if !defined(K3C) && !defined(K3) && !defined(SBRAC1900P) && !defined(SBRAC3200P) && !defined(R8000P)
+		fprintf(fp, "server 114.114.114.114 -group master\n");
+		fprintf(fp, "server 119.29.29.29 -group master\n");
+		fprintf(fp, "server 223.5.5.5 -group master\n");
+#if !defined(K3) && !defined(R8000P) && !defined(R7000P) && !defined(XWR3100)
 	} else {
-		fprintf(fp, "server 8.8.8.8\n");
-		fprintf(fp, "server 208.67.222.222\n");
-		fprintf(fp, "server 1.1.1.1\n");
+		fprintf(fp, "server 8.8.8.8 -group master\n");
+		fprintf(fp, "server 208.67.222.222 -group master\n");
+		fprintf(fp, "server 1.1.1.1 -group master\n");
 	}
 #endif
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
@@ -4158,7 +4153,7 @@ start_smartdns(void)
 		if (!*wan_dns && !*wan_xdns)
 			continue;
 		foreach(tmp, (*wan_dns ? wan_dns : wan_xdns), next)
-			fprintf(fp, "server %s\n", tmp);
+			fprintf(fp, "server %s -group master\n", tmp);
 	}
 	//fprintf(fp, "server %s\n", nvram_get("wan_dns1_x"));
 	//fprintf(fp, "server %s\n", nvram_get("wan_dns2_x"));
@@ -13790,87 +13785,138 @@ void setup_leds()
 
 	model = get_model();
 
+/*** Disable ***/
 	if (nvram_get_int("led_disable") == 1) {
-		if ((model == MODEL_RTAC56U) || (model == MODEL_RTAC56S) ||
-		    (model == MODEL_RTAC68U) || (model == MODEL_RTAC87U) ||
-		    (model == MODEL_RTAC3200) || (model == MODEL_RTAC88U) ||
-		    (model == MODEL_RTAC3100) || (model == MODEL_RTAC5300) ||
-#if defined(GTAC5300)
-			(model == MODEL_GTAC5300) || 
-#endif
-		    (model == MODEL_RTAC86U)) {
-			setAllLedOff();
-			if (model == MODEL_RTAC87U)
-				led_control_atomic(LED_5G, LED_OFF);
-		} else {        // TODO: Can other routers also use the same code?
-			led_control_atomic(LED_2G, LED_OFF);
-			led_control_atomic(LED_5G, LED_OFF);
-			led_control_atomic(LED_POWER, LED_OFF);
-			led_control_atomic(LED_SWITCH, LED_OFF);
-#if !defined(HND_ROUTER) 
-			led_control_atomic(LED_LAN, LED_OFF);
-#endif
-#ifdef RTCONFIG_LAN4WAN_LED
-			led_control_atomic(LED_LAN1, LED_OFF);
-			led_control_atomic(LED_LAN2, LED_OFF);
-			led_control_atomic(LED_LAN3, LED_OFF);
-			led_control_atomic(LED_LAN4, LED_OFF);
-#endif
-			led_control_atomic(LED_WAN, LED_OFF);
-		}
+		setAllLedOff();
+		nvram_set("AllLED", "0");
 #ifdef RTCONFIG_USB
 		stop_usbled();
-		led_control_atomic(LED_USB, LED_OFF);
 #endif
-
 	} else {
+/*** Enable ***/
+		nvram_set("AllLED", "1");
+#if defined(RTCONFIG_SWRT_LED)
+#if defined(XWR3100)
+		LanWanLedCtrl();
+#endif
+		swrt_ledon();
+		return;
+#endif
+		led_control(LED_POWER, LED_ON);
+
 #ifdef RTCONFIG_USB
 		start_usbled();
 #endif
 #ifdef RTCONFIG_LED_ALL
-		led_control_atomic(LED_ALL, LED_ON);
+		led_control(LED_ALL, LED_ON);
 #endif
 
-/* LAN */
-#if defined(HND_ROUTER) && defined(RTCONFIG_LAN4WAN_LED)
-		setLANLedOn();
-#endif
 
-/* WAN */
-#if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
-#ifndef HND_ROUTER
+/* WAN/LAN */
+#if defined(RTAC3200) || defined(RTCONFIG_BCM_7114)
 		eval("et", "-i", "eth0", "robowr", "0", "0x18", "0x01ff");
 		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01ff");
-#else
+#elif defined(HND_ROUTER)
+#ifndef GTAC2900
 		led_control(LED_WAN_NORMAL, LED_ON);
 #endif
+		setLANLedOn();
 #else
 		eval("et", "robowr", "0", "0x18", "0x01ff");
 		eval("et", "robowr", "0", "0x1a", "0x01ff");
 #endif
 
-/* Wifi */
-		if (nvram_match("wl1_radio", "1")
-#if defined(RTAC3200) || defined(RTAC5300)
-		    || nvram_match("wl2_radio", "1")
+#if defined(GTAX11000) || defined(GTAXE11000)
+#ifdef RTCONFIG_EXTPHY_BCM84880
+		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x7fff0", "0x1");
+		eval("ethctl", "phy", "ext", EXTPHY_ADDR_STR, "0x1a832", "0x6");
 #endif
-		   ) {
-			led_control_atomic(LED_5G_FORCED, LED_ON);
-		}
-		if (nvram_match("wl0_radio", "1")) {
-			led_control_atomic(LED_2G, LED_ON);
-		}
-#ifdef RTCONFIG_QTN
-		setAllLedOn_qtn();
 #endif
-		led_control_atomic(LED_SWITCH, LED_ON);
-		led_control_atomic(LED_POWER, LED_ON);
 
-#if defined(RTAC3200) || defined(RTAC88U) || defined(RTAC3100) || defined(RTAC5300)
+#ifdef RTCONFIG_LAN4WAN_LED
+		LanWanLedCtrl();
+#endif
+#ifdef RTAC87U
+		qcsapi_wifi_run_script("router_command.sh", "lan4_led_ctrl on");
+#endif
 		kill_pidfile_s("/var/run/wanduck.pid", SIGUSR2);
+
+/* Wifi */
+		if (nvram_match("wl0_radio", "1")) {
+#ifdef RTAC68U
+			eval("wl", "ledbh", "10", "7");
+#elif defined(RTAC3200)
+			eval("wl", "-i", "eth2", "ledbh", "10", "7");
+#elif defined(RTCONFIG_BCM_7114) || defined(RTAC86U)
+#if defined(R7000P) || defined(R8500)
+			led_control(LED_2G, LED_ON);
+#else
+			eval("wl", "ledbh", "9", "7");
+#endif
+#elif defined(RTAX88U) || defined(GTAX11000)
+			eval("wl", "-i", "eth6", "ledbh", "15", "7");
+#elif defined(RTAX58U) || defined(RTAX56U)
+			eval("wl", "-i", "eth5", "ledbh", "0", "25");
+#elif defined(RTAX86U)
+			eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(GTAC2900)
+			eval("wl", "ledbh", "9", "1");
+#endif
+		}
+
+		if (nvram_match("wl1_radio", "1")) {
+#ifdef RTAC68U
+			eval("wl", "-i", "eth2", "ledbh", "10", "7");
+#elif defined(RTAC3200)
+			eval("wl", "ledbh", "10", "7");
+#elif defined(RTAC86U)
+			eval("wl", "-i", "eth6", "ledbh", "9", "7");
+#elif defined(GTAC2900)
+			eval("wl", "-i", "eth6", "ledbh", "9", "1");
+#elif defined(RTCONFIG_BCM_7114)
+#if defined(R7000P) || defined(R8500)
+			led_control(LED_5G, LED_ON);
+#else
+			eval("wl", "-i", "eth2", "ledbh", "9", "7");
+#endif
+#elif defined(RTAC87U)
+			qcsapi_wifi_run_script("router_command.sh", "wifi_led_on");
+			qcsapi_led_set(1, 1);
+#elif defined(RTAX88U) || defined(RTAX86U) || defined(GTAX11000)
+			eval("wl", "-i", "eth7", "ledbh", "15", "7");
+#elif defined(RTAX58U)
+			eval("wl", "-i", "eth6", "ledbh", "15", "7");
+#elif defined(RTAX56U)
+			eval("wl", "-i", "eth6", "ledbh", "0", "25");
+#endif
+		}
+
+#if defined(RTAC3200) || defined(RTAC5300) || defined(GTAX11000)
+		if (nvram_match("wl2_radio", "1")) {
+#if defined(RTAC3200)
+			eval("wl", "-i", "eth3", "ledbh", "10", "7");
+#elif defined(RTAC5300)
+#if defined(R8500)
+			led_control(LED_5G2, LED_ON);
+#else
+			eval("wl", "-i", "eth3", "ledbh", "9", "7");
+#endif
+#elif defined(GTAX11000)
+			eval("wl", "-i", "eth8", "ledbh", "15", "7");
+#endif
+		}
+#endif
+
+#ifdef RTCONFIG_LOGO_LED
+		led_control(LED_LOGO, LED_ON);
 #endif
 	}
+
+#if defined(RTCONFIG_RGBLED)
+	start_aurargb();
+#endif
 }
+
 
 // Takes one argument:  0 = update failure
 //                      1 (or missing argument) = update success
@@ -15295,7 +15341,9 @@ int start_cfgsync(void)
 	char *cfg_client_argv[] = {"cfg_client", NULL};
 	pid_t pid;
 	int ret = 0;
-
+#if defined(SWRT_VER_MAJOR_B)
+	return 0;
+#endif
 #ifdef RTCONFIG_MASTER_DET
 	if (nvram_match("cfg_master", "1") && (!repeater_mode() && !mediabridge_mode()))
 #else

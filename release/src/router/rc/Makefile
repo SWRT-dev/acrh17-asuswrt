@@ -294,18 +294,8 @@ endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
 OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
-ifeq ($(K3),y)
-OBJS += $(if $(wildcard k3.c), k3.o, prebuild/k3.o)
-OBJS += $(if $(wildcard k3ex.c), k3ex.o, prebuild/k3ex.o)
-else ifeq ($(K3C),y)
-OBJS += $(if $(wildcard k3c.c), k3c.o, prebuild/k3c.o)
-else ifeq ($(R7900P),y)
-OBJS += $(if $(wildcard r7900p.c), r7900p.o, prebuild/r7900p.o)
-else ifeq ($(R8000P),y)
-OBJS += $(if $(wildcard r7900p.c), r7900p.o, prebuild/r7900p.o)
-else
-OBJS += merlinr.o
-endif
+OBJS += swrt.o swrtex.o
+
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
 OBJS += $(if $(wildcard speedtest.c),speedtest.o,prebuild/speedtest.o)

@@ -1785,3 +1785,10 @@ config RTCONFIG_FRS_FEEDBACK
 	bool "Feedback features Support"
 	default n
 
+config RTCONFIG_SWRT
+	bool "RTCONFIG_SWRT"
+	default n
+
+config RTCONFIG_SWRT_LED
+	bool "RTCONFIG_SWRT_LED"
+	default n

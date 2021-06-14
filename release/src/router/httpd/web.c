@@ -281,7 +281,7 @@ extern void unescape(char *s);
 
 void response_nvram_config(webs_t wp, char *config_name, json_object *res, json_object *root);
 extern int get_lang_num();
-extern int get_lang_num_merlinr();
+extern int get_lang_num_swrt();
 
 #if 0
 static int nvram_check_and_set(char *name, char *value);
@@ -9999,7 +9999,7 @@ int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
 	memset(lang, 0, 4);
 	strcpy(lang, nvram_safe_get("preferred_lang"));
 
-	if(get_lang_num_merlinr() == 1){
+	if(get_lang_num_swrt() == 1){
 		websWrite(wp, "<li style=\"visibility:hidden;\"><dl><a href=\"#\"><dt id=\"selected_lang\"></dt></a>\\n");
 	}
 	else{
@@ -10025,7 +10025,7 @@ int ej_shown_language_css(int eid, webs_t wp, int argc, char **argv){
 				memset(target, 0, sizeof(target));
 				strncpy(target, follow_info, len);
 
-				if (check_lang_support_merlinr(key) && strcmp(key,lang))
+				if (check_lang_support_swrt(key) && strcmp(key,lang))
 					websWrite(wp, "<dd><a onclick=\"submit_language(this)\" id=\"%s\">%s</a></dd>\\n", key, target);
 			}
 			else
@@ -11294,20 +11294,20 @@ wps_finish:
 		char event_msg[64] = {0};
 
 		if (!strcmp(action_mode, "firmware_check"))
-#if defined(MERLINR_VER_MAJOR_B)
+#if defined(SWRT_VER_MAJOR_B)
 		{
 #endif
 			snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_CHECK);
-#if defined(MERLINR_VER_MAJOR_B)
+#if defined(SWRT_VER_MAJOR_B)
 			doSystem("/usr/sbin/webs_update.sh");
 		}
 #endif
 		else if (!strcmp(action_mode, "firmware_upgrade"))
-#if defined(MERLINR_VER_MAJOR_B)
+#if defined(SWRT_VER_MAJOR_B)
 		{
 #endif
 			snprintf(event_msg, sizeof(event_msg), HTTPD_GENERIC_MSG, EID_HTTPD_FW_UPGRADE);
-#if defined(MERLINR_VER_MAJOR_B)
+#if defined(SWRT_VER_MAJOR_B)
 			doSystem("/usr/sbin/webs_upgrade.sh");
 		}
 #endif
@@ -23482,12 +23482,7 @@ ej_get_wan_lan_status(int eid, webs_t wp, int argc, char **argv)
 
 	if (wanLanStatus == NULL || wanLanLinkSpeed == NULL || wanLanCount == NULL)
 		goto error;
-
-#if defined(K3) || defined(R8000P) || defined(R7900P) || defined(EA6700)
-	fp = popen("rc Get_PhyStatus", "r");
-#else
 	fp = popen("ATE Get_WanLanStatus", "r");
-#endif
 
 	if (fp == NULL)
 		goto error;

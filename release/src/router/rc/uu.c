@@ -1,5 +1,5 @@
 #include "rc.h"
-#include "merlinr.h"
+#include "swrt.h"
 
 void start_uu(void)
 {
@@ -12,7 +12,7 @@ void start_uu(void)
 
 	if(nvram_get_int("uu_enable"))
 #if defined(R8000P) || defined(RTAC3200) || defined(RTAC3100) || defined(EA6700) || defined(RAX20) || defined(SBRAC1900P) || defined(R7000P) || defined(RMAC2100) || defined(TY6201_BCM) || defined(TY6201_RTK)
-		exec_uu_merlinr();
+		exec_uu_swrt();
 #else
 		exec_uu();
 #endif
