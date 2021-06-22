@@ -494,3 +494,5 @@ define platformKernelConfig
 	fi; \
 	)
 endef
+
+export PARALLEL_BUILD := -j$(shell grep -c '^processor' /proc/cpuinfo)

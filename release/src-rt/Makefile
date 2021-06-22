@@ -67,13 +67,9 @@ export SRCBASEDIR := $(shell pwd | sed 's/.*release\///g')
 RELEASEDIR := $(shell (cd $(SRC_ROOT)/.. && pwd -P))
 export PATH := $(RELEASEDIR)/tools:$(SRCBASE)/ctools:$(PATH)
 
-#K3C/K3/SBRAC1900P/SBRAC3200P/R7000/R8000/R7900P/R8000P
-export SWRT_NAME := RTACRH17
-export SWRT_VER_MAJOR :=B
-export SWRT_VER_MINOR :=5.1.5
 export SWRT_VER := $(SWRT_VER_MAJOR)$(SWRT_VER_MINOR)
 export SWRTVER := $(SWRT_NAME)_$(SWRT_VER)
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AC82U RT-AX89U RT-AC95U))
+ifeq ($(QCA),y)
 export PATH := /opt/openwrt-gcc463.arm/bin:$(PATH)
 endif
 
@@ -185,10 +181,12 @@ endif
 export MODEL
 export CFLAGS += -D$(MODEL)
 export $(MODEL):=y
+ifneq ($(SWRT_NAME),)
 export CFLAGS += -D$(SWRT_NAME)
-export $(SWRT_NAME)=y
+export $(SWRT_NAME):=y
 export CFLAGS += -DSWRT_VER_MAJOR_$(SWRT_VER_MAJOR)
-export SWRT_VER_MAJOR_$(SWRT_VER_MAJOR)=y
+export SWRT_VER_MAJOR_$(SWRT_VER_MAJOR):=y
+endif
 endif
 
 EXTRA_KERNEL_YES_CONFIGS_1 := $(filter %=y %=Y,$(EXTRA_KERNEL_CONFIGS))
@@ -612,7 +610,7 @@ ifeq ($(IPQ40XX),y)
 		RFSOFFSET=`expr 64 + $${KSIZE} + $${PAD2}` ; \
 		echo "PAD2: $${PAD2}" ; \
 	asustools/mkimage -A $(ARCH) -O linux -T kernel -C lzma -a $(LOADADDR) -e $(ENTRYADDR) -r $${RFSOFFSET} \
-			-n $(BUILD_NAME) -V "$(KERNEL_VER)" "$(FS_VER)" "$(SERIALNO)" "$(EXTENDNO)" "0" "0" "0" "0" "0" "0" \
+			-n $(BUILD_NAME) -V "$(KERNEL_VER)" "$(FS_VER)" "$(SERIALNO)" "$(SWRT_CODEBASE)" "0" "0" "0" "0" "0" "0" \
 			-d image/$(IMGNAME).img image/$(IMGNAME).trx
 else
 	@rm -rf $(PLATFORMDIR)/zImage.lzma ; \
@@ -4150,7 +4148,7 @@ endef
 	$(call save_src_config, RT$@)
 	$(MAKE) bin
 
-brt-% BRT-% rt-% RT-% gt-% GT-% rp-% RP-% ea-% EA-% tm-% TM-% pl-% PL-% ac% map-% MAP-% vzw-% VZW-%:
+brt-% BRT-% rt-% RT-% gt-% GT-% rp-% RP-% ea-% EA-% tm-% TM-% pl-% PL-% ac% map-% MAP-% vzw-% VZW-% swrt-% SWRT-%:
 ifeq ($(REALTEK),y)
 	rm -f include
 	ln -sf include-n66u include
