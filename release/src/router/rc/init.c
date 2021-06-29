@@ -9216,7 +9216,9 @@ int init_nvram(void)
 #ifdef RTCONFIG_PORT2_DEVICE
 	add_rc_support("port2_device");
 #endif
-
+#if defined(RTCONFIG_SWRT_FULLCONE)
+	add_rc_support("swrt_fullcone");
+#endif
 	return 0;
 }
 

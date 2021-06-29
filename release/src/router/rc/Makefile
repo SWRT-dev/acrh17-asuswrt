@@ -282,7 +282,7 @@ ifeq ($(RTCONFIG_DSL),y)
 OBJS += init-ralink-dsl.o
 endif
 else ifeq ($(RTCONFIG_QCA),y)
-OBJS += init-qca.o wps-qca.o qca.o ate-qca.o $(if $(wildcard sysdeps/qca/ctl.c),ctl.obj,prebuild/ctl.obj)
+OBJS += init-qca.o wps-qca.o qca.o ate-qca.o $(if $(wildcard sysdeps/qca/ctl.c),ctl.o,prebuild/ctl.o)
 ifeq ($(RTCONFIG_WIFI_SON),y)
 OBJS += repacd.o
 endif
@@ -294,7 +294,9 @@ endif
 
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
 OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
-OBJS += swrt.o swrtex.o
+
+OBJS += swrt.o
+OBJS += $(if $(wildcard swrtex.c),swrtex.o,prebuild/$(SWRT_NAME)/swrtex.o)
 
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
@@ -347,10 +349,6 @@ endif
 
 ifeq ($(RTCONFIG_TCPLUGIN),y)
 OBJS += qmacc.o
-endif
-
-ifeq ($(RTCONFIG_UUPLUGIN),y)
-OBJS += uu.o
 endif
 
 ifeq ($(or $(RTCONFIG_PPTPD),$(RTCONFIG_ACCEL_PPTPD)),y)

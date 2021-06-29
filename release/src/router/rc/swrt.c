@@ -504,13 +504,38 @@ GODONE:
 	FWUPDATE_DBG("---- firmware check update finish ----");
 	return 0;
 }
-#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_RALINK)
+#ifdef RTCONFIG_UUPLUGIN
+void start_uu(void)
+{
+	stop_uu();
+
+	if(getpid()!=1) {
+		notify_rc("start_uu");
+		return;
+	}
+
+	if(nvram_get_int("uu_enable"))
+#if defined(RTCONFIG_SWRT_UU)
+		exec_uu_swrt();
+#else
+		exec_uu();
+#endif
+}
+
+void stop_uu(void)
+{
+	doSystem("killall uuplugin_monitor.sh");
+	if (pidof("uuplugin") > 0)
+		doSystem("killall uuplugin");
+}
+#endif
+#if defined(RTCONFIG_SWRT_UU)
 void exec_uu_swrt()
 {
 	FILE *fp;
 	char buf[128];
 	int download,i;
-	char *dup_pattern, *g, *gg;
+	char *g, *gg;
 	char p[2][100];
 	if(nvram_get_int("sw_mode") == 1){
 		add_rc_support("uu_accel");
@@ -523,20 +548,15 @@ void exec_uu_swrt()
 				fclose(fp);
 				unlink("/tmp/uu/script_url");
 				i=0;
-				g = dup_pattern = strdup(buf);
-				gg = strtok( g, "," );
-				while (gg != NULL)
-				{
-					if (gg!=NULL){
+				g = strdup(buf);
+				gg = strtok(g, ",");
+				while(gg != NULL){
 						strcpy(p[i], gg);
 						i++;
 						++download;
-						gg = strtok( NULL, "," );
-					}
+						gg = strtok(NULL, ",");
 				}
-				if ( download > 0 )
-				//if ( download == 2 )
-				{
+				if (download > 0){
 					_dprintf("URL: %s\n",p[0]);
 					_dprintf("MD5: %s\n",p[1]);
 					if ( !doSystem("wget -t 2 -T 30 --dns-timeout=120 --header=Accept:text/plain -q --no-check-certificate %s -O /tmp/uu/uuplugin_monitor.sh", p[0]))
@@ -568,7 +588,7 @@ void exec_uu_swrt()
 					}
 				}
 			}
-			free(dup_pattern);
+			free(g);
 		}
 	}
 }

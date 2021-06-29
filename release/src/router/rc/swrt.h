@@ -70,8 +70,12 @@ extern void patch_Factory(void);
 #elif defined(RTAX82U)
 extern void swrt_patch_nvram(void);
 #endif
-#if defined(RTCONFIG_UUPLUGIN)
+#ifdef RTCONFIG_UUPLUGIN
+extern void start_uu(void);
+extern void stop_uu(void);
+#if defined(RTCONFIG_SWRT_UU)
 extern void exec_uu_swrt(void);
+#endif
 #endif
 #if defined(RTCONFIG_FRS_LIVE_UPDATE) 
 extern int swrt_firmware_check_update_main(int argc, char *argv[]);
