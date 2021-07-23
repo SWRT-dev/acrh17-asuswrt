@@ -673,8 +673,8 @@ gen_qca_wifi_cfgs(void)
 	if (!(fp2 = fopen("/tmp/postwifi.sh", "w+")))
 		return;
 
-	fprintf(fp, "#!/bin/sh -p\n");
-	fprintf(fp2, "#!/bin/sh -p\n");
+	fprintf(fp, "#!/bin/sh\n");
+	fprintf(fp2, "#!/bin/sh\n");
 	memset(wl_mask, 0, sizeof(wl_mask));
 	strlcpy(lan_ifnames, nvram_safe_get("lan_ifnames"), sizeof(lan_ifnames));
 

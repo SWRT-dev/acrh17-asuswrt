@@ -593,8 +593,8 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	if (!(fp3 = fopen(path3, "w+")))
 		return 0;
 
-	fprintf(fp2, "#!/bin/sh -p\n");
-	fprintf(fp3, "#!/bin/sh -p\n");
+	fprintf(fp2, "#!/bin/sh\n");
+	fprintf(fp3, "#!/bin/sh\n");
 #ifdef RTCONFIG_WIRELESSREPEATER
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 	snprintf(prefix_wlc, sizeof(prefix_wlc), "wlc%d_", band);
@@ -2385,8 +2385,8 @@ int gen_nl80211_config(int band, int is_iNIC, int subnet)
 	if (!(fp_pre = fopen(prewifi_path, "w+")))
 		return 0;
 
-	fprintf(fp_post, "#!/bin/sh -p\n");
-	fprintf(fp_re, "#!/bin/sh -p\n");
+	fprintf(fp_post, "#!/bin/sh\n");
+	fprintf(fp_re, "#!/bin/sh\n");
 #ifdef RTCONFIG_WIRELESSREPEATER
 	if (sw_mode == SW_MODE_REPEATER && wlc_band == band && nvram_invmatch("wlc_ssid", "") && !subnet) {
 		rep_mode = 1;
