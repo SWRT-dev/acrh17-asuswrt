@@ -1752,7 +1752,7 @@ void init_switch()
 #ifdef CONFIG_BCMWL5
 	// ctf should be disabled when some functions are enabled
 	if ((nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 0) ||
-	    (check_wl_guest_bw_enable()  && (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 2)) ||
+	    (check_wl_guest_bw_enable() || (nvram_get_int("qos_enable") && nvram_get_int("qos_type") == 2)) ||
 	    nvram_get_int("ctf_disable_force")
 #ifndef RTCONFIG_BCMARM
 	|| sw_mode() == SW_MODE_REPEATER
@@ -3603,9 +3603,9 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 		if (nvram_get_int("smart_connect_x") && get_bsd_nonvht_status(unit) && (bss_opmode_cap_reqd < 3))
 			bss_opmode_cap_reqd = 3;				// devices must advertise VHT (11ac) capabilities to be allowed to associate
 #endif
-
+#ifdef RTCONFIG_BCMWL6
 		nvram_set_int(strcat_r(prefix, "bss_opmode_cap_reqd", tmp), bss_opmode_cap_reqd);
-
+#endif
 		if (nvram_match(strcat_r(prefix, "nband", tmp), "2") &&
 			nvram_match(strcat_r(prefix, "nmode", tmp2), "-1"))
 			nvram_set(strcat_r(prefix, "gmode_protection", tmp), "auto");
@@ -3792,8 +3792,12 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 
 #ifdef RTCONFIG_EMF
 		/* Wireless IGMP Snooping */
-		i = nvram_get_int(strcat_r(prefix, "igs", tmp)) || is_psta(unit) || is_psr(unit);
-		nvram_set_int(strcat_r(prefix, "wmf_bss_enable", tmp), i ? 1 : 0);
+		i = nvram_get_int(strcat_r(prefix, "igs", tmp));
+		nvram_set_int(strcat_r(prefix, "wmf_bss_enable", tmp), i
+#ifdef RTCONFIG_PROXYSTA
+				|| is_psta(unit) || is_psr(unit)
+#endif
+		       		? 1 : 0);
 #ifdef RTCONFIG_BCMWL6
 		nvram_set_int(strcat_r(prefix, "wmf_ucigmp_query", tmp), 1);
 		nvram_set_int(strcat_r(prefix, "wmf_mdata_sendup", tmp), 1);
@@ -3837,8 +3841,10 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 			|| is_psta(unit) || is_psr(unit)
 #endif
-		)
-			nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+		) {
+			if (!nvram_get_int(strcat_r(prefix, "mfp", tmp)))
+				nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+		}
 #endif
 
 		dbG("bw: %s\n", nvram_safe_get(strcat_r(prefix, "bw", tmp)));
@@ -3920,8 +3926,10 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 				|| is_psta(unit) || is_psr(unit)
 #endif
-			)
-				nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+			) {
+				if (!nvram_get_int(strcat_r(prefix2, "mfp", tmp)))
+					nvram_set_int(strcat_r(prefix, "mfp", tmp), 1);
+			}
 #endif
 		}
 		else
@@ -5045,7 +5053,10 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				if (switch_stb <= 6) {
 					/* Add wan bridge */
 					eval("brctl", "addbr", "br1");
-					eval("brctl", "stp", "br1", "on");
+					eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "1",  "-m", "0");
+					eval("bcmmcastctl", "mode", "-i",  "br1",  "-p", "2",  "-m", "0");
+					if (!nvram_match("switch_wantag", "unifi_home"))
+						eval("brctl", "stp", "br1", "on");
 					eval("ifconfig", "br1", "up");
 					eval("brctl", "addif", "br1", "eth0.v0");
 					set_wan_phy("");
@@ -5231,6 +5242,8 @@ _dprintf("*** Multicast IPTV: config Singtel TR069 on wan port ***\n");
 				eval("vlanctl", "--if", ethPort1, "--tx", "--tags", "1", "--filter-vid", vlan_entry, "0", "--filter-txif", vlanDev1, "--pop-tag", "--rule-append");
 				eval("ifconfig", vlanDev1, "allmulti", "up");
 				eval("brctl", "addif", "br1", vlanDev1);
+				if (nvram_match("switch_wantag", "unifi_home"))
+					eval("ethswctl", "-c", "hwstp",  "-i",  vlanDev1, "-o",  "disable");
 			}
 		}
 		else if (nvram_match("switch_stb_x", "5") && nvram_match("switch_wantag", "none")) {
@@ -6972,9 +6985,9 @@ void set_acs_ifnames()
 #endif
 
 	nvram_set_int("wl0_acs_dfs", 0);
-	nvram_set_int("wl1_acs_dfs", nvram_match("wl1_reg_mode", "h") ? 2 : 0);
+	nvram_set_int("wl1_acs_dfs", nvram_match("wl1_reg_mode", "h") ? 1 : 0);
 #if defined(RTAC3200) || defined(RTAC5300) || defined(GTAC5300)
-	nvram_set_int("wl2_acs_dfs", nvram_match("wl2_reg_mode", "h") ? 2 : 0);
+	nvram_set_int("wl2_acs_dfs", nvram_match("wl2_reg_mode", "h") ? 1 : 0);
 #endif
 }
 #endif

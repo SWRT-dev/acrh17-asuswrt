@@ -38,7 +38,6 @@
 #include <shutils.h>
 #include <shared.h>
 
-#ifdef RTCONFIG_ODMPID
 struct REPLACE_PRODUCTID_S replace_productid_t[] =
 {
 	{"LYRA_VOICE", "LYRA VOICE"},
@@ -48,7 +47,7 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"RT-AC1500G_PLUS", "RT-AC1500G PLUS"},
 	{NULL, NULL}
 };
-#endif
+
 struct REPLACE_MODELNAME_S replace_modelname_t[] = {
 	{ "K3C" },//Must be before k3
 	{ "K3" },
@@ -166,8 +165,7 @@ process_asp (char *s, char *e, FILE *f)
 	return end;
 }
 
-#ifdef RTCONFIG_ODMPID
-static void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
+extern void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 
 	struct REPLACE_PRODUCTID_S *p;
 
@@ -186,7 +184,7 @@ static void replace_productid(char *GET_PID_STR, char *RP_PID_STR, int len){
 			*RP_PID_STR = ' ';
 	}
 }
-#endif
+
 extern int replace_modelname(char *GET_PID_STR, char *RP_PID_STR, int len){
 
 	struct REPLACE_MODELNAME_S *p;
@@ -219,7 +217,6 @@ translate_lang (char *s, char *e, FILE *f, kw_t *pkw)
 
 		desc = search_desc (pkw, name);
 		if (desc != NULL) {
-#ifdef RTCONFIG_ODMPID
 			static char pattern1[2048];
 			char RP_PID_STR[32];
 			char GET_PID_STR[32]={0};
@@ -256,7 +253,7 @@ translate_lang (char *s, char *e, FILE *f, kw_t *pkw)
 					desc = pattern1;
 				}
 			}
-#endif
+
 			fprintf (f, "%s", desc);
 		}
 
@@ -317,10 +314,12 @@ do_ej(char *path, FILE *stream)
 		if (((pattern + pattern_size) - end_pat) < frag_size)
 		{
 			len = end_pat - start_pat;
-			memcpy (pattern, start_pat, len);
-			start_pat = pattern;
-			end_pat = start_pat + len;
-			*end_pat = '\0';
+			if(len < pattern_size){
+				memcpy (pattern, start_pat, len);
+				start_pat = pattern;
+				end_pat = start_pat + len;
+				*end_pat = '\0';
+			}
 		}
 
 		read_len = (pattern + pattern_size) - end_pat;

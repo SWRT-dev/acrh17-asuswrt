@@ -122,11 +122,11 @@ var flag = '<% get_parameter("flag"); %>';
 var realip_state = "";
 
 var StatusList = {
-	"NoInetrnet": "Internet is disconnected. Please check your WAN connection for remote control",
-	"SvrFail": "Server connection failed",
-	"StepAccount": "Please follow steps to pair your account",
+	"NoInetrnet": "<#Alexa_Status_Disconnect#>",
+	"SvrFail": "<#Alexa_Server_Failed#>",
+	"StepAccount": "<#Alexa_Status_Account#>",
 	"EnableRemoteCtrl": "<#Alexa_Register1#>",
-	"Success": "Amazon Alexa account is registered"
+	"Success": "<#Alexa_Registered#>"
 }
 
 var AccLinkStatus = {
@@ -347,7 +347,7 @@ function show_account_state(){
 
 	var RetDDNSstatus = function(){
 
-		if(AccLinkStatus.RemoteStatus.ddns_enable_x == '0' || AccLinkStatus.RemoteStatus.ddns_hostname_x == '' || AccLinkStatus.RemoteStatus.misc_http_x == '0')
+		if(!check_ddns_status() || AccLinkStatus.RemoteStatus.misc_http_x == '0')
 			return false;
 		else
 			return true;

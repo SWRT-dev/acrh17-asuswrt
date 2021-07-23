@@ -20,6 +20,9 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <style type="text/css">
+*{
+    box-sizing: content-box;
+}
 .contentM_upload{
 	position:absolute;
 	-webkit-border-radius: 5px;
@@ -61,6 +64,7 @@ var wans_mode ='<% nvram_get("wans_mode"); %>';
 var no_phddns = isSupport("no_phddns");
 
 var ddns_return_code = '<% nvram_get_ddns("LANHostConfig","ddns_return_code"); %>';
+var ddns_return_code_chk = '<% nvram_get("ddns_return_code_chk"); %>';
 var ddns_old_name = '<% nvram_get("ddns_hostname_old"); %>';
 var ddns_server_x = '<% nvram_get("ddns_server_x"); %>';
 var ddns_enable_x = '<% nvram_get("ddns_enable_x"); %>';
@@ -69,6 +73,10 @@ var http_enable = '<% nvram_get("http_enable"); %>';
 var httpd_cert_info = [<% httpd_cert_info(); %>][0];
 var orig_le_enable = '<% nvram_get("le_enable"); %>';
 var le_state = '<% nvram_get("le_state"); %>';
+var ddnsStatus = getDDNSState(ddns_return_code_chk, ddns_hostname_x_t, ddns_old_name);
+var deregister_fail = 0;
+var cur_wan_ipaddr = wanlink_ipaddr();
+var inadyn = isSupport("inadyn");
 
 function init(){
 	show_menu();
@@ -85,7 +93,7 @@ function init(){
 		}
 	}
 
-	setTimeout(show_warning_message, 100);
+	setTimeout(show_warning_message, 1000);
 
 	ASUS_EULA.config(applyRule, refreshpage);
 	if(ddns_enable_x == "1" && ddns_server_x == "WWW.ASUS.COM"){
@@ -116,7 +124,7 @@ function show_warning_message(){
 				setTimeout("get_real_ip();", 3000);
 		}
 		else if(realip_state != "2"){
-			if(validator.isPrivateIP(wanlink_ipaddr()))
+			if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
 				showhide("wan_ip_hide2", 1);
 			else
 				showhide("wan_ip_hide2", 0);
@@ -128,7 +136,7 @@ function show_warning_message(){
 				showhide("wan_ip_hide2", 0);
 		}
 	}
-	else if(validator.isPrivateIP(wanlink_ipaddr()))
+	else if(cur_wan_ipaddr == "0.0.0.0" || validator.isPrivateIP(cur_wan_ipaddr))
 		showhide("wan_ip_hide2", 1);
 }
 
@@ -148,11 +156,11 @@ function get_real_ip(){
 
 function submitForm(){
 	if(letsencrypt_support){
-		if(document.form.ddns_enable_x.value == "1" && document.form.le_enable.value == "1"){
+		if($("input[name='ddns_enable_x']:checked").val() == "1" && $("input[name='le_enable']:checked").val() == "1"){
 			document.form.action_wait.value = "10";
 			document.form.action_script.value = "restart_ddns_le";
 		}
-		else if(http_enable != "0" && document.form.le_enable.value != orig_le_enable){
+		else if(http_enable != "0" && $("input[name='le_enable']:checked").val() != orig_le_enable){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
 				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
@@ -189,11 +197,6 @@ function force_update() {
 }
 
 function ddns_load_body(){
-	/* MODELDEP */
-	if(based_modelid == "AC2900"){	//MODELDEP: AC2900(RT-AC86U)
-		document.getElementById('ASUSOption').outerHTML = "";
-	}	
-
     if(ddns_enable_x == 1){
         inputCtrl(document.form.ddns_server_x, 1);
         document.getElementById('ddns_hostname_tr').style.display = "";
@@ -246,16 +249,31 @@ function ddns_load_body(){
    
     hideLoading();
 
-	if(ddns_enable_x == "1")
+	if(ddns_enable_x == "1" && !deregister_fail)
 	{
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
-		if(ddnsHint != "")
+		if(ddnsHint != ""){
 			alert(ddnsHint);
-		if(ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230'){
+			document.getElementById("ddns_result").innerHTML = ddnsHint;
+			document.getElementById('ddns_result_tr').style.display = "";
+		}
+
+		if((ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230') ||
+		   (ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 			showhide("wan_ip_hide2", 0);
 			if(ddns_server_x == "WWW.ASUS.COM"){
 				showhide("wan_ip_hide3", 1);
+				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
+				if(inadyn)
+					$("#deregister_btn").css("display", "inline");
+			}
+		}
+		else{
+			if(ddns_server_x == "WWW.ASUS.COM"){
+				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
+				if(ddnsStatus != "")
+					$("#ddns_status_detail").css("display", "inline");
 			}
 		}
 	}
@@ -330,7 +348,7 @@ function validForm(){
 			}else if(!validator.string(document.form.ddns_hostname_x)){
 				return false;
 			}
-			
+			if(document.form.ddns_server_x.value != "CUSTOM"){             // Not CUSTOM
 			if(document.form.ddns_username_x.value == ""){
 				alert("<#QKSet_account_nameblank#>");
 				document.form.ddns_username_x.focus();
@@ -347,6 +365,7 @@ function validForm(){
 				return false;
 			}else if(!validator.string(document.form.ddns_passwd_x)){
 				return false;
+			}
 			}
 			
 			if(document.form.ddns_regular_period.value < 30){
@@ -441,13 +460,119 @@ function onSubmitApply(s){
 	return true;
 }
 
+function change_ddns_setting(v){
+	document.getElementById("ddns_result_tr").style.display = "none";
+	document.getElementById("ddns_status_tr").style.display = "none";
+	if(inadyn)
+		$("#deregister_btn").css("display", "none");
+	if (v == "WWW.ASUS.COM"){
+			document.getElementById("ddns_hostname_info_tr").style.display = "none";
+			document.getElementById("ddns_hostname_tr").style.display="";
+			document.form.ddns_hostname_x.parentNode.style.display = "none";
+			document.form.DDNSName.parentNode.style.display = "";
+			var ddns_hostname_title = ddns_hostname_x_t.substring(0, ddns_hostname_x_t.indexOf('.asuscomm.com'));
+			if(ddns_hostname_x_t != '' && ddns_hostname_title)
+					document.getElementById("DDNSName").value = ddns_hostname_title;
+			else
+					document.getElementById("DDNSName").value = "<#asusddns_inputhint#>";
+
+			inputCtrl(document.form.ddns_username_x, 0);
+			inputCtrl(document.form.ddns_passwd_x, 0);
+			document.form.ddns_wildcard_x[0].disabled= 1;
+			document.form.ddns_wildcard_x[1].disabled= 1;
+			showhide("link", 0);
+			showhide("linkToHome", 0);
+			showhide("wildcard_field",0);
+			document.form.ddns_regular_check.value = 0;
+			showhide("check_ddns_field", 0);
+			inputCtrl(document.form.ddns_regular_period, 0);
+			showhide("customnote", 0);
+			showhide("need_custom_scripts", 0);
+			document.getElementById("ddns_status_tr").style.display = "";
+
+			if(ddns_enable_x == "1" && ddns_server_x_t == "WWW.ASUS.COM" &&
+				(ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
+				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
+				if(inadyn)
+					$("#deregister_btn").css("display", "inline");
+			}
+			else
+				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
+	}
+	else if (v == "CUSTOM"){
+			document.form.ddns_hostname_x.parentNode.style.display = "";
+			document.form.DDNSName.parentNode.style.display = "none";
+			inputCtrl(document.form.ddns_username_x, 0);
+			inputCtrl(document.form.ddns_passwd_x, 0);
+			document.form.ddns_wildcard_x[0].disabled= 1;
+			document.form.ddns_wildcard_x[1].disabled= 1;
+			showhide("customnote", 1);
+			showhide("link", 0);
+			showhide("linkToHome", 0);
+			showhide("wildcard_field",0);
+			showhide("check_ddns_field", 0);
+			if (('<% nvram_get("jffs2_enable"); %>' != '1') || ('<% nvram_get("jffs2_scripts"); %>' != '1'))
+				showhide("need_custom_scripts", 1);
+			else
+			showhide("need_custom_scripts", 0);
+	}
+	else if( v == "WWW.ORAY.COM"){
+		document.getElementById("ddns_hostname_tr").style.display="none";
+		inputCtrl(document.form.ddns_username_x, 1);
+		inputCtrl(document.form.ddns_passwd_x, 1);
+		document.form.ddns_wildcard_x[0].disabled= 1;
+		document.form.ddns_wildcard_x[1].disabled= 1;
+		showhide("link", 1);
+		showhide("linkToHome", 0);
+		showhide("wildcard_field",0);
+		document.form.ddns_regular_check.value = 0;
+		showhide("check_ddns_field", 0);
+		inputCtrl(document.form.ddns_regular_period, 0);
+	}
+	else{
+			document.getElementById("ddns_hostname_info_tr").style.display = "none";
+			document.getElementById("ddns_hostname_tr").style.display="";
+			document.form.ddns_hostname_x.parentNode.style.display = "";
+			document.form.DDNSName.parentNode.style.display = "none";
+			inputCtrl(document.form.ddns_username_x, 1);
+			inputCtrl(document.form.ddns_passwd_x, 1);
+			if(v == "WWW.TUNNELBROKER.NET" || v == "WWW.SELFHOST.DE" || v == "DOMAINS.GOOGLE.COM")
+				var disable_wild = 1;
+			else
+				var disable_wild = 0;
+			document.form.ddns_wildcard_x[0].disabled= disable_wild;
+			document.form.ddns_wildcard_x[1].disabled= disable_wild;
+			if(v == "WWW.ZONEEDIT.COM" || v == "DOMAINS.GOOGLE.COM"){
+				showhide("link", 0);
+				showhide("linkToHome", 1);
+			}
+			else{
+				showhide("link", 1);
+				showhide("linkToHome", 0);
+			}
+
+			showhide("wildcard_field",!disable_wild);
+			showhide("check_ddns_field", 1);
+			showhide("customnote", 0);
+			showhide("need_custom_scripts", 0);
+			if(document.form.ddns_regular_check.value == 0)
+				inputCtrl(document.form.ddns_regular_period, 0);
+			else
+				inputCtrl(document.form.ddns_regular_period, 1);
+	}
+
+	if(letsencrypt_support){
+		document.getElementById("le_crypt").style.display = "";
+	}
+}
+
 function change_cert_method(cert_method){
 	var html_code = "";
 	if(letsencrypt_support){
 		if(cert_method === undefined){
 			//Let's encrypt default on
 			if(ddns_server_x_t != document.form.ddns_server_x.value && orig_le_enable == "0")
-				cert_method = "1";
+				cert_method = "0";
 			else
 				cert_method = orig_le_enable;
 
@@ -524,19 +649,24 @@ function hide_upload_window(){
 
 function show_cert_details(){
 	if(httpd_cert_info.issueTo != "" && httpd_cert_info.issueBy != "" && httpd_cert_info.expire != ""){
-		if(orig_le_enable == "1" && le_state == "0" && httpd_cert_info.issueBy.indexOf("Let's Encrypt") == -1){
-			document.getElementById("cert_status").innerHTML = "<#upgrade_processing#>";
+		if(orig_le_enable == "1" && le_state == "0"){
+			if(httpd_cert_info.issueBy.indexOf("Let's Encrypt") == -1)
+				document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
+			else
+				document.getElementById("cert_status").innerHTML = "<#upgrade_processing#>";
+			setTimeout("get_cert_info();", 1000);
 		}
-		else
-			document.getElementById("cert_status").innerHTML = "<#CTL_ok#>";
+		else{
+			document.getElementById("cert_status").innerHTML = "<#Status_Active#>";
+			document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
+			document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
+			document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
+		}
 	}
 	else{
-		document.getElementById("cert_status").innerHTML = "Authorizing";
+		document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
 		setTimeout("get_cert_info();", 1000);
 	}
-	document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
-	document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
-	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
 }
 
 function check_filename(){
@@ -573,10 +703,62 @@ function upload_cert_key(){
 function save_cert_key(){
 	location.href = "cert_key.tar";
 }
+
+function show_ddns_status_detail() {
+	var ddnsHint = getDDNSState(ddns_return_code_chk, ddns_hostname_x_t, ddns_old_name);
+
+	if(ddnsHint != ""){
+		overlib(ddnsHint);
+	}
+}
+
+function asuscomm_deregister(){
+	$.ajax({
+		url: "/unreg_ASUSDDNS.cgi",
+
+		success: function( response ) {
+			check_unregister_result();
+		}
+	});
+}
+
+var max_retry_count = 6;
+var retry_count = 0;
+function check_unregister_result(){
+	var asusddns_reg_result = httpApi.nvramGet(["asusddns_reg_result"], true).asusddns_reg_result;
+	var action_type = asusddns_reg_result.slice(0, asusddns_reg_result.indexOf(','));
+	var return_status = "";
+	var timeout = 0;
+
+	if(action_type != "unregister" && retry_count < max_retry_count){
+		setTimeout(check_unregister_result, 500);
+		retry_count++;
+	}
+	else if(action_type == "unregister"){
+		return_status = asusddns_reg_result.slice(asusddns_reg_result.indexOf(',') + 1);
+	}
+	else if(retry_count == max_retry_count){
+		timeout = 1;
+	}
+
+	if(timeout || return_status != ""){
+		if(return_status == "200"){
+			alert("Deregistration is successful.");
+			refreshpage();
+		}
+		else{
+			hideLoading();
+			alert("Fail to deregister ASUSDDNS hostname.");
+			deregister_fail = 1;
+			retry_count = 0;
+		}
+	}
+
+}
 </script>
 </head>
 
-<body onload="init();" onunLoad="return unload_body();">
+<body onload="init();" onunLoad="return unload_body();" class="bg">
 <div id="TopBanner"></div>
 
 <div id="Loading" class="popup_bg"></div>
@@ -644,7 +826,7 @@ function save_cert_key(){
 				<th><#LANHostConfig_x_DDNSServer_itemname#></th>
 				<td>
 					<select name="ddns_server_x"class="input_option" onchange="change_ddns_setting(this.value); change_cert_method();">
-						<option id="ASUSOption" value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
+						<option value="WWW.ASUS.COM" <% nvram_match("ddns_server_x", "WWW.ASUS.COM","selected"); %>>WWW.ASUS.COM</option>
 						<option value="DOMAINS.GOOGLE.COM" <% nvram_match("ddns_server_x", "DOMAINS.GOOGLE.COM","selected"); %>>DOMAINS.GOOGLE.COM</option>
 						<option value="WWW.DYNDNS.ORG" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG","selected"); %>>WWW.DYNDNS.ORG</option>
 						<option value="WWW.DYNDNS.ORG(CUSTOM)" <% nvram_match("ddns_server_x", "WWW.DYNDNS.ORG(CUSTOM)","selected"); %>>WWW.DYNDNS.ORG(CUSTOM)</option>
@@ -658,6 +840,7 @@ function save_cert_key(){
 						<option value="WWW.3322.ORG" <% nvram_match("ddns_server_x", "WWW.3322.ORG","selected"); %>>WWW.3322.ORG</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected"); %>>Custom</option>
 					</select>
+					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="Deregister" onclick="showLoading();asuscomm_deregister();"/>
 				<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
 				<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
 				<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>
@@ -707,7 +890,7 @@ function save_cert_key(){
 			<tr style="display:none;">
 				<th><#DDNS_verification_frequency#></th>
 				<td>
-					<input type="text"  class="input_3_table" name="ddns_regular_period" value="<% nvram_get("ddns_regular_period"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
+					<input type="text" maxlength="5" class="input_6_table" name="ddns_regular_period" value="<% nvram_get("ddns_regular_period"); %>" autocorrect="off" autocapitalize="off"> <#Minute#>
 				</td>
 			</tr>
 			<tr style="display:none;">
@@ -715,6 +898,14 @@ function save_cert_key(){
 				<td>
 					<input type="hidden" maxlength="15" class="button_gen" size="12" name="" value="<% nvram_get("DDNSStatus"); %>">
 				  	<input type="submit" maxlength="15" class="button_gen" onclick="showLoading();return onSubmitApply('ddnsclient');" size="12" name="LANHostConfig_x_DDNSStatus_button" value="<#LANHostConfig_x_DDNSStatus_buttonname#>" /></td>
+			</tr>
+			<tr id="ddns_status_tr" style="display:none;">
+				<th>DDNS Status</th>
+				<td><sapn id="ddns_status" style="color:#FFCC00"></sapn><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
+			</tr>
+			<tr id="ddns_result_tr" style="display:none;">
+				<th>DDNS Registration Result</th>
+				<td id="ddns_result"></td>
 			</tr>
 			<tr id="https_cert" style="display:none;">
 				<th><#DDNS_https_cert#></th>
@@ -737,22 +928,22 @@ function save_cert_key(){
 			</tr>
 
 			<tr id="cert_details" style="display:none;">
-				<th>Server Certificate</th><!--untranslated-->
+				<th><#vpn_openvpn_KC_SA#></th>
 				<td>
 					<div style="display:table-row;">
 						<div style="display:table-cell;"><#Status_Str#> :</div>
 						<div id="cert_status" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;">
-						<div style="display:table-cell;">Issued to :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_to#> :</div>
 						<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;">
-						<div style="display:table-cell;">Issued by :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_by#> :</div>
 						<div id="issueBy" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div style="display:table-row;">
-						<div style="display:table-cell;">Expires on :</div> <!--untranslated-->
+						<div style="display:table-cell;"><#vpn_openvpn_KC_expire#> :</div>
 						<div id="expireOn" style="display:table-cell; padding-left:10px;"></div>
 					</div>
 					<div>
@@ -788,17 +979,17 @@ function save_cert_key(){
 <input type="hidden" name="action_wait" value="">
 <input type="hidden" name="le_enable" value="2">
 <div id="upload_cert_window"  class="contentM_upload" style="box-shadow: 1px 5px 10px #000;">
-	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;">Import your own certificate</div><!--untranslated-->
-	<div class="formfontdesc" style="margin-left: 15px;">Upload a certificate issued by a certification authority here. Your private key and SSL certificate is necessary.</div><!--untranslated-->
+	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;"><#DDNS_https_cert_Import#></div>
+	<div class="formfontdesc" style="margin-left: 15px;"><#DDNS_https_cert_Import_desc#></div>
 	<div class="Upload_item">
-		<div style="display:table-cell; width: 45%;">Private Key :</div>
+		<div style="display:table-cell; width: 45%;"><#DDNS_https_cert_PrivateKey#> :</div>
 		<div style="display:table-cell;"><input type="file" name="file_key" class="input Upload_file"></div>
 	</div>
 	<div class="Upload_item">
-		<div style="display:table-cell; width: 45%;">SSL Certificate :</div>
+		<div style="display:table-cell; width: 45%;"><#DDNS_ssl_cert#> :</div>
 		<div style="display:table-cell;"><input type="file" name="file_cert" class="input Upload_file"></div>
 	</div>
-	<div style="color: #FC0; margin-left: 15px; margin-top: 20px">*Private keys cannot be passphrase protected.</div>
+	<div style="color: #FC0; margin-left: 15px; margin-top: 20px">* <#DDNS_https_cert_PrivateKey_note#></div>
 	<div align="center" style="margin-top:30px; padding-bottom:15px;">
 		<div style="display:table-cell;"><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
 		<div style="display:table-cell; padding-left: 5px;"><input class="button_gen" type="button" onclick="upload_cert_key();" value="<#CTL_ok#>"></div>
@@ -807,3 +998,4 @@ function save_cert_key(){
 </form>
 </body>
 </html>
+

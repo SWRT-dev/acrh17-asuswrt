@@ -2871,6 +2871,12 @@ void btn_check(void)
 						led_control(wled[unit], LED_ON);
 					unit++;
 				}
+
+#if defined(RTAC59U)
+				eval("ssdk_sh", "debug", "reg", "set", "0x50", "0xc735c735", "4");
+				eval("ssdk_sh", "debug", "reg", "set", "0x54", "0xc735c735", "4");
+				eval("ssdk_sh", "debug", "reg", "set", "0x58", "0xc735c735", "4");
+#endif
 #endif	/* RTCONFIG_QCA */
 #ifdef RTCONFIG_LAN4WAN_LED
 				LanWanLedCtrl();
@@ -3613,6 +3619,9 @@ void timecheck(void)
 	item = 0;
 	unit = 0;
 
+	if (nvram_match("svc_ready", "0") || nvram_match("wlready", "0"))
+		goto end_of_wl_sched;
+
 	if (nvram_match("reload_svc_radio", "1"))
 	{
 		nvram_set("reload_svc_radio", "0");
@@ -3629,7 +3638,6 @@ void timecheck(void)
 	}
 
 	// radio on/off
-	if (nvram_match("svc_ready", "1") && nvram_match("wlready", "1"))
 	foreach (word, nvram_safe_get("wl_ifnames"), next) {
 		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
@@ -3676,6 +3684,7 @@ void timecheck(void)
 		unit++;
 
 	}
+end_of_wl_sched:
 
 	// guest ssid expire check
 	if ((sw_mode() != SW_MODE_REPEATER) &&
@@ -4046,11 +4055,8 @@ void fake_etlan_led(void)
 	}
 	allstatus = 1;
 #endif
-#if defined(K3)
-	if (!GetPhyStatusk3(0)) {
-#else
+
 	if (!GetPhyStatus(0)) {
-#endif
 		if (lstatus)
 #ifdef GTAC5300
 			aggled_control(AGGLED_ACT_ALLOFF);
@@ -5066,7 +5072,7 @@ void regular_ddns_check(void)
 #else
 	int r, wan_unit = wan_primary_ifunit(), last_unit = nvram_get_int("ddns_last_wan_unit");
 #endif
-	char prefix[sizeof("wanX_YYY")];
+	char prefix[sizeof("wanXXXXXXXXXX_")];
 	struct in_addr ip_addr;
 	struct hostent *hostinfo;
 
@@ -5107,8 +5113,13 @@ void regular_ddns_check(void)
 
 	//_dprintf("WAN IP change!\n");
 	nvram_set("ddns_update_by_wdog", "1");
-	if (wan_unit != last_unit)
+	if (wan_unit != last_unit) {
+#ifndef RTCONFIG_INADYN
 		unlink("/tmp/ddns.cache");
+#else
+		eval("rm", "-f", "/var/cache/inadyn/*.cache");
+#endif
+	}
 	logmessage("watchdog", "Hostname/IP mapping error! Restart ddns.");
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");
@@ -5132,7 +5143,7 @@ void ddns_check(void)
 #endif
 
 	//_dprintf("ddns_check... %d\n", ddns_check_count);
-	if (!nvram_match("ddns_enable_x", "1"))
+	if (!nvram_get_int("ddns_enable_x"))
 		return;
 
 #if defined(RTCONFIG_DUALWAN)
@@ -5157,12 +5168,17 @@ void ddns_check(void)
 	if (!nvram_match("wans_mode", "lb") && !is_wan_connect(wan_unit))
 		return;
 
-	/* Check existence of ez-ipupdate/phddns
+	/* Check existence of ddns daemon
 	 * if and only if last WAN unit is equal to new WAN unit.
 	 */
 	if (last_unit == wan_unit) {
+#ifndef RTCONFIG_INADYN
 		if (pids("ez-ipupdate"))	//ez-ipupdate is running!
 			return;
+#else
+		if (pids("inadyn"))		//inadyn is running!
+			return;
+#endif
 		if (pids("phddns"))		//phddns is running!
 			return;
 	}
@@ -5198,8 +5214,13 @@ void ddns_check(void)
 		return;
 
 	nvram_set("ddns_update_by_wdog", "1");
-	if (wan_unit != last_unit)
+	if (wan_unit != last_unit) {
+#ifndef RTCONFIG_INADYN
 		unlink("/tmp/ddns.cache");
+#else
+		eval("rm", "-f", "/var/cache/inadyn/*.cache");
+#endif
+	}
 	logmessage("watchdog", "start ddns.");
 	if (last_unit != wan_unit)
 		r = notify_rc("restart_ddns");
@@ -5784,7 +5805,6 @@ static void ntevent_disk_usage_check(){
 }
 #endif
 
-#ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 /* DEBUG DEFINE */
 #define FAUPGRADE_DEBUG             "/tmp/FAUPGRADE_DEBUG"
 
@@ -5805,57 +5825,73 @@ static void ntevent_disk_usage_check(){
 
 static void auto_firmware_check()
 {
-	static int period_retry = -1;
-	static int period = 2877;
+	int periodic_check = 0;
+	static int period_retry = 0;
+	static int bootup_check_period = 3;	//wait 3 times(90s) to check
 	static int bootup_check = 1;
-	static int periodic_check = 0;
-	int cycle_manual = nvram_get_int("fw_check_period");
-	int cycle = (cycle_manual > 1) ? cycle_manual : 2880;
-
+#ifndef RTCONFIG_FW_JUMP
+	char *datestr[] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 	time_t now;
 	struct tm local;
 	static int rand_hr, rand_min;
+#endif
 
 	if (!nvram_get_int("ntp_ready")){
-		FAUPGRADE_DBG("ntp_ready false");
+		//FAUPGRADE_DBG("ntp_ready false");
 		return;
 	}
 
-	if (!bootup_check && !periodic_check)
-	{
-		setenv("TZ", nvram_safe_get("time_zone_x"), 1);
-		time(&now);
-		localtime_r(&now, &local);
+	if(bootup_check_period > 0){	//bootup wait 90s to check
+		bootup_check_period--;
+		return;
+	}
 
-		if ((local.tm_hour == (2 + rand_hr)) &&	// every 48 hours at 2 am + random offset
-		    (local.tm_min == rand_min))
+	time(&now);
+	localtime_r(&now, &local);
+
+	if(local.tm_hour == (2 + rand_hr) && local.tm_min == rand_min) //at 2 am + random offset to check
+		periodic_check = 1;
+
+	//FAUPGRADE_DBG("periodic_check = %d, period_retry = %d, bootup_check = %d", periodic_check, period_retry, bootup_check);
+#ifndef RTCONFIG_FW_JUMP
+	if (bootup_check || periodic_check || period_retry!=0)
+#endif
+	{
+#ifdef RTCONFIG_ASD
+		//notify asd to download version file
+		if (pids("asd"))
 		{
-			periodic_check = 1;
-			period = -1;
+			killall("asd", SIGUSR1);
 		}
-	}
+#endif
+#ifndef RTCONFIG_FW_JUMP
+		if(nvram_get_int("webs_state_dl_error")){
+			if(!strncmp(datestr[local.tm_wday], nvram_safe_get("webs_state_dl_error_day"), 3))
+				return;
+			else
+				nvram_set("webs_state_dl_error", "0");
+		}
 
-	if (bootup_check || periodic_check)
-		period = (period + 1) % cycle;
-	else
-		return;
-	//FAUPGRADE_DBG("period = %d, period_retry = %d, bootup_check = %d", period, period_retry, bootup_check);
-	if (!period || (period_retry < 2 && bootup_check == 0))
-	{
-		period_retry = (period_retry+1) % 3;
-		FAUPGRADE_DBG("period_retry = %d", period_retry);
 		if (bootup_check)
 		{
 			bootup_check = 0;
 			rand_hr = rand_seed_by_time() % 4;
 			rand_min = rand_seed_by_time() % 60;
 			FAUPGRADE_DBG("periodic_check AM %d:%d", 2 + rand_hr, rand_min);
+#ifdef RTCONFIG_AMAS
+			if(nvram_match("re_mode", "1"))
+				return;
+#endif
 		}
+
+		period_retry = (period_retry+1) % 3;
+#endif
 
 		if(!nvram_contains_word("rc_support", "noupdate")){
 #if defined(RTL_WTDOG)
 			stop_rtl_watchdog();
 #endif
+			nvram_set("webs_update_trigger", "watchdog");
 			eval("/usr/sbin/webs_update.sh");
 #if defined(RTL_WTDOG)
 			start_rtl_watchdog();
@@ -5864,10 +5900,12 @@ static void auto_firmware_check()
 #ifdef RTCONFIG_DSL
 		eval("/usr/sbin/notif_update.sh");
 #endif
-
-		if (nvram_get_int("webs_state_update") &&
-		    !nvram_get_int("webs_state_error") &&
-		    strlen(nvram_safe_get("webs_state_info")))
+#ifdef RTCONFIG_FORCE_AUTO_UPGRADE
+		if (nvram_get_int("webs_state_update")
+				&& !nvram_get_int("webs_state_error")
+				&& !nvram_get_int("webs_state_dl_error")
+				&& strlen(nvram_safe_get("webs_state_info"))
+				)
 		{
 			FAUPGRADE_DBG("retrieve firmware information");
 
@@ -5876,25 +5914,30 @@ static void auto_firmware_check()
 				return;
 			}
 
+#ifndef RTCONFIG_FW_JUMP
 			if (nvram_match("x_Setting", "0")){
 				FAUPGRADE_DBG("default status");
 				return;
 			}
+#endif
 
 			if (nvram_get_int("webs_state_flag") != 2)
 			{
+				period_retry = 0; //stop retry
 				FAUPGRADE_DBG("no need to upgrade firmware");
 				return;
 			}
 
-			nvram_set_int("auto_upgrade", 1);
+			nvram_set("webs_state_dl", "1");
 
-			eval("/usr/sbin/webs_upgrade.sh");
+			notify_rc_and_wait("stop_upgrade;start_webs_upgrade");
 
-			if (nvram_get_int("webs_state_error"))
+			nvram_set("webs_state_dl", "0");
+
+			if (nvram_get_int("webs_state_dl_error"))
 			{
 				FAUPGRADE_DBG("error execute upgrade script");
-				goto ERROR;
+				reboot(RB_AUTOBOOT);
 			}
 
 #ifdef RTCONFIG_DUAL_TRX
@@ -5911,13 +5954,16 @@ static void auto_firmware_check()
 			reboot(RB_AUTOBOOT);
 		}
 		else{
-			FAUPGRADE_DBG("could not retrieve firmware information: webs_state_update = %d, webs_state_error = %d, webs_state_info.len = %d", nvram_get_int("webs_state_update"), nvram_get_int("webs_state_error"), strlen(nvram_safe_get("webs_state_info")));
+			FAUPGRADE_DBG("could not retrieve firmware information: webs_state_update = %d, webs_state_error = %d, webs_state_dl_error = %d, webs_state_info.len = %d", nvram_get_int("webs_state_update"), nvram_get_int("webs_state_error"), nvram_get_int("webs_state_dl_error"), strlen(nvram_safe_get("webs_state_info")));
 		}
-ERROR:
-		nvram_set_int("auto_upgrade", 0);
-	}
-}
+#else
+		period_retry = 0; //stop retry
 #endif
+		return;
+	}
+
+}
+
 
 #ifdef RTCONFIG_WIFI_SON
 static void link_pap_status()
@@ -7182,9 +7228,7 @@ wdp:
 		modem_flow_check(modem_unit);
 #endif
 #endif
-#ifdef RTCONFIG_FORCE_AUTO_UPGRADE
 	auto_firmware_check();
-#endif
 #ifdef RTCONFIG_BWDPI
 	auto_sig_check();		// libbwdpi.so
 	web_history_save();		// libbwdpi.so
@@ -7231,7 +7275,7 @@ wdp:
 #if defined(RTCONFIG_AMAS)
 	amaslib_check();
 #endif
-#if defined(K3) || defined(K3C) || defined(R8000P) || defined(R7900P) || defined(SBRAC1900P) || defined(RAX20)
+#if defined(SBRAC1900P) || defined(SBRAC3200P) || defined(K3C) || defined(K3) || defined(XWR3100) || defined(R8000P) || defined(EA6700) || defined(DIR868L) || defined(R6300V2) || defined(TY6201_BCM) || defined(TY6201_RTK) || defined(R8500) || defined(F9K1118)
 #if defined(SWRT_VER_MAJOR_R) || defined(SWRT_VER_MAJOR_X)
 	check_auth_code();
 #endif

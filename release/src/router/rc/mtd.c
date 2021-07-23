@@ -24,7 +24,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#ifdef __GLIBC__		//musl doesn't have error.h
 #include <error.h>
+#endif	/* __GLIBC__ */
 #include <sys/ioctl.h>
 #include <sys/sysinfo.h>
 #include <sys/mman.h>
@@ -94,6 +96,18 @@ static int mtd_open(const char *mtdname, mtd_info_t *mi)
 	return -1;
 }
 
+/* int _unlock_erase(const char *mtdname, int erase)
+ *
+ * mtdname: name of mtd partition want to do
+ * erase  : 0      to Unlock
+ *          others to Erase
+ *
+ * return:
+ * 	 1: timeout
+ * 	 0: success
+ * 	-1: fail
+ */
+
 static int _unlock_erase(const char *mtdname, int erase)
 {
 	int mf;
@@ -101,7 +115,9 @@ static int _unlock_erase(const char *mtdname, int erase)
 	erase_info_t ei;
 	int r;
 
-	if (!wait_action_idle(5)) return 0;
+	if (!wait_action_idle(10)){
+		return 1;	//timeout
+	}
 	set_action(ACT_ERASE_NVRAM);
 
 	r = 0;
@@ -163,7 +179,9 @@ static int _unlock_erase(const char *mtdname, int erase)
 	else printf("\nError %sing MTD\n", erase ? "eras" : "unlock");
 
 	sleep(1);
-	return r;
+	if (r)
+		return 0;	//success
+	return -1;		//erase fail
 }
 
 int mtd_unlock(const char *mtdname)
@@ -345,7 +363,7 @@ int mtd_write_main_old(int argc, char *argv[])
 int mtd_write_main(int argc, char *argv[])
 #endif
 {
-	int mf = -1;
+	int mf = -1, device = 0;
 	mtd_info_t mi;
 	erase_info_t ei;
 	FILE *f;
@@ -359,11 +377,16 @@ int mtd_write_main(int argc, char *argv[])
 	char *dev = NULL;
 	char msg_buf[2048];
 	int alloc = 0, bounce = 0, fd;
+	int skip_bytes = 0, count_bytes = 0;
+#if defined(RTCONFIG_DUAL_TRX2)
+	int imtd_id = -1, omtd_id, mtd_size;
+#endif
+	char mtdblockname[sizeof("/dev/mtdblockXYYYYYY")] = { 0 };
 #ifdef DEBUG_SIMULATE
 	FILE *of;
 #endif
 
-	while ((c = getopt(argc, argv, "i:d:")) != -1) {
+	while ((c = getopt(argc, argv, "i:d:s:c:")) != -1) {
 		switch (c) {
 		case 'i':
 			iname = optarg;
@@ -371,12 +394,43 @@ int mtd_write_main(int argc, char *argv[])
 		case 'd':
 			dev = optarg;
 			break;
+		case 's':
+			skip_bytes = atoi(optarg);
+			break;
+		case 'c':
+			count_bytes = atoi(optarg);
+			break;
 		}
 	}
 
 	if ((iname == NULL) || (dev == NULL)) {
 		usage_exit(argv[0], "-i file -d part");
 	}
+
+#if defined(RTCONFIG_DUAL_TRX2)
+	device = !strncmp(iname, "/dev/mtd", 8);
+	if (device) {
+		/* Make sure /dev/mtdblockX is different MTD partition. */
+		if (!strncmp(iname, "/dev/mtdblock", 13)) {
+			imtd_id = safe_atoi(iname + 13);
+			strlcpy(mtdblockname, iname, sizeof(mtdblockname));
+		} else {
+			imtd_id = safe_atoi(iname + 8);
+			snprintf(mtdblockname, sizeof(mtdblockname), "/dev/mtdblock%d", imtd_id);
+		}
+
+		if (mtd_getinfo(dev, &omtd_id, &mtd_size) == 1) {
+			if (imtd_id == omtd_id) {
+				dbg("%s: source MTD part. = destination MTD part. (%d/%d)\n",
+					__func__, imtd_id, omtd_id);
+				return 1;
+			}
+		} else {
+			dbg("%s: mtd_getinfo() can't find %s\n", __func__, dev);
+			return 1;
+		}
+	}
+#endif
 
 	if (!wait_action_idle(10)) {
 		printf("System is busy\n");
@@ -392,7 +446,7 @@ int mtd_write_main(int argc, char *argv[])
 		if(strcmp(iname,"/tmp/linux.trx")==0)
 		{
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock2") == 0){
+			if(mtd_erase("/dev/mtdblock2")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/linux.trx",0,"/dev/mtdblock2",0x0,msg_buf)<0)
@@ -406,7 +460,7 @@ int mtd_write_main(int argc, char *argv[])
 		//	_dprintf("%s %d\n", __FUNCTION__,__LINE__);
 #ifdef CONFIG_ASUS_DUAL_IMAGE_ENABLE
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock4") == 0){
+			if(mtd_erase("/dev/mtdblock4")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/linux.trx",0,"/dev/mtdblock4",0x0,msg_buf)<0)
@@ -423,7 +477,7 @@ int mtd_write_main(int argc, char *argv[])
 		{
 			//_dprintf("%s %d\n", __FUNCTION__,__LINE__);
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock3") == 0){
+			if(mtd_erase("/dev/mtdblock3")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/root.trx",0,"/dev/mtdblock3",0,msg_buf)<0)
@@ -437,7 +491,7 @@ int mtd_write_main(int argc, char *argv[])
 			//_dprintf("%s %d\n", __FUNCTION__,__LINE__);
 #ifdef CONFIG_ASUS_DUAL_IMAGE_ENABLE
 #ifdef CONFIG_MTD_NAND
-			if(mtd_erase("/dev/mtdblock5") == 0){
+			if(mtd_erase("/dev/mtdblock5")){
 				printf("%s %d\n", __FUNCTION__,__LINE__);
 			}
 			if(copy_file2file("/tmp/root.trx",0,"/dev/mtdblock5",0,msg_buf)<0)
@@ -454,15 +508,18 @@ int mtd_write_main(int argc, char *argv[])
 	goto RTK_FINISH;
 #endif /* RTCONFIG_REALTEK */
 
-	if ((f = fopen(iname, "r")) == NULL) {
+	if ((f = fopen(device? mtdblockname : iname, "r")) == NULL) {
 		error = "Error opening input file";
 		goto ERROR;
 	}
 
 	fd = fileno(f);
 	fseek( f, 0, SEEK_END);
-	filelen = ftell(f);
-	fseek( f, 0, SEEK_SET);
+	if (count_bytes)
+		filelen = count_bytes;
+	else
+		filelen = ftell(f) - skip_bytes;
+	fseek( f, skip_bytes, SEEK_SET);
 	_dprintf("file len=0x%x\n", filelen);
 
 #ifdef RTCONFIG_BCMARM
@@ -499,14 +556,21 @@ int mtd_write_main(int argc, char *argv[])
 		goto ERROR;
 	}
 
-	if ((buf = mmap(0, filelen, PROT_READ, MAP_SHARED, fd, 0)) == (unsigned char*)MAP_FAILED) {
+	if (skip_bytes) {// do not use mmap
+		alloc = 1;
+	} else if ((buf = mmap(0, filelen, PROT_READ, MAP_SHARED, fd, 0)) == (unsigned char*)MAP_FAILED) {
 		_dprintf("mmap %x bytes fail!. errno %d (%s).\n", filelen, errno, strerror(errno));
 		alloc = 1;
 	}
 
+	if (device && (c = get_firmware_length(buf)) > 0) {
+		filelen = c;
+		_dprintf("new file len=0x%x\n", filelen);
+	}
+
 	sysinfo(&si);
 	if (alloc) {
-		if ((si.freeram * si.mem_unit) <= (unit_len + (4096 * 1024)))
+		if (skip_bytes || ((si.freeram * si.mem_unit) <= (unit_len + (4096 * 1024))))
 			unit_len = mi.erasesize;
 	}
 
@@ -519,8 +583,8 @@ int mtd_write_main(int argc, char *argv[])
 			goto ERROR;
 		}
 	}
-	_dprintf("freeram=%lx unit_len=%lx filelen=%lx mi.erasesize=%x mi.writesize=%x\n",
-		si.freeram, unit_len, filelen, mi.erasesize, mi.writesize);
+	_dprintf("freeram=%lx unit_len=%lx filelen=%lx mi.erasesize=%x mi.writesize=%x, skip_bytes=%x\n",
+		si.freeram, unit_len, filelen, mi.erasesize, mi.writesize, skip_bytes);
 
 	if (alloc && !(buf = malloc(unit_len))) {
 		error = "Not enough memory";

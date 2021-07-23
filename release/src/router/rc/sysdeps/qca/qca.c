@@ -192,17 +192,15 @@ static int atoh(const char *a, unsigned char *e)
 	return i;
 }
 
-char *htoa(const unsigned char *e, char *a, int len)
+char * htoa(const unsigned char *e, char *a, int len)
 {
 	char *c = a;
-	int i, l;
+	int i;
 
-	for (i = 0, l = len; i < len; i++) {
+	for (i = 0; i < len; i++) {
 		if (i)
 			*c++ = ':';
-		l = snprintf(c, len, "%02X", e[i] & 0xff);
-		len -= l;
-		c += l;
+		c += sprintf(c, "%02X", e[i] & 0xff);
 	}
 	return a;
 }
@@ -546,10 +544,15 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	char path5[sizeof(NAWDS_SH_FMT) + 6] = "";
 	int rep_mode, nmode, shortgi, stbc;
 	char *uuid = nvram_safe_get("uuid");
-#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
+    defined(RTCONFIG_WIFI_QCA9994_QCA9994) || \
+    defined(RTCONFIG_SOC_IPQ40XX)
 	int fc_buf_min = 1000;
 	int txbf, mumimo, ldpc = 3, tqam, tqam_intop;
 	unsigned int maxsta = 511;
+#elif defined(RTCONFIG_PCIE_QCA9888)
+	int txbf, mumimo, ldpc = 3;
+	unsigned int maxsta = 127;
 #else
 	unsigned int maxsta = 127;
 #endif
@@ -590,6 +593,8 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	if (!(fp3 = fopen(path3, "w+")))
 		return 0;
 
+	fprintf(fp2, "#!/bin/sh -p\n");
+	fprintf(fp3, "#!/bin/sh -p\n");
 #ifdef RTCONFIG_WIRELESSREPEATER
 #if defined(RTCONFIG_CONCURRENTREPEATER)
 	snprintf(prefix_wlc, sizeof(prefix_wlc), "wlc%d_", band);
@@ -1040,28 +1045,43 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	fprintf(fp2, "iwpriv %s tx_stbc %d\n", wif, stbc);
 	fprintf(fp2, "iwpriv %s rx_stbc %d\n", wif, stbc);
 
-#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || defined(RTCONFIG_WIFI_QCA9994_QCA9994) || defined(RTCONFIG_SOC_IPQ40XX) || defined(RPAC51)
-	// TX BeamForming, must be set before association with the station.
-	txbf = (nmode != 2)? !!nvram_get_int(strcat_r(tmpfix, "txbf", tmp)) : 0;
-	mumimo = (nmode != 2)? !!(nvram_get_int(strcat_r(tmpfix, "mumimo", tmp))) : 0;
-	if (!repeater_mode() && !mediabridge_mode()) {
-		fprintf(fp2, "iwpriv %s vhtmubfer %d\n", wif, mumimo);	/* Multiple-user beam former, AP only */
-	} else {
-		fprintf(fp2, "iwpriv %s vhtmubfee %d\n", wif, mumimo);	/* Multiple-user beam formee, STA only */
-	}
-	fprintf(fp2, "iwpriv %s vhtsubfer %d\n", wif, txbf);	/* Single-user beam former */
-	fprintf(fp2, "iwpriv %s vhtsubfee %d\n", wif, txbf);	/* Single-user beam formee */
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
+    defined(RTCONFIG_WIFI_QCA9994_QCA9994) || \
+    defined(RTCONFIG_PCIE_QCA9888) || \
+    defined(RTCONFIG_SOC_IPQ40XX)
+#if defined(RTCONFIG_QCA953X) || \
+    defined(RTCONFIG_SOC_QCA9557) || \
+    defined(RTCONFIG_QCA956X) || \
+    defined(RTCONFIG_QCN550X)
+	if (band) { /* 5G only */
+#endif
+		// TX BeamForming, must be set before association with the station.
+		txbf = (nmode != 2)? !!nvram_get_int(strcat_r(tmpfix, "txbf", tmp)) : 0;
+		mumimo = (nmode != 2)? !!(nvram_get_int(strcat_r(tmpfix, "mumimo", tmp))) : 0;
+		if (!repeater_mode() && !mediabridge_mode()) {
+			fprintf(fp2, "iwpriv %s vhtmubfer %d\n", wif, mumimo);	/* Multiple-user beam former, AP only */
+		} else {
+			fprintf(fp2, "iwpriv %s vhtmubfee %d\n", wif, mumimo);	/* Multiple-user beam formee, STA only */
+		}
+		fprintf(fp2, "iwpriv %s vhtsubfer %d\n", wif, txbf);	/* Single-user beam former */
+		fprintf(fp2, "iwpriv %s vhtsubfee %d\n", wif, txbf);	/* Single-user beam formee */
 
-	if(mumimo)	
-		fprintf(fp2, "wifitool %s beeliner_fw_test 2 0\n", wif);	/* Improve Multiple-user mimo performance */
+		if (mumimo)
+			fprintf(fp2, "wifitool %s beeliner_fw_test 2 0\n", wif);	/* Improve Multiple-user mimo performance */
 
-	fprintf(fp2, "iwpriv %s implicitbf %d\n", wif,nvram_get_int(strcat_r(tmpfix, "implicitxbf", tmp)));
+		fprintf(fp2, "iwpriv %s implicitbf %d\n", wif,nvram_get_int(strcat_r(tmpfix, "implicitxbf", tmp)));
 
 #ifdef RTCONFIG_OPTIMIZE_XBOX
-	// LDPC
-	if (nvram_match(strcat_r(prefix, "optimizexbox", tmp), "1"))
-		ldpc = 0;
-	fprintf(fp2, "iwpriv %s ldpc %d\n", wif, ldpc? 3 : 0);
+		// LDPC
+		if (nvram_match(strcat_r(prefix, "optimizexbox", tmp), "1"))
+			ldpc = 0;
+		fprintf(fp2, "iwpriv %s ldpc %d\n", wif, ldpc? 3 : 0);
+#endif
+#if defined(RTCONFIG_QCA953X) || \
+    defined(RTCONFIG_SOC_QCA9557) || \
+    defined(RTCONFIG_QCA956X) || \
+    defined(RTCONFIG_QCN550X)
+	}
 #endif
 
 #if defined(RPAC51)
@@ -1522,10 +1542,11 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 			)
 				p += snprintf(p, sizeof(b_channels) + b_channels - p, "%s36,40,44,48,52,56,60,64", (b_channels==p)?"":",");	//skip band12 to use band4 in TW
 		}	
-#if defined(RTAC58U)
+#if defined(RTAC58U) || defined(RTAC59U)
 		else
 		{
-			if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+			if (!strncmp(nvram_safe_get("territory_code"), "CX/01", 5)
+			 || !strncmp(nvram_safe_get("territory_code"), "CX/05", 5))
 				p += snprintf(p, sizeof(b_channels) + b_channels - p, "%s12,13", (b_channels==p)?"":",");	//skip channel 12,13 in CX on RT-AC58U
 		}
 #endif
@@ -1573,12 +1594,12 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 	}
 #endif
 
-#if defined(RPAC51) /* 5G chain 2x2 nss 1 */
-	if (band == 1) {
-		fprintf(fp3, "iwpriv ath1 nss 1\n");
-		fprintf(fp3, "iwpriv sta1 nss 1\n");
-	}
-#endif
+//#if defined(RPAC51) /* 5G chain 2x2 nss 1 */
+//	if (band == 1) {
+//		fprintf(fp3, "iwpriv ath1 nss 1\n");
+//		fprintf(fp3, "iwpriv sta1 nss 1\n");
+//	}
+//#endif
 
 	//AccessPolicy0
 	gen_macmode(mac_filter, band, prefix);	//Ren
@@ -1606,12 +1627,8 @@ int gen_ath_config(int band, int is_iNIC,int subnet)
 		}
 	}
 
-	if(rep_mode){
-		if((nvram_match(strcat_r(prefix_mssid, "auth_mode_x", temp), "shared") || nvram_match(strcat_r(prefix_mssid, "auth_mode_x", temp), "open")) && !nvram_get_int("wps_enable")){
-			fprintf(fp2, "ifconfig %s up\n", wif);
-		}
-	   goto next;
-	}	
+	if (rep_mode)
+		goto next;
 		
 	int WdsEnable=0;
         int WdsEncrypType=0;
@@ -2368,6 +2385,8 @@ int gen_nl80211_config(int band, int is_iNIC, int subnet)
 	if (!(fp_pre = fopen(prewifi_path, "w+")))
 		return 0;
 
+	fprintf(fp_post, "#!/bin/sh -p\n");
+	fprintf(fp_re, "#!/bin/sh -p\n");
 #ifdef RTCONFIG_WIRELESSREPEATER
 	if (sw_mode == SW_MODE_REPEATER && wlc_band == band && nvram_invmatch("wlc_ssid", "") && !subnet) {
 		rep_mode = 1;
@@ -3804,77 +3823,51 @@ void ate_commit_bootlog(char *err_code)
 #endif  //RTCONFIG_QCA
 
 #ifdef RTCONFIG_USER_LOW_RSSI
-typedef struct _WLANCONFIG_LIST {
-         char addr[18];
-         unsigned int aid;
-         unsigned int chan;
-         char txrate[6];
-         char rxrate[6];
-         int rssi;
-         unsigned int idle;
-         unsigned int txseq;
-         unsigned int rcseq;
-         char caps[12];
-         char acaps[10];
-         char erp[7];
-         char state_maxrate[20];
-         char wps[4];
-         char rsn[4];
-         char wme[4];
-         char mode[31];
-} WLANCONFIG_LIST;
+struct rssi_check_unit_priv_s {
+	int rssi_th;
+	char *wif;
+};
+
+/* Helper of rssi_check_unit()
+ * @src:	pointer to WLANCONFIG_LIST
+ * @arg:
+ * @return:
+ * 	0:	success
+ *  otherwise:	error
+ */
+static int handle_rssi_check_unit(const WLANCONFIG_LIST *src, void *arg)
+{
+	struct rssi_check_unit_priv_s *priv = arg;
+	char cmd[sizeof("iwpriv XXXXXX kickmac XX:XX:XX:XX:XX:XX") + IFNAMSIZ];
+
+	if (!src || !arg)
+		return -1;
+
+	if (priv->rssi_th < src->rssi)
+		return 0;
+
+	snprintf(cmd, sizeof(cmd), "iwpriv %s kickmac %s", priv->wif, src->addr);
+	doSystem(cmd);
+	dbg("=====>Roaming with %s:Disconnect Station: %s  RSSI: %d\n", priv->wif, src->addr, src->rssi);
+
+	return 0;
+}
 
 void rssi_check_unit(int unit)
 {
-	#define STA_LOW_RSSI_PATH "/tmp/low_rssi"
-	int rssi_th, channf;
-	FILE *fp;
-	char line_buf[300],cmd[300],tmp[128],wif[8]; // max 14x
-	char prefix[sizeof("wlXXXXXXXXXX_")];
-	WLANCONFIG_LIST *result;
+	int rssi_th;
+	char wif[IFNAMSIZ], prefix[sizeof("wlXXXXXXXXXX_")], tmp[128];
+	struct rssi_check_unit_priv_s priv;
+
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	if (!(rssi_th= nvram_get_int(strcat_r(prefix, "user_rssi", tmp))))
 		return;
 
-	result=malloc(sizeof(WLANCONFIG_LIST));
-	memset(result, 0, sizeof(WLANCONFIG_LIST));
 	__get_wlifname(unit, 0, wif);
-	channf = QCA_DEFAULT_NOISE_FLOOR;
 
-	doSystem("wlanconfig %s list > %s", wif, STA_LOW_RSSI_PATH);
-	if (!(fp = fopen(STA_LOW_RSSI_PATH, "r")))
-		return;
-	fgets(line_buf, sizeof(line_buf), fp); // ignore header
-	while ( fgets(line_buf, sizeof(line_buf), fp) ) {
-		sscanf(line_buf, "%s%u%u%s%s%u%u%u%u%s%s%s%s%s%s%s%s",
-					result->addr,
-					&result->aid,
-					&result->chan,
-					result->txrate,
-					result->rxrate,
-					&result->rssi,
-					&result->idle,
-					&result->txseq,
-					&result->rcseq,
-					result->caps,
-					result->acaps,
-					result->erp,
-					result->state_maxrate,
-					result->wps,
-					result->rsn,
-					result->wme,
-					result->mode);
-
-		if (rssi_th >= (result->rssi + channf)) {
-			snprintf(cmd, sizeof(cmd), "iwpriv %s kickmac %s", wif, result->addr);
-			doSystem(cmd);
-			dbg("=====>Roaming with %s:Disconnect Station: %s  RSSI: %d\n",
-				wif, result->addr, (result->rssi + channf));
-		}
-	}
-	free(result);
-	fclose(fp);
-	unlink(STA_LOW_RSSI_PATH);
+	priv.rssi_th = rssi_th;
+	priv.wif = wif;
+	__get_qca_sta_info_by_ifname(wif, 0, handle_rssi_check_unit, &priv);
 }
 #endif
 
@@ -4001,15 +3994,40 @@ static int do_sitesurvey(char *ssv_if)
 }
 
 
-#define target 9
-char str[target][40]={"Address:","ESSID:","Frequency:","Quality=","Encryption key:","IE:","Authentication Suites","Pairwise Ciphers","phy_mode="};
+enum {
+	TARGET_ID_ADDRESS = 0,
+	TARGET_ID_ESSID,
+	TARGET_ID_FREQUENCY,
+	TARGET_ID_QUALITY,
+	TARGET_ID_ENCRYPTION,
+	TARGET_ID_IE,
+	TARGET_ID_IE2,
+	TARGET_ID_AUTH,
+	TARGET_ID_CIPHERS,
+	TARGET_ID_PHYMODE,
+	TARGET_ID_TotalCount
+};
+
+char *target_str[TARGET_ID_TotalCount] = {
+	[TARGET_ID_ADDRESS]	= "Address:",
+	[TARGET_ID_ESSID]	= "ESSID:",
+	[TARGET_ID_FREQUENCY]	= "Frequency:",
+	[TARGET_ID_QUALITY]	= "Quality=",
+	[TARGET_ID_ENCRYPTION]	= "Encryption key:",
+	[TARGET_ID_IE]		= "IE:",
+	[TARGET_ID_IE2]		= "IE:",
+	[TARGET_ID_AUTH]	= "Authentication Suites",
+	[TARGET_ID_CIPHERS]	= "Pairwise Ciphers",
+	[TARGET_ID_PHYMODE]	= "phy_mode=",
+};
+
 int
 getSiteSurvey(int band,char* ofile)
 {
    	int apCount=0;
 	char header[128];
 	FILE *fp,*ofp;
-	char buf[target][200],set_flag[target];
+	char buf[TARGET_ID_TotalCount][200],set_flag[TARGET_ID_TotalCount];
 	int i, ssv_ok = 0, radio, is_sta = 0;
 	char *pt1,*pt2;
 	char a1[10],a2[10];
@@ -4134,10 +4152,10 @@ skip_init:
 			}
 			if(is_ready)
 	   		{		   
-				for(i=0;i<target;i++)
+				for(i=0;i<TARGET_ID_TotalCount;i++)
 				{
-					if(strstr(temp1,str[i])!=NULL && set_flag[i]==0)
-				  	{   
+					if(strstr(temp1,target_str[i])!=NULL && set_flag[i]==0)
+					{
 						set_flag[i]=1;
 					     	memcpy(buf[i],temp1,sizeof(temp1));
 						break;
@@ -4159,7 +4177,7 @@ skip_init:
 		apCount++;
 
 		//ch
-	        pt1 = strstr(buf[2], "Channel ");	
+	        pt1 = strstr(buf[TARGET_ID_FREQUENCY], "Channel ");
 		if(pt1)
 		{
 
@@ -4169,30 +4187,30 @@ skip_init:
 		}   
 
 		//ssid
-	        pt1 = strstr(buf[1], "ESSID:");	
+	        pt1 = strstr(buf[TARGET_ID_ESSID], "ESSID:");
 		if(pt1)
 		{
 		   	memset(ssid,0,sizeof(ssid));
-			strncpy(ssid,pt1+strlen("ESSID:")+1,strlen(buf[1])-2-(pt1+strlen("ESSID:")+1-buf[1]));
+			strncpy(ssid,pt1+strlen("ESSID:")+1,strlen(buf[TARGET_ID_ESSID])-2-(pt1+strlen("ESSID:")+1-buf[TARGET_ID_ESSID]));
 		}   
 
 
 		//bssid
-	        pt1 = strstr(buf[0], "Address: ");	
+	        pt1 = strstr(buf[TARGET_ID_ADDRESS], "Address: ");
 		if(pt1)
 		{
 		   	memset(address,0,sizeof(address));
-			strncpy(address,pt1+strlen("Address: "),strlen(buf[0])-(pt1+strlen("Address: ")-buf[0])-1);
+			strncpy(address,pt1+strlen("Address: "),strlen(buf[TARGET_ID_ADDRESS])-(pt1+strlen("Address: ")-buf[TARGET_ID_ADDRESS])-1);
 		}   
 	
 
 		//enc
-		pt1=strstr(buf[4],"Encryption key:");
+		pt1=strstr(buf[TARGET_ID_ENCRYPTION],"Encryption key:");
 		if(pt1)
 		{   
 			if(strstr(pt1+strlen("Encryption key:"),"on"))
 			{
-				pt2=strstr(buf[7],"Pairwise Ciphers");
+				pt2=strstr(buf[TARGET_ID_CIPHERS],"Pairwise Ciphers");
 				if(pt2)
 	  			{
 					if(strstr(pt2,"CCMP TKIP") || strstr(pt2,"TKIP CCMP"))
@@ -4212,21 +4230,46 @@ skip_init:
 
 		//auth
 		memset(auth,0,sizeof(auth));
-		pt1=strstr(buf[5],"IE:");
-		if(pt1 && strstr(buf[5],"Unknown")==NULL)
+		pt1=strstr(buf[TARGET_ID_IE],"IE:");
+		if(pt1 && strstr(buf[TARGET_ID_IE],"Unknown")==NULL)
 		{   			 
-			if(strstr(pt1+strlen("IE:"),"WPA2")!=NULL)
-				strlcpy(auth, "WPA2-", sizeof(auth));
-			else if(strstr(pt1+strlen("IE:"),"WPA")!=NULL) 
-				strlcpy(auth, "WPA-", sizeof(auth));
-		
-			pt2=strstr(buf[6],"Authentication Suites");
-			if(pt2)
-	  		{
-				if(strstr(pt2+strlen("Authentication Suites"),"PSK")!=NULL)
-			   		strcat(auth,"Personal");
-				else //802.1x
-				   	strcat(auth,"Enterprise");
+			int wpa_seen = 0;
+			if (strstr(pt1+strlen("IE:"),"WPA2")!=NULL)
+				wpa_seen |= 2;
+			else if (strstr(pt1+strlen("IE:"),"WPA")!=NULL)
+				wpa_seen |= 1;
+			else
+				_dprintf("%s:%d WARNING!! unknown AUTH in 1st IE:[%s]\n", __func__, __LINE__, pt1);
+
+			if (set_flag[TARGET_ID_IE2]) {
+				pt1=strstr(buf[TARGET_ID_IE2],"IE:");
+				if(pt1 && strstr(buf[TARGET_ID_IE2],"Unknown")==NULL) {
+					if (strstr(pt1+strlen("IE:"),"WPA2")!=NULL)
+						wpa_seen |= 2;
+					else if (strstr(pt1+strlen("IE:"),"WPA")!=NULL)
+						wpa_seen |= 1;
+					else
+						_dprintf("%s:%d WARNING!! unknown AUTH in 2nd IE:[%s]\n", __func__, __LINE__, pt1);
+				}
+			}
+			switch (wpa_seen) {
+				case 3 : strlcpy(auth, "WPA-WPA2-", sizeof(auth));
+					 break;
+				case 2 : strlcpy(auth, "WPA2-", sizeof(auth));
+					 break;
+				case 1 : strlcpy(auth, "WPA-", sizeof(auth));
+					 break;
+				default : // 0
+					_dprintf("%s:%d ERROR!! NO AUTH TYPE Set!!\n", __func__, __LINE__);
+			}
+			if (wpa_seen) {
+				pt2=strstr(buf[TARGET_ID_AUTH],"Authentication Suites");
+				if(pt2) {
+					if(strstr(pt2+strlen("Authentication Suites"),"PSK")!=NULL)
+						strcat(auth,"Personal");
+					else //802.1x
+						strcat(auth,"Enterprise");
+				}
 			}
 		}
 		else
@@ -4240,7 +4283,7 @@ skip_init:
 		}
 		   		  
 		//sig
-	        pt1 = strstr(buf[3], "Quality=");	
+	        pt1 = strstr(buf[TARGET_ID_QUALITY], "Quality=");
 		pt2 = NULL;
 		if (pt1 != NULL)
 			pt2 = strstr(pt1,"/");
@@ -4270,7 +4313,7 @@ skip_init:
 
 		//wmode
 		memset(wmode,0,sizeof(wmode));
-		pt1=strstr(buf[8],"phy_mode=");
+		pt1=strstr(buf[TARGET_ID_PHYMODE],"phy_mode=");
 		if(pt1)
 		{   
 

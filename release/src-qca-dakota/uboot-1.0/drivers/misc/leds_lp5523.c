@@ -33,7 +33,11 @@ static uchar chip_addr;
  * fast blink:	"5000"		= 124.8ms
 */
 struct lp55xx_blink_leds_pattern lp55xx_blnk_leds_ptn[] = {
+#if 1
 	{ LP55XX_INIT_LEDS, "9d80400044101ef042001ff04510", "9d80440044101af042001bf04510", "9d80480044101cf042001df04510", "111000000", "000111000", "000000111" },
+#else /* for Hydra running RT-AC58U firmware, special edition */
+	{ LP55XX_INIT_LEDS, "9d804030", "", "", "111000000", "", "" }, /* low power blue */
+#endif
 	{ LP55XX_NONE_LEDS, "9d804000", "9d804000", "9d804000", "111111111", "", "" },
 	{ LP55XX_RESCUE_LEDS, "9d8040ff", "9d804000", "9d80405a", "111000000", "000111000", "000000111" }, // purple
 	{ LP55XX_RESCUE_RCV_DATA_LEDS, "9d8040ff7e00420040007e004200", "9d8040007e00420040ff7e004200", "9d80405a7e00420040007e004200", "111000000", "000111000", "000000111" }, // slow blink - purple+green

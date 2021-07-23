@@ -2394,6 +2394,7 @@ struct msm_spi_dt_to_pdata_map {
 	int                          default_val;
 };
 
+extern char mid_str[];
 static int msm_spi_dt_to_pdata_populate(struct platform_device *pdev,
 					struct msm_spi_platform_data *pdata,
 					struct msm_spi_dt_to_pdata_map  *itr)
@@ -2406,6 +2407,8 @@ static int msm_spi_dt_to_pdata_populate(struct platform_device *pdev,
 		case DT_GPIO:
 			ret = of_get_named_gpio(node, itr->dt_name, 0);
 			if (ret >= 0) {
+				if (mid_str[0] && strcmp(mid_str, "Hydra")==0 && strcmp(itr->dt_name, "qcom,gpio-cs1")==0)
+					ret = 0;  // Hydra cs1 GPIO is 0
 				*((int *) itr->ptr_data) = ret;
 				ret = 0;
 			}

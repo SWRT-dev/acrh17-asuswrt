@@ -839,6 +839,10 @@ static int ioctl_standard_iw_point(struct iw_point *iwp, unsigned int cmd,
 
 	/* If we have something to return to the user */
 	if (!err && IW_IS_GET(cmd)) {
+
+		/* add back */
+		user_length += essid_compat;
+
 		/* Check if there is enough buffer up there */
 		if (user_length < iwp->length) {
 			err = -E2BIG;

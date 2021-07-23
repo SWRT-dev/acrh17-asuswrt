@@ -161,6 +161,16 @@ __setup("reset_devices", set_reset_devices);
 uint32_t *gl_tmp_otp_value;
 EXPORT_SYMBOL(gl_tmp_otp_value);
 
+char mid_str[30];
+EXPORT_SYMBOL(mid_str);
+static int __init mid_setup(char *str)
+{
+	strncpy(mid_str, str, sizeof(mid_str));
+	printk("MID is [%s]\n", mid_str);
+	return 1;
+}
+__setup("mid=", mid_setup);
+
 long int rfs_offset;
 EXPORT_SYMBOL(rfs_offset);
 static int __init rfs_setup(char *str)

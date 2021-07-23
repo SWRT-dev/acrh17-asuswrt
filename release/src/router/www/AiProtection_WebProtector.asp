@@ -248,7 +248,7 @@ function addRow_main(obj, length){
 		document.form.PC_devicename.focus();
 		return false;
 	}
-	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename))){
+	else if(!check_macaddr(document.form.PC_devicename, check_hwaddr_flag(document.form.PC_devicename, 'inner'))){
 		document.form.PC_devicename.focus();
 		document.form.PC_devicename.select();
 		return false;
@@ -575,7 +575,7 @@ function applyRule(){
 	if(document.form.wrs_enable.value == "1") {
 		var apps_filter_row = "";
 		if(document.form.PC_devicename.value != ""){
-			alert("You must press add icon to add a new rule first.");
+			alert("<#JS_add_rule#>");
 			return false;
 		}
 

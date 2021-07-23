@@ -180,7 +180,8 @@ uint8 nvram_calc_crc(struct nvram_header * nvh);
 #define NVRAM_SOFTWARE_VERSION	"1"
 
 #if !defined(UBOOT_CFG_ENV_SIZE)
-#define UBOOT_CFG_ENV_SIZE 0x1000
+#define UBOOT_CFG_ENV_SIZE 0 // ubootenv is independant with nvram
+#define UBI_OVERHEAD	0x1000
 #endif
 
 #define NVRAM_MAGIC_BE		0x464C5348	/* 'FLSH' */
@@ -212,11 +213,10 @@ uint8 nvram_calc_crc(struct nvram_header * nvh);
 #define NVRAM_INVALID_MAGIC	0xFFFFFFFF
 #define NVRAM_VERSION		1
 #define NVRAM_HEADER_SIZE	20
-#if (defined(RTCONFIG_NVRAM_64K) || defined(CONFIG_NVRAM_64K))
-#define NVRAM_SPACE		(0x10000 - UBOOT_CFG_ENV_SIZE)
-#else
-#define NVRAM_SPACE		0x8000
-#endif
+
+////// expand SPI NOR definition here if someday use that~
+#define NVRAM_SPACE		(0x20000 - UBOOT_CFG_ENV_SIZE - UBI_OVERHEAD)
+
 /* For CFE builds this gets passed in thru the makefile */
 #ifndef MAX_NVRAM_SPACE
 #define MAX_NVRAM_SPACE		NVRAM_SPACE

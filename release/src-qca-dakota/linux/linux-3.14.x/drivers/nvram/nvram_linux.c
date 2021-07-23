@@ -593,6 +593,7 @@ hndcrc8(
 	return crc;
 }
 
+extern char mid_str[];
 #define NVRAM_DRIVER_VERSION	"0.06"
 static int 
 nvram_proc_show(struct seq_file *m, void *v)
@@ -627,6 +628,8 @@ nvram_proc_show(struct seq_file *m, void *v)
 			g_wlnv.avg_len, g_wlnv.may_erase_nexttime);
 	seq_printf(m, "rsv_blk_size : 0x%x\n", rsv_blk_size);
 #endif	/* WL_NVRAM */
+	if (mid_str[0])
+	seq_printf(m, "MID : %s\n", mid_str);
 
 	return 0;
 }

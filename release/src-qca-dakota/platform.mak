@@ -487,6 +487,14 @@ define platformKernelConfig
 			echo "CONFIG_DUMP_PREV_OOPS_MSG_BUF_ADDR=0x83ff0000" >>$(1); \
 			echo "CONFIG_DUMP_PREV_OOPS_MSG_BUF_LEN=0x3000" >>$(1); \
 		fi; \
+		if [ "$(MODEM)" = "y" ]; then \
+			sed -i "/CONFIG_USB_WDM/d" $(1); \
+			echo "CONFIG_USB_WDM=m" >>$(1); \
+			sed -i "/CONFIG_USB_NET_CDC_MBIM/d" $(1); \
+			echo "CONFIG_USB_NET_CDC_MBIM=m" >>$(1); \
+			sed -i "/CONFIG_USB_NET_QMI_WWAN/d" $(1); \
+			echo "CONFIG_USB_NET_QMI_WWAN=m" >>$(1); \
+		fi; \
 	fi; \
 	if [ "$(DUALWAN)" = "y" ]; then \
 		sed -i "/CONFIG_ESSEDMA_DUALWAN/d" $(1); \
@@ -496,3 +504,4 @@ define platformKernelConfig
 endef
 
 export PARALLEL_BUILD := -j$(shell grep -c '^processor' /proc/cpuinfo)
+

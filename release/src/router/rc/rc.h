@@ -82,6 +82,8 @@
 
 #if defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC1200GA1) || defined(RTAC1200GU) //for MT7621
 #define USB20_MOD	"xhci-hcd"
+#elif defined(RTCONFIG_QCN550X) && LINUX_KERNEL_VERSION >= KERNEL_VERSION(4,4,0)
+#define USB20_MOD	"ehci-ath79"
 #else
 #define USB20_MOD	"ehci-hcd"
 #endif
@@ -656,6 +658,9 @@ extern int ethbh_peer_detect(char *nic, char *timeout, char *msg);
 extern int check_eth_time;
 extern int eth_down_time;
 #endif
+#ifdef RTCONFIG_BCMARM
+extern void config_mssid_isolate(char *ifname, int vif);
+#endif
 #endif
 
 /* sysdeps/dsl-*.c */
@@ -793,7 +798,7 @@ extern void lan_down(char *lan_ifname);
 extern void stop_lan_wl(void);
 extern void start_lan_wl(void);
 extern void restart_wl(void);
-extern void lanaccess_mssid_ban(const char *ifname_in);
+extern void lanaccess_mssid(const char *ifname_in, int mode);
 extern void lanaccess_wl(void);
 #ifdef RTCONFIG_FBWIFI
 extern void stop_fbwifi_check();
@@ -1263,6 +1268,7 @@ extern int vpnc_set_dev_policy_rule();
 // ovpn.c
 extern int ovpn_up_main(int argc, char **argv);
 extern int ovpn_down_main(int argc, char **argv);
+extern int ovpn_route_up_main(int argc, char **argv);
 
 // openvpn.c
 #ifdef RTCONFIG_OPENVPN
@@ -1303,6 +1309,7 @@ extern void subtime(struct timeval *a, struct timeval *b, struct timeval *res);
 extern void setupset(fd_set *theset, int *numfds);
 extern void waitforconnects();
 extern int tcpcheck_main(int argc, char *argv[]);
+extern int tcpcheck_retval(int timeout, char *host_port);
 
 // readmem.c
 #ifdef BUILD_READMEM
@@ -1535,7 +1542,7 @@ extern int firmware_check_main(int argc, char *argv[]);
 #ifdef RTCONFIG_HTTPS
 extern int rsasign_check_main(int argc, char *argv[]);
 extern int rsarootca_check_main(int argc, char *argv[]);
-extern char *pwdec(const char *input, char *output);
+extern char *pwdec(const char *input, char *output, int output_len);
 extern char *pwdec_dsl(char *input);
 #endif
 extern int service_main(int argc, char *argv[]);
@@ -1563,7 +1570,7 @@ extern void stop_dblog(void);
 #ifdef RTCONFIG_DSL_TCLINUX
 extern void start_sendDSLdiag(void);
 #endif
-#endif /* RTCONFIG_FEEDBACK */
+#endif /* RTCONFIG_FRS_FEEDBACK */
 #ifdef RTCONFIG_SNMPD
 extern void start_snmpd(void);
 extern void stop_snmpd(void);
@@ -1751,6 +1758,7 @@ extern void extract_data(char *path, FILE *fp);
 extern int merge_log(char *path, int len);
 extern void stop_dpi_engine_service(int forced);
 extern void start_dpi_engine_service();
+extern void start_wrs_wbl_service();
 extern void setup_wrs_conf();
 extern void auto_sig_check();
 extern void sqlite_db_check();
@@ -1811,7 +1819,7 @@ extern void vlan_subnet_filter_forward(FILE *fp, char *wan_if);
 extern int check_exist_subnet_access_rule(int index, int subnet_group_tmp);
 extern void vlan_subnet_deny_input(FILE *fp);
 extern void vlan_subnet_deny_forward(FILE *fp);
-extern void vlan_lanaccess_mssid_ban(const char *limited_ifname, char *ip, char *netmask);
+extern void vlan_lanaccess_mssid(const char *limited_ifname, char *ip, char *netmask, int mode);
 extern void vlan_lanaccess_wl(void);
 extern int get_vlan_info_by_lanX(char *lan_prefix, int *vid, int *prio, int *portlist);
 extern void vlan_if_allow_list_set(unsigned int wan_allow_list, unsigned int lan_allow_list, unsigned int wl_allow_list);
@@ -1947,6 +1955,9 @@ enum LED_STATUS
 #ifdef RTCONFIG_TUNNEL
 extern void start_mastiff();
 extern void stop_mastiff();
+extern void start_aae_sip_conn(int sdk_init);
+extern void stop_aae_sip_conn(int sdk_deinit);
+extern void stop_aae_gently();
 #endif
 
 #if defined(RTCONFIG_TCODE) && defined(CONFIG_BCMWL5)

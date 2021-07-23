@@ -65,7 +65,7 @@ extern void k3c_lan_led(void);
 extern void k3c_init_led(void);
 extern void init_mtd8(void);
 extern void swrt_patch_nvram(void);
-#elif defined(RMAC2100)
+#elif defined(RMAC2100) || defined(R6800)
 extern void patch_Factory(void);
 #elif defined(RTAX82U)
 extern void swrt_patch_nvram(void);

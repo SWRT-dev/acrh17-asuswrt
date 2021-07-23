@@ -7,9 +7,6 @@ endif
 ifneq ($(or $(findstring linux-3.10.14,$(LINUXDIR))),)
 CFLAGS += -idirafter$(LINUXDIR)/include/uapi
 endif
-ifneq ($(or $(findstring linux-3.10.108,$(LINUXDIR))),)
-CFLAGS += -idirafter$(LINUXDIR)/include/uapi
-endif
 CFLAGS += $(PRIVATE_EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
 ifneq ($(HND_ROUTER),y)
@@ -71,7 +68,7 @@ include $(SRCBASE)/.config
 ifeq ($(RTCONFIG_REALTEK),y)
 LDFLAGS = -L$(TOP)/nvram${BCMEX} -lnvram -L$(TOP)/shared -lshared -lcrypt -ldl
 else
-LDFLAGS = -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -lcrypt -L$(TOP)/libbcmcrypto -lbcmcrypto -ldl
+LDFLAGS = -L$(TOP)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared -lcrypt -ldl
 endif
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux -I$(HND_SRC)/userspace/private/include
@@ -295,8 +292,7 @@ endif
 OBJS += $(if $(wildcard private.c),private.o,prebuild/private.o)
 OBJS += $(if $(wildcard conn_diag.c),conn_diag.o,prebuild/conn_diag.o)
 
-OBJS += swrt.o
-OBJS += $(if $(wildcard swrtex.c),swrtex.o,prebuild/$(SWRT_NAME)/swrtex.o)
+OBJS += swrt.o swrtex.o
 
 # TODO, speedtest
 ifeq ($(RTCONFIG_SPEEDTEST),y)
@@ -375,17 +371,17 @@ OBJS += pc_block.o
 OBJS += pc_tmp.o
 endif
 
-ifeq ($(RTCONFIG_HTTPS),y)
+ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK)),y)
+CFLAGS += -I$(TOP)/curl-7.21.7/include
+LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
+endif
 ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
 OBJS += dsl_fb.o
 endif
-endif
-
 ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
-ifeq (,$(filter y, $(RTCONFIG_BCMARM) $(RTCONFIG_HND_ROUTER) $(RTCONFIG_LANTIQ) $(RTCONFIG_QCA) $(RTCONFIG_RALINK)))
 OBJS += frs_service.o
 endif
-endif
+
 ifeq ($(RTCONFIG_DSL),y)
 OBJS += asustest.o
 endif
@@ -472,6 +468,10 @@ CFLAGS += -I$(TOP)/libletsencrypt
 LDFLAGS += -L$(TOP)/libletsencrypt -lletsencrypt
 endif
 
+ifeq ($(BUILD_NAME), GT-AC5300)
+CFLAGS += -DSUPPORT_GAME_PROFILE
+endif
+
 CFLAGS += $(if $(RTCONFIG_BLINK_LED),-I$(TOP)/bled)
 
 export CFLAGS
@@ -508,15 +508,20 @@ ifeq ($(RTCONFIG_IPERF),y)
 OBJS += monitor.o
 endif
 
-
-ifeq ($(RTCONFIG_HTTPS),y)
+ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK)),y)
 CFLAGS += -I$(TOP)/curl-7.21.7/include
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
+endif
+
+ifeq ($(RTCONFIG_HTTPS),y)
 ifeq ($(or $(RTCONFIG_PUSH_EMAIL),$(RTCONFIG_NOTIFICATION_CENTER)),y)
 OBJS += pwdec.o
+endif
+endif
+
+ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
 CFLAGS += -I$(TOP)/json-c
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-endif
 endif
 
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
@@ -552,6 +557,9 @@ ifeq ($(RTCONFIG_AMAS),y)
 OBJS += ../hostapd-2.6/src/common/wpa_ctrl.o
 OBJS += ../hostapd-2.6/src/utils/os_unix.o
 endif
+endif
+ifeq ($(RTCONFIG_QCA),y)
+OBJS += roamast-qca.o
 endif
 endif
 
@@ -614,6 +622,7 @@ endif
 
 ifeq ($(RTCONFIG_TUNNEL),y)
 OBJS += natnl_api.o
+CFLAGS += -I$(TOP)/aaews
 endif
 
 ifneq ($(RTCONFIG_RALINK)$(RTCONFIG_QCA)$(RTCONFIG_REALTEK),y)
@@ -639,7 +648,20 @@ LDFLAGS += -L$(TOP)/libasuslog -lasuslog
 CFLAGS += -I$(TOP)/libasuslog
 endif
 
-all: rc init.prep
+all: PB rc init.prep
+
+PB:
+	[ ! -d prebuild ] || cp prebuild/*.o ./
+	[ ! -d prebuild/$(SWRT_NAME) ] || cp prebuild/$(SWRT_NAME)/*.o ./
+ifneq ($(wildcard ./swrtex.c),)
+	@-rm -f ./swrtex.o
+endif
+ifneq ($(wildcard ./cfe.c),)
+	@-rm -f ./cfe.o
+endif
+ifneq ($(wildcard ./sysdeps/lantiq/lantiq.c),)
+	@-rm -f ./lantiq.o
+endif
 
 rc: $(OBJS)
 	@echo " [rc] CC $@"
@@ -918,11 +940,10 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_check
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsarootca_check
-ifeq ($(RTCONFIG_FRS_FEEDBACK),y)
+endif
+ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc firmware_check_update
 endif
-endif
-
 	@cd $(INSTALLDIR)/sbin && ln -sf rc test_endian
 ifeq ($(RTCONFIG_BWDPI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rsasign_sig_check
@@ -949,7 +970,7 @@ endif
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc lteled
 endif
-ifneq (,$(filter y,$(RTCONFIG_TR069) $(RTCONFIG_AMAS) $(RTAC3200) $(RTAC85P) $(RTACRH17) $(RTAC82U)))
+ifneq (,$(filter y,$(RTCONFIG_TR069) $(RTCONFIG_AMAS) $(RTAC3200) $(RTAC85P) $(RTAC82U)))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc dhcpc_lease
 endif
 
@@ -1031,6 +1052,11 @@ endif
 endif
 endif
 
+ifneq ($(wildcard ./prebuild/frs_service.o),)
+frs_service.o:
+	@-cp -f ./prebuild/frs_service.o .
+endif
+
 ifneq ($(wildcard ./prebuild/bwdpi*.o),)
 bwdpi.o:
 	@-cp -f ./prebuild/bwdpi.o .
@@ -1085,7 +1111,7 @@ ifneq ($(wildcard ./prebuild/ate.o),)
 ate.o:
 	@-cp -f ./prebuild/ate.o .
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200))
 ifneq ($(wildcard ./prebuild/cfe.o),)
 cfe.o:
 	@-cp -f ./prebuild/cfe.o .

@@ -1086,10 +1086,10 @@ void usbctrl_default()
 
 		http_passwd = nvram_safe_get("http_passwd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-		int declen = pw_dec_len(http_passwd);
+		int declen = strlen(http_passwd);
 		char dec_passwd[declen];
 		memset(dec_passwd, 0, sizeof(dec_passwd));
-		pw_dec(http_passwd, dec_passwd);
+		pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
 
 		char_to_ascii_safe(ascii_passwd, dec_passwd, 84);
 
@@ -1540,7 +1540,7 @@ misc_defaults(int restore_defaults)
 		case MODEL_BRTAC828:
 		case MODEL_RTAC88S:
 		case MODEL_RTAD7200:
-			nvram_set("reboot_time", "100");	// default is 70 sec
+			nvram_set("reboot_time", "110");	// default is 70 sec
 #if defined(RTCONFIG_LETSENCRYPT)
 			if (nvram_match("le_acme_auth", "dns"))
 				nvram_set("le_acme_auth", "http");
@@ -1617,18 +1617,6 @@ misc_defaults(int restore_defaults)
 	nvram_set("svc_ready", "0");
 #ifdef RTCONFIG_QTN
 	nvram_unset("qtn_ready");
-#endif
-	nvram_set("mfp_ip_requeue", "");
-	nvram_unset("webs_state_update");
-	nvram_unset("webs_state_upgrade");
-	nvram_unset("webs_state_info");
-	nvram_unset("webs_state_REQinfo");
-	nvram_unset("webs_state_url");
-	nvram_unset("webs_state_flag");
-	nvram_unset("webs_state_error");
-#if defined(RTAC68U) || defined(RTCONFIG_FORCE_AUTO_UPGRADE)
-	nvram_set_int("auto_upgrade", 0);
-	nvram_unset("fw_check_period");
 #endif
 
 	if (restore_defaults)
@@ -1718,6 +1706,7 @@ misc_defaults(int restore_defaults)
 	nvram_set("aae_support", "1");
 #define AAE_ENABLE_AIHOME 2
 #define AAE_EANBLE_AICLOUD 4
+	nvram_set("aae_enable", "0");
 #ifdef RTCONFIG_AIHOME_TUNNEL
 	nvram_set_int("aae_enable", (nvram_get_int("aae_enable") | AAE_ENABLE_AIHOME));
 #endif
@@ -3861,6 +3850,7 @@ int init_nvram(void)
 		add_rc_support("manual_stb");
 		add_rc_support("11AC");
 		add_rc_support("app");
+		add_rc_support("gameMode");
 		//add_rc_support("pwrctrl");
 		// the following values is model dep. so move it from default.c to here
 		nvram_set("wl0_HT_TxStream", "4");
@@ -4770,6 +4760,10 @@ int init_nvram(void)
 		add_rc_support("11AC");
 		add_rc_support("nodm");
 		add_rc_support("app");
+		if (!strncmp(nvram_safe_get("territory_code"), "CX/05", 5)) {
+			add_rc_support("pwrctrl");
+			add_rc_support("nz_isp");
+		}
 		// the following values is model dep. so move it from default.c to here
 		nvram_set("wl0_HT_TxStream", "4");
 		nvram_set("wl0_HT_RxStream", "4");
@@ -5060,7 +5054,8 @@ int init_nvram(void)
 		add_rc_support("11AC");
 		add_rc_support("pwrctrl");
 		add_rc_support("nodm");
-		if (!strncmp(nvram_safe_get("territory_code"), "CX", 2))
+		if (!strncmp(nvram_safe_get("territory_code"), "CX/01", 5)
+		 || !strncmp(nvram_safe_get("territory_code"), "CX/05", 5))
 			add_rc_support("nz_isp");
 		else if (!strncmp(nvram_safe_get("territory_code"), "SP", 2))
 			add_rc_support("spirit");
@@ -8988,8 +8983,41 @@ int init_nvram(void)
 	}
 #endif // RTCONFIG_USB
 
+#if defined(RTCONFIG_BWDPI)
+#ifdef RTAC68U
+	if (!is_n66u_v2())
+#endif
+	add_rc_support("bwdpi");
+
+	/* modify logic for AiProtection switch */
+	// DON'T USE the logic of nvram_match, it's the wrong logic in this case!!
+	// 1. when wrs_protect_enable == "", set to 1
+	// 2. when wrs_protect_enable == 0, not to change this value
+	if (!strcmp(nvram_safe_get("wrs_protect_enable"), ""))
+	{
+		if (nvram_get_int("wrs_mals_enable") || nvram_get_int("wrs_cc_enable") ||  nvram_get_int("wrs_vp_enable"))
+			nvram_set("wrs_protect_enable", "1");
+		else
+			nvram_set("wrs_protect_enable", "0");
+	}
+
+	// wrs - white and black list
+	add_rc_support("wrs_wbl");
+#endif
+
 #ifdef RTCONFIG_HTTPS
 	add_rc_support("HTTPS");
+
+	/* workaround : openssl self-signed certificate from old firmware version */
+	// force to enable https_crt_save to store certificate
+	if (nvram_get_int("https_crt_save") == 0) {
+		nvram_set_int("https_crt_save", 1);
+	}
+
+	/* remove nvram https_crt_file */
+	if (nvram_safe_get("https_crt_file")) {
+		nvram_unset("https_crt_file");
+	}
 #ifdef RTCONFIG_LETSENCRYPT
 	add_rc_support("letsencrypt");
 #endif
@@ -9026,7 +9054,7 @@ int init_nvram(void)
 #ifdef RTCONFIG_BCMWL6
 	add_rc_support("wl6");
 #endif
-#if defined(RTCONFIG_BCMWL6) || defined(RTCONFIG_QCA)
+#if defined(RTN66U) || defined(RTAC66U) || defined(RTAC68U) || defined(DSL_AC68U) || defined(RTCONFIG_QCA)
 #ifdef RTCONFIG_OPTIMIZE_XBOX
 	add_rc_support("optimize_xbox");
 #endif
@@ -9216,6 +9244,12 @@ int init_nvram(void)
 #ifdef RTCONFIG_PORT2_DEVICE
 	add_rc_support("port2_device");
 #endif
+
+#ifdef RTCONFIG_REDIRECT_DNAME
+	if (sw_mode() == SW_MODE_REPEATER || sw_mode() == SW_MODE_AP)
+		add_rc_support("redirect_dname");
+#endif
+
 #if defined(RTCONFIG_SWRT_FULLCONE)
 	add_rc_support("swrt_fullcone");
 #endif
@@ -9352,6 +9386,22 @@ int init_nvram2(void)
 	nvram_unset("disableWifiDrv_fac");
 #endif
 	nvram_set("label_mac", get_label_mac());
+
+	// upgrade/downgrade dont keep info
+	if(!nvram_match("extendno", nvram_safe_get("extendno_org"))){
+		nvram_set("mfp_ip_requeue", "");
+		nvram_unset("webs_state_update");
+		nvram_unset("webs_state_upgrade");
+		nvram_unset("webs_state_info");
+		nvram_unset("webs_state_REQinfo");
+		nvram_unset("webs_state_url");
+		nvram_unset("webs_state_flag");
+		nvram_unset("webs_state_error");
+#if defined(RTAC68U) || defined(RTCONFIG_FORCE_AUTO_UPGRADE)
+		nvram_set_int("auto_upgrade", 0);
+#endif
+	}
+
 	return 0;
 }
 
@@ -9989,6 +10039,10 @@ static void sysinit(void)
 		"/tmp/share", "/var/webmon", // !!TB
 		"/var/log", "/var/run", "/var/tmp", "/var/lib", "/var/lib/misc",
 		"/var/spool", "/var/spool/cron", "/var/spool/cron/crontabs",
+		"/var/cache",
+#ifdef RTCONFIG_INADYN
+		"/var/cache/inadyn",
+#endif
 		"/tmp/var/wwwext", "/tmp/var/wwwext/cgi-bin",	// !!TB - CGI support
 #ifdef BLUECAVE
 		"/tmp/etc/rc.d",
@@ -10440,6 +10494,10 @@ static void sysinit(void)
 #if defined(MAPAC2200)
 	nvram_unset("dpdt_ant");
 #endif
+
+#ifdef RTCONFIG_ASD
+	nvram_set("3rd-party", "");
+#endif
 }
 
 #if defined(RTCONFIG_TEMPROOTFS)
@@ -10513,6 +10571,7 @@ void config_format_compatibility_handler(void)
 #endif
 }
 
+#ifdef RTCONFIG_WIFILOGO
 static void
 run_rc_local(void)
 {
@@ -10524,6 +10583,7 @@ run_rc_local(void)
 		system(cmd);
 	}
 }
+#endif
 
 int init_main(int argc, char *argv[])
 {
@@ -10648,6 +10708,10 @@ int init_main(int argc, char *argv[])
 				stop_wan();
 
 			stop_lan();
+#if defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X)
+			if ((state != SIGTERM /* REBOOT */) &&
+				(state != SIGQUIT /* HALT */))
+#endif
 			stop_vlan();
 			stop_logger();
 
@@ -11133,7 +11197,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 
 #endif // RTCONFIG_USB
 
+#ifdef RTCONFIG_WIFILOGO
 			run_rc_local();
+#endif
 
 #ifndef RTCONFIG_LANTIQ
 			nvram_set("success_start_service", "1");
@@ -11202,6 +11268,9 @@ dbg("boot/continue fail= %d/%d\n", nvram_get_int("Ate_boot_fail"),nvram_get_int(
 			check_services();
 		}
 
+#ifdef RTCONFIG_ASD
+		monitor_asd();
+#endif
 		do {
 		ret = sigwaitinfo(&sigset, &info);
 		} while (ret == -1);

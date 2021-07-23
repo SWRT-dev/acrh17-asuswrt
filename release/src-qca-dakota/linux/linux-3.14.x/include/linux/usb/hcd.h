@@ -606,29 +606,6 @@ extern void usb_ep0_reinit(struct usb_device *);
 extern long usb_calc_bus_time(int speed, int is_input,
 			int isoc, int bytecount);
 
-
-/*
- * USB device fs stuff
- */
-
-#ifdef CONFIG_USB_DEVICEFS
-
-/*
- * these are expected to be called from the USB core/hub thread
- * with the kernel lock held
- */
-extern void usbfs_update_special(void);
-extern int usbfs_init(void);
-extern void usbfs_cleanup(void);
-
-#else /* CONFIG_USB_DEVICEFS */
-
-static inline void usbfs_update_special(void) {}
-static inline int usbfs_init(void) { return 0; }
-static inline void usbfs_cleanup(void) { }
-
-#endif /* CONFIG_USB_DEVICEFS */
-
 /*-------------------------------------------------------------------------*/
 
 extern void usb_set_device_state(struct usb_device *udev,

@@ -194,6 +194,9 @@ static void asus_boot_args(int offset)
 		}
 	}
 #endif
+#if defined(VZWAC1300)
+	strcat(p, "mid=Hydra ");
+#endif
 
 	setenv("bootargs", p);
 }
