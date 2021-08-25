@@ -127,6 +127,7 @@ static struct nat_mapping* allocate_mapping(const __be32 int_addr, const uint16_
   u32 hash_src;
 
   p_new = kmalloc(sizeof(struct nat_mapping), GFP_ATOMIC);
+
   if (p_new == NULL) {
     pr_debug("xt_FULLCONENAT: ERROR: kmalloc() for new nat_mapping failed.\n");
     return NULL;
@@ -152,6 +153,7 @@ static struct nat_mapping* allocate_mapping(const __be32 int_addr, const uint16_
 
 static void add_original_tuple_to_mapping(struct nat_mapping *mapping, const struct nf_conntrack_tuple* original_tuple) {
   struct nat_mapping_original_tuple *item = kmalloc(sizeof(struct nat_mapping_original_tuple), GFP_ATOMIC);
+
   if (item == NULL) {
     pr_debug("xt_FULLCONENAT: ERROR: kmalloc() for nat_mapping_original_tuple failed.\n");
     return;
@@ -222,13 +224,17 @@ static void destroy_mappings(void) {
 /* check if a mapping is valid.
  * possibly delete and free an invalid mapping.
  * the mapping should not be used anymore after check_mapping() returns 0. */
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 4, 0)
 static int check_mapping(struct nat_mapping* mapping, struct net *net, const struct nf_conntrack_zone *zone) {
+#else
+static int check_mapping(struct nat_mapping* mapping, struct net *net, const u16 zone) {
+#endif
   struct list_head *iter, *tmp;
   struct nat_mapping_original_tuple *original_tuple_item;
   struct nf_conntrack_tuple_hash *tuple_hash;
   struct nf_conn *ct;
 
-  if (mapping == NULL || net == NULL || zone == NULL) {
+  if (mapping == NULL) {
     return 0;
   }
 
@@ -241,11 +247,7 @@ static int check_mapping(struct nat_mapping* mapping, struct net *net, const str
 
   list_for_each_safe(iter, tmp, &mapping->original_tuple_list) {
     original_tuple_item = list_entry(iter, struct nat_mapping_original_tuple, node);
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 10, 0)
     tuple_hash = nf_conntrack_find_get(net, zone, &original_tuple_item->tuple);
-#else
-    tuple_hash = nf_conntrack_find_get(net, zone->id, &original_tuple_item->tuple);
-#endif
 
     if (tuple_hash == NULL) {
       pr_debug("xt_FULLCONENAT: check_mapping(): tuple %s dying/unconfirmed. free this tuple.\n", nf_ct_stringify_tuple(&original_tuple_item->tuple));
@@ -416,10 +418,12 @@ static __be32 get_device_ip(const struct net_device* dev) {
   }
 }
 
-#if LINUX_VERSION_CODE > KERNEL_VERSION(3, 10, 0)
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 4, 0)
 static uint16_t find_appropriate_port(struct net *net, const struct nf_conntrack_zone *zone, const uint16_t original_port, const int ifindex, const struct nf_nat_ipv4_range *range) {
+#elif LINUX_VERSION_CODE > KERNEL_VERSION(3, 10, 0)
+static uint16_t find_appropriate_port(struct net *net, const u16 zone, const uint16_t original_port, const int ifindex, const struct nf_nat_ipv4_range *range) {
 #else
-static uint16_t find_appropriate_port(struct net *net, const struct nf_conntrack_zone *zone, const uint16_t original_port, const int ifindex, const struct nf_nat_range *range) {
+static uint16_t find_appropriate_port(struct net *net, const u16 zone, const uint16_t original_port, const int ifindex, const struct nf_nat_range *range) {
 #endif
   uint16_t min, start, selected, range_size, i;
   struct nat_mapping* mapping = NULL;
@@ -495,8 +499,11 @@ static unsigned int fullconenat_tg(struct sk_buff *skb, const struct xt_action_p
   const struct nf_nat_multi_range_compat *mr;
   const struct nf_nat_range *range;
 #endif
-
+#if LINUX_VERSION_CODE > KERNEL_VERSION(4, 4, 0)
   const struct nf_conntrack_zone *zone;
+#else
+  u16 zone;
+#endif
   struct net *net;
   struct nf_conn *ct;
   enum ip_conntrack_info ctinfo;
@@ -721,7 +728,7 @@ static int fullconenat_tg_check(const struct xt_tgchk_param *par)
 #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 10, 0)
     if (nf_conntrack_register_notifier(par->net, &ct_event_notifier) == 0) {
 #else
-    if (nf_conntrack_register_notifier(&ct_event_notifier) == 0) {
+    if (nf_conntrack_register_notifier_fullcone(&ct_event_notifier) == 0) {
 #endif
       ct_event_notifier_registered = 1;
       pr_debug("xt_FULLCONENAT: fullconenat_tg_check(): ct_event_notifier registered\n");
@@ -749,7 +756,7 @@ static void fullconenat_tg_destroy(const struct xt_tgdtor_param *par)
 #if LINUX_VERSION_CODE > KERNEL_VERSION(3, 10, 0)
       nf_conntrack_unregister_notifier(par->net, &ct_event_notifier);
 #else
-      nf_conntrack_unregister_notifier(&ct_event_notifier);
+      nf_conntrack_unregister_notifier_fullcone(&ct_event_notifier);
 #endif
       ct_event_notifier_registered = 0;
 

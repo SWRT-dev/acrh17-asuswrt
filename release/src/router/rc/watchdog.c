@@ -5357,6 +5357,7 @@ void k3screen_check()
 	}
 }
 #endif
+
 #if defined(RTCONFIG_SOFTCENTER)
 static void softcenter_sig_check()
 {
@@ -5393,16 +5394,41 @@ static void softcenter_sig_check()
 				doSystem("sh /jffs/softcenter/automount.sh &");
 			}
 		}
-		if(nvram_match("sc_services_sig", "1")) {
+		if(nvram_match("sc_services_start_sig", "1")) {
 			if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
-				softcenter_eval(SOFTCENTER_SERVICES);
-				nvram_set_int("sc_services_sig", 0);
+				softcenter_eval(SOFTCENTER_SERVICES_START);
+				nvram_set_int("sc_services_start_sig", 0);
+			}
+		}
+		if(nvram_match("sc_services_stop_sig", "1")) {
+			if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
+				softcenter_eval(SOFTCENTER_SERVICES_STOP);
+				nvram_set_int("sc_services_stop_sig", 0);
 			}
 		}
 		if(nvram_match("sc_unmount_sig", "1")) {
 			if(f_exists("/jffs/softcenter/bin/softcenter.sh")) {
 				softcenter_eval(SOFTCENTER_UNMOUNT);
 				nvram_set_int("sc_unmount_sig", 0);
+			}
+		}
+	}
+}
+#endif
+#if defined(RTCONFIG_ENTWARE)
+static void entware_sig_check()
+{
+	if(nvram_match("entware_installed", "1")){
+		if(nvram_match("entware_wan_sig", "1")){
+			if(f_exists("/opt/etc/init.d/rc.unslung")){
+				doSystem("/opt/etc/init.d/rc.unslung start");
+				nvram_set_int("entware_wan_sig", 0);
+			}
+		}
+		if(nvram_match("entware_stop_sig", "1")) {
+			if(f_exists("/opt/etc/init.d/rc.unslung")) {
+				doSystem("/opt/etc/init.d/rc.unslung stop");
+				nvram_set_int("entware_stop_sig", 0);
 			}
 		}
 	}

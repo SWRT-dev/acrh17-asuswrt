@@ -623,8 +623,13 @@ void update_wan_state(char *prefix, int state, int reason)
     else if (state == WAN_STATE_CONNECTED) {
 		sprintf(tmp,"%c",prefix[3]);
 		run_custom_script("wan-start", 0, tmp, NULL);
+#if defined(RTCONFIG_SOFTCENTER)
 		nvram_set_int("sc_wan_sig", 1);
-    }
+#endif
+#if defined(RTCONFIG_ENTWARE)
+		nvram_set_int("entware_wan_sig", 1);
+#endif
+	}
 
 #if defined(RTCONFIG_WANRED_LED)
 	switch (state) {

@@ -23,7 +23,9 @@
 #ifndef __SWRT_H__
 #define __SWRT_H__
 extern void swrt_init(void);
+extern void swrt_init_model(void);
 extern void swrt_init_done(void);
+extern void gen_swrtid(void);
 extern int swrt_toolbox(int argc, char **argv);
 #if defined(RTAC68U)
 extern int swrt_set(const char *name, const char *value);
@@ -85,7 +87,8 @@ enum {
 	SOFTCENTER_WAN=1,
 	SOFTCENTER_NAT,
 	SOFTCENTER_MOUNT,
-	SOFTCENTER_SERVICES,
+	SOFTCENTER_SERVICES_START,
+	SOFTCENTER_SERVICES_STOP,
 	SOFTCENTER_UNMOUNT
 };
 extern void softcenter_eval(int sig);
@@ -95,6 +98,11 @@ extern void check_auth_code(void);
 #endif
 #if defined(RTCONFIG_SWRT_LED)
 extern void swrt_ledon(void);
+#endif
+#if defined(RTCONFIG_ENTWARE)
+extern void start_entware(void);
+extern void stop_entware(void);
+extern void init_entware(void);
 #endif
 #endif
 

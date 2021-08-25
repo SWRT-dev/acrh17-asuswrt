@@ -9253,6 +9253,12 @@ int init_nvram(void)
 #if defined(RTCONFIG_SWRT_FULLCONE)
 	add_rc_support("swrt_fullcone");
 #endif
+#if defined(RTCONFIG_ENTWARE)
+	add_rc_support("entware");
+#endif
+#if defined(RTCONFIG_SOFTCENTER)
+	add_rc_support("softcenter");
+#endif
 	return 0;
 }
 

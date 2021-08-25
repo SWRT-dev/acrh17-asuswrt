@@ -807,3 +807,9 @@ ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC1200G+))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/re.jpg
 endif
 
+ifneq ($(RTCONFIG_ENTWARE), y)
+	rm -rf $(INSTALLDIR)/www/Entware_start.asp
+	rm -rf $(INSTALLDIR)/www/Entware_installed.asp
+	rm -rf $(INSTALLDIR)/www/Entware_list.asp
+endif
+

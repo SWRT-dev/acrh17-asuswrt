@@ -649,6 +649,9 @@ var cfg_sync_support = isSupport("cfg_sync");
 var utf8_ssid_support = isSupport("utf8_ssid");
 var uu_support = uiSupport('uu_accel');
 var gameMode_support = isSupport('gameMode');
+var softcenter_support = isSupport('softcenter');
+var entware_support = isSupport('entware');
+var swrt_fullcone_support = isSupport('swrt_fullcone');
 var QISWIZARD = "QIS_wizard.htm";
 
 var wl_version = "<% nvram_get("wl_version"); %>";

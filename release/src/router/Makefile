@@ -1065,6 +1065,7 @@ obj-$(RTCONFIG_FTPCLIENT) += ftpclient
 obj-$(RTCONFIG_SAMBACLIENT) += sambaclient
 obj-$(RTCONFIG_USBCLIENT) += usbclient
 
+obj-$(RTCONFIG_ENTWARE) += libiconv-1.14
 #aaews,asusnatnl related
 obj-$(RTCONFIG_TUNNEL) += libxml2
 obj-$(RTCONFIG_TUNNEL) += curl
@@ -1257,6 +1258,7 @@ obj-$(RTCONFIG_TCPDUMP) += tcpdump-4.4.0
 obj-$(RTCONFIG_TRACEROUTE) += traceroute-2.1.0
 
 obj-$(RTCONFIG_BLINK_LED) += bled
+obj-$(RTCONFIG_SWRT_I2CLED) += i2cled i2c-tools-3.1.2
 obj-$(RTCONFIG_BONDING) += ifenslave
 
 obj-$(RTCONFIG_GEOIP) += GeoIP-1.6.2
@@ -1470,15 +1472,15 @@ kernel: $(LINUXDIR)/.config
 ifneq ($(RTCONFIG_BCMARM),y)
 ifeq ($(RTCONFIG_RALINK),y)
 	@if ! grep -q "CONFIG_EMBEDDED_RAMDISK=y" $(LINUXDIR)/.config ; then \
-		$(MAKE) -C $(LINUXDIR) vmlinux CC=$(KERNELCC) LD=$(KERNELLD); \
+		$(MAKE) $(PARALLEL_BUILD) -C $(LINUXDIR) vmlinux CC=$(KERNELCC) LD=$(KERNELLD); \
 	fi
 	if grep -q "CONFIG_MODULES=y" $(LINUXDIR)/.config ; then \
-		$(MAKE) -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
+		$(MAKE) $(PARALLEL_BUILD) -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
 	fi
 else ifeq ($(RTCONFIG_QCA),y)
-	$(MAKE) -j 8 -C $(LINUXDIR) vmlinux CC=$(KERNELCC) LD=$(KERNELLD)
+	$(MAKE) $(PARALLEL_BUILD) -C $(LINUXDIR) vmlinux CC=$(KERNELCC) LD=$(KERNELLD)
 	if grep -q "CONFIG_MODULES=y" $(LINUXDIR)/.config ; then \
-	    $(MAKE) -j 8 -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
+	    $(MAKE) $(PARALLEL_BUILD) -C $(LINUXDIR) modules CC=$(KERNELCC) LD=$(KERNELLD); \
 	fi
 ifeq ($(KPATH_37_OR_ABOVE),y)
 	$(MAKE) -C $(LINUXDIR) dtbs
@@ -1488,13 +1490,13 @@ else ifeq ($(RTCONFIG_REALTEK),y)
 	@$(MAKE) -C $(LINUXDIR)/.. linux
 else ifeq ($(RTCONFIG_ALPINE),y)
 	# uImage (Host Linux)
-	make -j 9 -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${STAGING_DIR}/host/include -Wall -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_SHELL="/bin/bash" V='' uImage
-	make -j 9 -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${STAGING_DIR}/host/include -Wall -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_SHELL="/bin/bash" V='' modules
+	make $(PARALLEL_BUILD) -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${STAGING_DIR}/host/include -Wall -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_SHELL="/bin/bash" V='' uImage
+	make $(PARALLEL_BUILD) -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${STAGING_DIR}/host/include -Wall -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_SHELL="/bin/bash" V='' modules
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	# uImage (Host Linux)
-	make -j3 -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${SRCBASE}/tools/host/include -I${SRCBASE}/tools/host/usr/include -Wall -Wmissing-prototypes -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_SHELL="/bin/bash" V='' INSTALL_HDR_PATH=${LINUXDIR}/user_headers headers_install
-	make -j3 -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${SRCBASE}/tools/host/include -I${SRCBASE}/tools/host/usr/include -Wall -Wmissing-prototypes -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_SHELL="/bin/bash" V='' INSTALL_HDR_PATH=${LINUXDIR} modules
-	make -j3 -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${SRCBASE}/tools/host/include -I${SRCBASE}/tools/host/usr/include -Wall -Wmissing-prototypes -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_SHELL="/bin/bash" V='' INSTALL_HDR_PATH=${LINUXDIR} all modules
+	make $(PARALLEL_BUILD) -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${SRCBASE}/tools/host/include -I${SRCBASE}/tools/host/usr/include -Wall -Wmissing-prototypes -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_SHELL="/bin/bash" V='' INSTALL_HDR_PATH=${LINUXDIR}/user_headers headers_install
+	make $(PARALLEL_BUILD) -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${SRCBASE}/tools/host/include -I${SRCBASE}/tools/host/usr/include -Wall -Wmissing-prototypes -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_SHELL="/bin/bash" V='' INSTALL_HDR_PATH=${LINUXDIR} modules
+	make $(PARALLEL_BUILD) -C ${LINUXDIR} HOSTCFLAGS="-O2 -I${SRCBASE}/tools/host/include -I${SRCBASE}/tools/host/usr/include -Wall -Wmissing-prototypes -Wmissing-prototypes -Wstrict-prototypes" KBUILD_HAVE_NLS=no CONFIG_DEBUG_SECTION_MISMATCH=y CONFIG_SHELL="/bin/bash" V='' INSTALL_HDR_PATH=${LINUXDIR} all modules
 else
 	# Broadcrom MIPS SoC
 	@if ! grep -q "CONFIG_EMBEDDED_RAMDISK=y" $(LINUXDIR)/.config ; then \
@@ -1510,12 +1512,12 @@ endif
 endif
 else	# RTCONFIG_BCMARM
 	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) |\
-		$(MAKE) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) zImage
-	+$(MAKE) CONFIG_SQUASHFS=$(CONFIG_SQUASHFS) -C $(SRCBASE)/router/compressed ARCH=$(ARCH)
+		$(MAKE) $(PARALLEL_BUILD) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) zImage
+	+$(MAKE) CONFIG_SQUASHFS=$(CONFIG_SQUASHFS) $(PARALLEL_BUILD) -C $(SRCBASE)/router/compressed ARCH=$(ARCH)
 
 	$(if $(shell grep "CONFIG_MODULES=y" ${LINUXDIR}/.config), \
-	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) MFG_WAR=1 zImage ; \
-	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) -C ${LINUXDIR} -f - ARCH=$(ARCH) modules)
+	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) $(PARALLEL_BUILD) -C ${LINUXDIR} -f - $(SUBMAKE_SETTINGS) MFG_WAR=1 zImage ; \
+	(echo '.NOTPARALLEL:' ; cat ${LINUXDIR}/Makefile) | $(MAKE) $(PARALLEL_BUILD) -C ${LINUXDIR} -f - ARCH=$(ARCH) modules)
 	# Preserve the debug versions of these and strip for release
 	$(call STRIP_DEBUG_SYMBOLS,$(LINUXDIR)/vmlinux)
 	$(call STRIP_DEBUG_SYMBOLS,$(LINUXDIR)/drivers/net/wl/wl.ko)
@@ -2568,7 +2570,7 @@ openssl/Makefile:
 	@touch $@
 
 openssl: openssl/Makefile $(if $(filter y,$(HND_ROUTER)),fsbuild,)
-	$(MAKE) -j 8 -C openssl && $(MAKE) $@-stage
+	$(MAKE) $(PARALLEL_BUILD) -C openssl && $(MAKE) $@-stage
 
 openssl-clean:
 	[ ! -f openssl/Makefile ] || $(MAKE) -C openssl clean
@@ -4163,7 +4165,7 @@ lldpd-0.9.8-clean:
 	@rm -f lldpd-0.9.8/libevent/Makefile
 
 libevent-2.0.21: libevent-2.0.21/Makefile
-	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
+	$(MAKE) $(PARALLEL_BUILD) -C $@ && $(MAKE) $@-stage && sed 's|/usr/lib|$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/lib/libevent.la
 
 libevent-2.0.21/Makefile:
 	$(MAKE) libevent-2.0.21-configure
@@ -4290,7 +4292,7 @@ dropbear/config.h: dropbear/config.h.in
 
 dropbear: dropbear/config.h
 	@$(SEP)
-	@$(MAKE) -j 8 -C $@ PROGRAMS="dropbear dbclient dropbearkey scp" MULTI=1
+	@$(MAKE) $(PARALLEL_BUILD) -C $@ PROGRAMS="dropbear dbclient dropbearkey scp" MULTI=1
 
 dropbear-install:
 	install -D dropbear/dropbearmulti $(INSTALLDIR)/dropbear/usr/bin/dropbearmulti
@@ -5107,7 +5109,7 @@ openvpn/dh2048.pem:
 	openssl dhparam -dsaparam -out $@ 2048
 
 openvpn: shared openssl lzo openpam zlib openvpn/dh2048.pem openvpn/Makefile
-	$(MAKE) -j 8 -C $@
+	$(MAKE) $(PARALLEL_BUILD) -C $@
 
 openvpn/Makefile:
 	( cd openvpn ; ./autogen.sh ; \
@@ -5360,7 +5362,7 @@ libxml2/stamp-h1:
 	touch $@
 
 libxml2: libxml2/stamp-h1
-	$(MAKE) -j 8 -C libxml2 all && $(MAKE) $@-stage
+	$(MAKE) $(PARALLEL_BUILD) -C libxml2 all && $(MAKE) $@-stage
 
 libxml2-install: libxml2
 	@$(SEP)
@@ -5497,7 +5499,7 @@ strongswan-5.2.1/stamp-h1:
 	touch $@
 
 strongswan-5.2.1: strongswan-5.2.1/stamp-h1
-	$(MAKE) -j 8 -C strongswan-5.2.1
+	$(MAKE) $(PARALLEL_BUILD) -C strongswan-5.2.1
 
 strongswan-5.2.1-install: strongswan-5.2.1
 	@$(SEP)
@@ -5913,7 +5915,7 @@ expat-2.0.1-clean:
 #avahi-0.6.31
 avahi-0.6.31: shared nvram$(BCMEX)$(EX7) expat-2.0.1 libdaemon avahi-0.6.31/Makefile
 	@$(SEP)
-	@$(MAKE) -j 8 -C avahi-0.6.31
+	@$(MAKE) $(PARALLEL_BUILD) -C avahi-0.6.31
 
 avahi-0.6.31/Makefile:
 	( cd avahi-0.6.31 ; $(CONFIGURE) LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS)" \
@@ -6055,7 +6057,7 @@ traffic_limiter-clean:
 traffic_limiter-install: traffic_limiter
 
 coovachilli: coovachilli/Makefile
-	@$(MAKE) -j 8 -C coovachilli
+	@$(MAKE) $(PARALLEL_BUILD) -C coovachilli
 
 coovachilli/Makefile:
 	$(MAKE) coovachilli-configure
@@ -6728,7 +6730,7 @@ ethtool-3.7-install: ethtool-3.7
 	$(STRIP) $(INSTALLDIR)/ethtool-3.7/usr/bin/ethtool
 
 libnl-bf:
-	$(MAKE) -j 8 -C $@ && $(MAKE) $@-stage
+	$(MAKE) $(PARALLEL_BUILD) -C $@ && $(MAKE) $@-stage
 
 i2c-tools-2013-12-15:
 	$(MAKE) -C $@
