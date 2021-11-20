@@ -32,18 +32,19 @@
 #define LEBS		0x1F000		/* 124 KiB */
 #define NUM_OH_LEB	24		/* for ubifs overhead */
 #endif
-#if defined(RTCONFIG_BCMARM) && !defined(RTCONFIG_HND_ROUTER)
+#if defined(RTCONFIG_BCMARM)
+#if !defined(RTCONFIG_HND_ROUTER)
+//bcm470x
 #define JFFS2_MTD_NAME	"brcmnand"
 #define UBI_DEV_NUM	"0"
 #define UBI_DEV_PATH	"/dev/ubi0"
 #define UBI_JFFS_PATH	"/dev/ubi0_0"
 #define LEBS		0x1F000		/* 124 KiB */
 #define NUM_OH_LEB	20		/* for ubifs overhead */
-#endif
-// AC86U/GTAC2900/GTAC5300/R7900P/R8000P/AX56U/AX58U/AX82U/RAX20/RAX50
-#ifdef HND_ROUTER
-//rootfs:0 data:1 nvram:2 jffs:3
+#else
+//bcm4908/bcm6750/bcm6755
 #ifdef RTCONFIG_HND_ROUTER_AX
+//rootfs:0 data:1 nvram:2 jffs:3
 #define UBI_DEV_NUM	"3"
 #else
 //data:0 nvram:1 jffs:2
@@ -55,6 +56,7 @@
 #define JFFS2_MTD_NAME	"misc2"
 #define LEBS		0x1F000		/* 124 KiB */
 #define NUM_OH_LEB	20		/* for ubifs overhead */
+#endif
 #endif
 
 static void error(const char *message)
@@ -150,7 +152,7 @@ void start_ubifs(void)
 	int mtd_part = 0, mtd_size = 0;
 	char dev_mtd[] = "/dev/mtdXXX";
 #endif
-#if defined(RTCONFIG_BCMARM)
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)) && !defined(BCM4912) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 	int mtd_part = 0, mtd_size = 0;
 	char dev_mtd[] = "/dev/mtdXXX";
 #endif
@@ -211,7 +213,7 @@ void start_ubifs(void)
 		}
 	}
 #endif
-#if defined(RTCONFIG_BCMARM)
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)) && !defined(BCM4912) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 	if (!mtd_getinfo(JFFS2_MTD_NAME, &mtd_part, &mtd_size)) return;
 	snprintf(dev_mtd, sizeof(dev_mtd), "/dev/mtd%d", mtd_part);
 	_dprintf("*** ubifs: %s (%d, %d)\n", JFFS2_MTD_NAME, mtd_part, mtd_size);
@@ -322,7 +324,7 @@ void start_ubifs(void)
 #if defined(RTCONFIG_ISP_CUSTOMIZE)
 	load_customize_package();
 #endif
-#if defined(RTCONFIG_BCMARM)
+#if (defined(RTCONFIG_BCMARM) || defined(RTCONFIG_HND_ROUTER)) && !defined(BCM4912) && !defined(RTCONFIG_HND_ROUTER_AX_6756)
 BRCM_UBI:
 		nvram_unset("ubifs_clean_fs");
 		nvram_commit_x();
@@ -381,6 +383,13 @@ void stop_ubifs(int stop)
 
 	if (!wait_action_idle(10))
 		return;
+
+#if defined(RTCONFIG_SOFTCENTER)
+	if(nvram_match("sc_mount","2")){
+		if (umount("/jffs/softcenter"))
+			umount2("/jffs/softcenter", MNT_DETACH);
+	}
+#endif
 
 	if ((statfs(UBIFS_MNT_DIR, &sf) == 0) && (sf.f_type != 0x73717368)) {
 		// is mounted

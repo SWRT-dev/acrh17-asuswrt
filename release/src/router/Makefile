@@ -1259,6 +1259,14 @@ obj-$(RTCONFIG_TRACEROUTE) += traceroute-2.1.0
 
 obj-$(RTCONFIG_BLINK_LED) += bled
 obj-$(RTCONFIG_SWRT_I2CLED) += i2cled i2c-tools-3.1.2
+ifeq ($(RTCONFIG_SWRT_KVR),y)
+obj-$(RTCONFIG_RALINK) += ralinkiappd
+obj-$(RTCONFIG_LANTIQ) += lantiq_cmd
+endif
+ifeq ($(or $(RTCONFIG_HND_ROUTER),$(RTCONFIG_QCA),$(RTCONFIG_LANTIQ),$(RTCONFIG_RALINK)),y)
+obj-y += cryptodev-linux
+endif
+
 obj-$(RTCONFIG_BONDING) += ifenslave
 
 obj-$(RTCONFIG_GEOIP) += GeoIP-1.6.2
@@ -5632,11 +5640,11 @@ curl-install:
 	cd $(INSTALLDIR)/curl/usr/lib && \
 		ln -sf libcurl.so.4.6.0 libcurl.so && \
 		ln -sf libcurl.so.4.6.0 libcurl.so.4
-ifeq ($(or $(RTCONFIG_SPEEDTEST),$(RTCONFIG_LETSENCRYPT)),y)
+#ifeq ($(or $(RTCONFIG_SPEEDTEST),$(RTCONFIG_LETSENCRYPT)),y)
 	# for speedtest
 	install -D curl/src/.libs/curl $(INSTALLDIR)/curl/usr/sbin/curl
 	$(STRIP) $(INSTALLDIR)/curl/usr/sbin/curl
-endif
+#endif
 
 curl-clean:
 	[ ! -f curl/Makefile ] || $(MAKE) -C curl distclean

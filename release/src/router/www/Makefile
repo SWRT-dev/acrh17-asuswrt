@@ -812,4 +812,7 @@ ifneq ($(RTCONFIG_ENTWARE), y)
 	rm -rf $(INSTALLDIR)/www/Entware_installed.asp
 	rm -rf $(INSTALLDIR)/www/Entware_list.asp
 endif
+ifneq ($(RTCONFIG_SMARTDNS),y)
+	rm -rf $(INSTALLDIR)/www/Advanced_SmartDNS_Content.asp
+endif
 

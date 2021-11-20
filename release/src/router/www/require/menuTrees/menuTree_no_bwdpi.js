@@ -161,6 +161,7 @@ define(function(){
 					{url: "Advanced_GWStaticRoute_Content.asp", tabName: "<#menu5_2_3#>"},
 					{url: "Advanced_IPTV_Content.asp", tabName: "IPTV"},
 					{url: "Advanced_SwitchCtrl_Content.asp", tabName: "<#Switch_itemname#>"},
+					{url: "Advanced_SmartDNS_Content.asp", tabName: "SmartDNS"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -417,7 +418,12 @@ define(function(){
 							menuTree.list.splice(i,1);
 					}
 				}
-
+				if (!smartdns_support){
+					for(i=0; i<menuTree.list.length; i++){
+						if(menuTree.list[i].menuName == 'SmartDNS')
+							menuTree.list.splice(i,1);
+					}
+				}
 				return retArray;
 			},
 

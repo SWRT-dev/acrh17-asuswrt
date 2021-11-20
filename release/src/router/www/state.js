@@ -652,6 +652,7 @@ var gameMode_support = isSupport('gameMode');
 var softcenter_support = isSupport('softcenter');
 var entware_support = isSupport('entware');
 var swrt_fullcone_support = isSupport('swrt_fullcone');
+var smartdns_support = isSupport('smartdns');
 var QISWIZARD = "QIS_wizard.htm";
 
 var wl_version = "<% nvram_get("wl_version"); %>";

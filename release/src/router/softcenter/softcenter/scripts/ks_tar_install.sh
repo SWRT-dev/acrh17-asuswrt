@@ -66,7 +66,7 @@ mem_space(){
 }
 
 jffs_space(){
-	local JFFS_AVAIL=$(df | grep -w "/jffs" | awk '{print $4}')
+	local JFFS_AVAIL=$(df | grep -w "/jffs$" | awk '{print $4}')
 	#ubifs自带压缩，以压缩包大小为准
 	local MODULE_NEEDED=$(du -s /tmp/${MODULE_NAME}*.tar.gz | awk '{print $1}')
 	local JFFS_FREE=$((${JFFS_AVAIL} - ${MODULE_NEEDED}))
@@ -109,7 +109,7 @@ install_tar(){
 	echo_date "====================== step 1 ==========================="
 	echo_date "开启插件离线安装！"
 	#obeying the law
-	detect_package "$MODULE_TAR"
+	#detect_package "$MODULE_TAR"
 
 	if [ "${MODEL}" == "RT-AX55" -o "${MODEL}" == "RT-AX56U" ];then
 		mem_space
