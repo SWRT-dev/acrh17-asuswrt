@@ -93,12 +93,6 @@ enum {
 	SOFTCENTER_UNMOUNT
 };
 
-extern int sc_wan_sig;
-extern int sc_nat_sig;
-extern int sc_mount_sig;
-extern int sc_services_start_sig;
-extern int sc_services_stop_sig;
-extern int sc_unmount_sig;
 extern void softcenter_trigger(int sig);
 #endif
 #if defined(SWRT_VER_MAJOR_R) || defined(SWRT_VER_MAJOR_X) || defined(SBRAC3200P)
