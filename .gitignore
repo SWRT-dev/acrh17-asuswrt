@@ -1,4 +1,5 @@
-swrtex.*
+swrtex.c
+swrtex.h
 stamp-h1
 tcode.c
 release/src-qca-dakota/linux/linux-3.14.x/net/swrt_fastpath/*.c

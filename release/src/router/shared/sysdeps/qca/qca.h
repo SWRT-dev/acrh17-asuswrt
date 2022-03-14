@@ -440,6 +440,7 @@ enum ASUS_IOCTL_SUBCMD {
 #define OFFSET_FAIL_BOOT_LOG		(MTD_FACTORY_BASE_ADDRESS + 0x0ffd0)	//bit operation for max 100
 #define OFFSET_FAIL_DEV_LOG		(MTD_FACTORY_BASE_ADDRESS + 0x0ffe0)	//bit operation for max 100
 #define OFFSET_SERIAL_NUMBER		(MTD_FACTORY_BASE_ADDRESS + 0x0fff0)
+#define OFFSET_SERIAL_NUMBER32 OFFSET_SERIAL_NUMBER
 
 /*
  * LED/Button GPIO# definitions

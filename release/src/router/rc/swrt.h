@@ -14,19 +14,35 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  *
- * Copyright 2018-2021, paldier <paldier@hotmail.com>.
- * Copyright 2018-2021, lostlonger<lostlonger.g@gmail.com>.
+ * Copyright 2018-2022, SWRT.
+ * Copyright 2018-2022, paldier <paldier@hotmail.com>.
+ * Copyright 2018-2022, lostlonger<lostlonger.g@gmail.com>.
  * All Rights Reserved.
  * 
  */
 
 #ifndef __SWRT_H__
 #define __SWRT_H__
+
+#if defined(RTCONFIG_SOFTCENTER)
+enum {
+	SOFTCENTER_WAN=1,
+	SOFTCENTER_NAT,
+	SOFTCENTER_MOUNT,
+	SOFTCENTER_SERVICES_START,
+	SOFTCENTER_SERVICES_STOP,
+	SOFTCENTER_CIFS_MOUNT,
+	SOFTCENTER_UNMOUNT
+};
+
+extern void softcenter_trigger(int sig);
+#endif
 extern void swrt_init(void);
 extern void swrt_init_model(void);
 extern void swrt_init_done(void);
 extern void gen_swrtid(void);
 extern int swrt_toolbox(int argc, char **argv);
+extern int curl_download_swrt(const char *url, const char *file_path, long timeout);
 #if defined(RTAC68U)
 extern int swrt_set(const char *name, const char *value);
 extern int swrt_unset(const char *name);
@@ -59,6 +75,12 @@ extern void r7000p_nvram_patch(void);
 extern void swrt_patch_nvram(void);
 #elif defined(R8000P)
 extern void r8000p_nvram_patch(void);
+#elif defined(RAX70)
+extern void rax70_sys_hack(void);
+extern void rax70_nvram_patch(void);
+#elif defined(MR60) || defined(MS60)
+extern void ntgr_sys_hack(void);
+extern void ntgr_nvram_patch(void);
 #elif defined(TUFAX3000) || defined(RTAX58U)
 extern void enable_4t4r_ax58(void);
 extern void enable_4t4r(void);
@@ -67,9 +89,9 @@ extern void k3c_lan_led(void);
 extern void k3c_init_led(void);
 extern void init_mtd8(void);
 extern void swrt_patch_nvram(void);
-#elif defined(RMAC2100) || defined(R6800)
+#elif defined(RMAC2100) || defined(R6800) || defined(RAX120) || defined(SWRT360V6)
 extern void patch_Factory(void);
-#elif defined(RTAX82U)
+#elif defined(RTAX82U) || defined(RTAX86U) || defined(RTAX88U) || defined(GTAX11000) || defined(GTAXE11000)
 extern void swrt_patch_nvram(void);
 #endif
 #ifdef RTCONFIG_UUPLUGIN
@@ -82,19 +104,6 @@ extern void exec_uu_swrt(void);
 #if defined(RTCONFIG_FRS_LIVE_UPDATE) 
 extern int swrt_firmware_check_update_main(int argc, char *argv[]);
 #endif
-#if defined(RTCONFIG_SOFTCENTER)
-enum {
-	SOFTCENTER_WAN=1,
-	SOFTCENTER_NAT,
-	SOFTCENTER_MOUNT,
-	SOFTCENTER_SERVICES_START,
-	SOFTCENTER_SERVICES_STOP,
-	SOFTCENTER_CIFS_MOUNT,
-	SOFTCENTER_UNMOUNT
-};
-
-extern void softcenter_trigger(int sig);
-#endif
 #if defined(SWRT_VER_MAJOR_R) || defined(SWRT_VER_MAJOR_X) || defined(SBRAC3200P)
 extern void check_auth_code(void);
 #endif
@@ -105,6 +114,10 @@ extern void swrt_ledon(void);
 extern void start_entware(void);
 extern void stop_entware(void);
 extern void init_entware(void);
+#endif
+#if defined(R6800)
+extern void show_boraddata(void);
+extern void fix_boraddata(char *key, char *value);
 #endif
 #endif
 

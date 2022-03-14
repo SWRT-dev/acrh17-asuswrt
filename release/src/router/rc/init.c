@@ -10518,7 +10518,10 @@ static void sysinit(void)
 #endif
 
 #ifdef RTCONFIG_ASD
-	nvram_set("3rd-party", "");
+	if(is_swrt_mod())
+		nvram_set("3rd-party", "swrt");
+	else
+		nvram_set("3rd-party", "merlin");
 #endif
 }
 

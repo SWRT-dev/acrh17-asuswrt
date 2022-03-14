@@ -166,6 +166,11 @@ static void start_toads(void);
 static void stop_toads(void);
 #endif
 
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
+void start_jitterentropy(void);
+void stop_jitterentropy(void);
+#endif
+
 #ifndef MS_MOVE
 #define MS_MOVE		8192
 #endif
@@ -7719,6 +7724,9 @@ stop_netool(void)
 int
 start_services(void)
 {
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
+	start_jitterentropy();
+#endif
 #ifdef RTCONFIG_SOFTCENTER
 	start_skipd();
 #endif
@@ -8258,7 +8266,28 @@ stop_services(void)
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	stop_roamast();
 #endif
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
+	stop_jitterentropy();
+#endif
 }
+
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
+void start_jitterentropy()
+{
+	pid_t pid;
+	char *cmd_argv[] = { "/usr/sbin/jitterentropy-rngd",
+								"-p", "/var/run/jitterentropy-rngd.pid",
+								NULL};
+	_eval(cmd_argv, NULL, 0, &pid);
+}
+
+void stop_jitterentropy()
+{
+	pid_t pid;
+	char *cmd_argv[] = { "killall", "jitterentropy-rngd", NULL};
+	_eval(cmd_argv, NULL, 0, &pid);
+}
+#endif
 
 #ifdef RTCONFIG_QCA
 int stop_wifi_service(void)
@@ -9312,6 +9341,19 @@ again:
 	{
 		factory_reset();
 	}
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
+	else if(strcmp(script, "jitterentropy") == 0)
+	{
+		if(action & RC_SERVICE_STOP)
+		{
+			stop_jitterentropy();
+		}
+		else if(action & RC_SERVICE_START)
+		{
+			start_jitterentropy();
+		}
+	}
+#endif
 	else if (strcmp(script, "all") == 0) {
 #ifdef RTCONFIG_WIFI_SON
 		action |= RC_SERVICE_STOP | RC_SERVICE_START;
@@ -9679,6 +9721,9 @@ again:
 			stop_jffs2(1);
 #ifdef RTCONFIG_QCA_PLC_UTILS
 			reset_plc();
+#endif
+#if defined(RTCONFIG_HND_ROUTER) || defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTCONFIG_RALINK)
+			stop_jitterentropy();
 #endif
 			// TODO free necessary memory here
 		}
@@ -14137,8 +14182,11 @@ void setup_leds()
 		setAllLedOff();
 		nvram_set("AllLED", "0");
 #ifdef RTCONFIG_USB
+#if !defined(RTCONFIG_NO_USBPORT)
 		stop_usbled();
 #endif
+#endif
+
 	} else {
 /*** Enable ***/
 		nvram_set("AllLED", "1");
@@ -14152,7 +14200,9 @@ void setup_leds()
 		led_control(LED_POWER, LED_ON);
 
 #ifdef RTCONFIG_USB
+#if !defined(RTCONFIG_NO_USBPORT)
 		start_usbled();
+#endif
 #endif
 #ifdef RTCONFIG_LED_ALL
 		led_control(LED_ALL, LED_ON);
@@ -14201,13 +14251,19 @@ void setup_leds()
 			eval("wl", "ledbh", "9", "7");
 #elif defined(RTAX88U) || defined(GTAX11000)
 			eval("wl", "-i", "eth6", "ledbh", "15", "7");
+#elif defined(RTAX55)
+			eval("wl", "-i", "eth2", "ledbh", "0", "25");
 #elif defined(RTAX58U) || defined(RTAX56U)
 			eval("wl", "-i", "eth5", "ledbh", "0", "25");
 #elif defined(RTAX86U)
 			eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(RTAX68U)
+			eval("wl", "-i", "eth5", "ledbh", "7", "7");
+#elif defined(RTAC68U_V4)
+			eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(GTAC2900)
 			eval("wl", "ledbh", "9", "1");
-#elif defined(GTAC5300)
+#elif defined(GTAC5300) || defined(GTAXE11000)
 			eval("wl", "-i", "eth6", "ledbh", "9", "7");
 #endif
 		}
@@ -14223,7 +14279,7 @@ void setup_leds()
 			eval("wl", "-i", "eth6", "ledbh", "9", "7");
 #elif defined(GTAC2900)
 			eval("wl", "-i", "eth6", "ledbh", "9", "1");
-#elif defined(GTAC5300)
+#elif defined(GTAC5300) || defined(GTAXE11000)
 			eval("wl", "-i", "eth7", "ledbh", "9", "7");
 #elif defined(RTCONFIG_BCM_7114)
 			eval("wl", "-i", "eth2", "ledbh", "9", "7");
@@ -14232,6 +14288,12 @@ void setup_leds()
 			qcsapi_led_set(1, 1);
 #elif defined(RTAX88U) || defined(RTAX86U) || defined(GTAX11000)
 			eval("wl", "-i", "eth7", "ledbh", "15", "7");
+#elif defined(RTAX55)
+			eval("wl", "-i", "eth3", "ledbh", "0", "25");
+#elif defined(RTAX68U)
+			eval("wl", "-i", "eth6", "ledbh", "7", "7");
+#elif defined(RTAC68U_V4)
+			eval("wl", "-i", "eth6", "ledbh", "10", "7");
 #elif defined(RTAX58U)
 			eval("wl", "-i", "eth6", "ledbh", "15", "7");
 #elif defined(RTAX56U)
@@ -14247,7 +14309,7 @@ void setup_leds()
 			eval("wl", "-i", "eth3", "ledbh", "9", "7");
 #elif defined(GTAX11000)
 			eval("wl", "-i", "eth8", "ledbh", "15", "7");
-#elif defined(GTAC5300)
+#elif defined(GTAC5300) || defined(GTAXE11000)
 			eval("wl", "-i", "eth8", "ledbh", "9", "7");
 #endif
 		}

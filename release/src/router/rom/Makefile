@@ -162,6 +162,7 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
 endif
+	cp -f webs_scripts/swrt.pem $(INSTALLDIR)/usr/sbin/swrt.pem
 else
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/swrt_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
@@ -192,6 +193,7 @@ endif
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/public.pem $(INSTALLDIR)/usr/sbin/public.pem
 endif
+	cp -f webs_scripts/swrt.pem $(INSTALLDIR)/usr/sbin/swrt.pem
 endif
 
 	# remove comments, compress whitespace

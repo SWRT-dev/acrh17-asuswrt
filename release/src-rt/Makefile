@@ -101,8 +101,8 @@ else
 RCSTRING=""
 RC_EXT_NO=0
 endif
-#EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)
-EXTENDNO1=0
+EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)$(RCSTRING) | wc -l)
+export SWRTEXTENDNO:= $(shell expr $(EXTENDNO1) + $(RC_EXT_NO))
 ifeq ($(BRANCH),)
 include ./router/extendno.conf
 else
@@ -233,7 +233,7 @@ ifeq ($(FAKEID),y)
 export IMGNAME := $(BUILD_NAME)_$(KERNEL_VER).$(FS_VER)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)
 else
 #export IMGNAME := $(BUILD_NAME)_$(KERNEL_VER).$(FS_VER)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)
-export IMGNAME := $(EXTENDNO)
+export IMGNAME := $(SWRTVER)_$(SWRTEXTENDNO)-g$(shell git log --pretty=format:'%h' -n 1|sed -e "s,\([0-9a-z]\{7\}\)[0-9a-z]*,\1,")$(EXSTRING)
 endif
 
 ifeq ($(BUILD_NAME),DSL-AC68U)
@@ -416,6 +416,7 @@ endif
 	@echo '$(BUILD_NAME)_$(KERNEL_VER).$(FS_VER) $(BUILD_TIME)' > router/shared/version
 	@echo 'EXTENDNO=$(EXTENDNO)' > router/extendno.conf
 	@echo '#define RT_FWVER "$(SWRT_VER_MINOR)"' >> router/shared/version.h
+	@echo '#define RT_FWEXTENDNO "$(SWRTEXTENDNO)"' >> router/shared/version.h
 
 rt_ver_ntools:
 	-@rm -f ntools/version
