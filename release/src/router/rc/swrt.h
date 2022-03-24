@@ -91,7 +91,7 @@ extern void init_mtd8(void);
 extern void swrt_patch_nvram(void);
 #elif defined(RMAC2100) || defined(R6800) || defined(RAX120) || defined(SWRT360V6)
 extern void patch_Factory(void);
-#elif defined(RTAX82U) || defined(RTAX86U) || defined(RTAX88U) || defined(GTAX11000) || defined(GTAXE11000)
+#elif defined(RTAX82U) || defined(RTAX86U)
 extern void swrt_patch_nvram(void);
 #endif
 #ifdef RTCONFIG_UUPLUGIN
@@ -114,10 +114,6 @@ extern void swrt_ledon(void);
 extern void start_entware(void);
 extern void stop_entware(void);
 extern void init_entware(void);
-#endif
-#if defined(R6800)
-extern void show_boraddata(void);
-extern void fix_boraddata(char *key, char *value);
 #endif
 #endif
 
