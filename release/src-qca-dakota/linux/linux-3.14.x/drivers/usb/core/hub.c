@@ -4217,7 +4217,7 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 			 * 255 is for WUSB devices, we actually need to use
 			 * 512 (WUSB1.0[4.8.1]).
 			 */
-			for (operations = 0; operations < 3; ++operations) {
+			for (operations = 0; operations < 10; ++operations) {
 				buf->bMaxPacketSize0 = 0;
 				r = usb_control_msg(udev, usb_rcvaddr0pipe(),
 					USB_REQ_GET_DESCRIPTOR, USB_DIR_IN,
@@ -4233,8 +4233,10 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 					}
 					/* FALL THROUGH */
 				default:
-					if (r == 0)
+					if (r == 0) {
 						r = -EPROTO;
+						continue;
+					}
 					break;
 				}
 				/*
@@ -4243,7 +4245,9 @@ hub_port_init (struct usb_hub *hub, struct usb_device *udev, int port1,
 				 * reset. But only on the first attempt,
 				 * lest we get into a time out/reset loop
 				 */
-				if (r == 0  || (r == -ETIMEDOUT && retries == 0))
+				if (r == 0 || (r == -ETIMEDOUT &&
+						retries == 0 &&
+						udev->speed > USB_SPEED_FULL))
 					break;
 			}
 			udev->descriptor.bMaxPacketSize0 =

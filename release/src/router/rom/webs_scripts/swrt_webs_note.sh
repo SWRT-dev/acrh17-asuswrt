@@ -4,7 +4,7 @@ wget_options="-q -t 2 -T 30 --no-check-certificate"
 
 dl_path_SQ="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ"
 dl_path_SQ_beta="https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/app"
-dl_path_file="https://update.paldier.com"
+dl_path_file="https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT"
 
 nvram set cfg_note=0
 get_preferred_lang=`nvram get preferred_lang`
@@ -53,6 +53,7 @@ elif [ "$forsq" == "1" ]; then
 		wget_release2=$?
 		echo "---- [LiveUpdate] wget US release note, exit code: ${wget_release2} ----" >> /tmp/webs_upgrade.log
 	fi
+	echo "---- https://dlcdnets.asus.com/pub/ASUS/LiveUpdate/Release/Wireless_SQ/$releasenote_file ----" >> /tmp/webs_note.log
 else
 	echo "---- download real release note ${dl_path_file} for $1 ----" >> /tmp/webs_upgrade.log
 	wget $wget_options ${dl_path_file}/$releasenote_file -O $releasenote_path
@@ -64,6 +65,7 @@ else
 		wget_release2=$?
 		echo "---- [LiveUpdate] wget US release note, exit code: ${wget_release2} ----" >> /tmp/webs_upgrade.log
 	fi
+	echo "---- https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT/$releasenote_file ----" >> /tmp/webs_note.log
 fi
 
 if [ "$wget_release" != "0" ] && [ "$wget_release2" != "0" ]; then
