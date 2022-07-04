@@ -5,17 +5,17 @@ export EXTRACFLAGS := -DBCMWPA2 -fno-delete-null-pointer-checks -marm -march=arm
 endif
 
 export KERNEL_BINARY=$(LINUXDIR)/vmlinux
+export TOOLS := /opt/openwrt-gcc463.arm
 export PLATFORM := arm-uclibc
-export CROSS_COMPILE := arm-openwrt-linux-uclibcgnueabi-
+export CROSS_COMPILE :=  $(TOOLS)/bin/arm-openwrt-linux-uclibcgnueabi-
 export CROSS_COMPILER := $(CROSS_COMPILE)
-export READELF := arm-openwrt-linux-uclibcgnueabi-readelf
+export READELF :=  $(TOOLS)/bin/arm-openwrt-linux-uclibcgnueabi-readelf
 export CONFIGURE := ./configure --host=arm-linux --build=$(BUILD)
 export HOSTCONFIG := linux-armv4
 export ARCH := arm
 export HOST := arm-linux
 export KERNELCC := $(CROSS_COMPILE)gcc
 export KERNELLD := $(CROSS_COMPILE)ld
-export TOOLS := /opt/openwrt-gcc463.arm
 export RTVER := 0.9.33.2
 
 # Kernel load address and entry address
@@ -23,9 +23,9 @@ export LOADADDR := 80208000
 export ENTRYADDR := $(LOADADDR)
 
 # OpenWRT's toolchain needs STAGING_DIR environment variable that points to top directory of toolchain.
-export STAGING_DIR=$(shell which arm-openwrt-linux-gcc|sed -e "s,/bin/arm-openwrt-linux-gcc,,")
+export STAGING_DIR=$(TOOLS)
 
-EXTRA_CFLAGS := -DLINUX26 -DCONFIG_QCA -pipe -DDEBUG_NOISY -DDEBUG_RCTEST -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp
+EXTRA_CFLAGS := -DLINUX26 -DCONFIG_QCA -pipe -DDEBUG_NOISY -DDEBUG_RCTEST -march=armv7-a -mfpu=vfpv3-d16 -mfloat-abi=softfp -D_GNU_SOURCE -D_BSD_SOURCE
 
 export CONFIG_LINUX26=y
 export CONFIG_QCA=y

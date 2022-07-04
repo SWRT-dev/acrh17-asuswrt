@@ -1087,7 +1087,7 @@ obj-$(RTCONFIG_TIMEMACHINE) += netatalk-3.0.5
 ifeq ($(or $(RTCONFIG_TIMEMACHINE),$(RTCONFIG_MDNS)),y)
 obj-y += libdaemon
 obj-y += expat-2.0.1
-obj-y += avahi-0.6.31
+obj-y += avahi
 else
 ifeq ($(or $(RTCONFIG_MEDIA_SERVER),$(RTCONFIG_BWDPI)),y)
 obj-y += mDNSResponder
@@ -5497,36 +5497,47 @@ usbclient-clean:
 	rm -rf usbclient/stamp-h1
 
 ##strongswan/IPSEC
-strongswan-5.2.1/stamp-h1:
-	cd strongswan-5.2.1 && autoreconf -i -f && \
-	$(if $(RTCONFIG_HND_ROUTER),$(CONFIGURE_64) CC=$(CROSS_COMPILE_64)gcc RANLIB=$(CROSS_COMPILE_64)ranlib, $(CONFIGURE) CC=$(CC)) \
-	--prefix=/usr/ --sysconfdir=/etc/ --localstatedir=/var/ \
-	--bindir=/usr/sbin --libdir=/usr/lib \
-	--libexecdir=/usr/lib --with-ipsecdir=/usr/lib/ipsec --with-user=admin \
-	--disable-gmp --enable-openssl --enable-agent --enable-eap-peap \
-	--enable-eap-md5 --enable-eap-mschapv2 --enable-eap-identity \
-	--with-strongswan-conf=/etc/strongswan.conf --enable-md4 --enable-acert \
-	--enable-cmd --enable-eap-tls --enable-libipsec \
-	CFLAGS="-I$(STAGEDIR)/usr/include -I$(TOP)/openssl/include $(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
-	LDFLAGS="$(if $(RTCONFIG_HND_ROUTER), -L$(TOP)/strongswan-5.2.1, -L$(STAGEDIR)/usr/lib -L$(TOP)/openssl)" \
-	LIBS="-lssl -lcrypto -lpthread -ldl -lm" 
-	touch $@
 
-strongswan-5.2.1: strongswan-5.2.1/stamp-h1
-	$(MAKE) $(PARALLEL_BUILD) -C strongswan-5.2.1
+strongswan/configure:
+	cd strongswan && autoreconf -i
 
-strongswan-5.2.1-install: strongswan-5.2.1
+strongswan/Makefile: strongswan/configure
+	cd strongswan && \
+	$(CONFIGURE) \
+	--prefix=/usr/ --bindir=/usr/sbin --sysconfdir=/etc/ --localstatedir=/var/ --libexecdir=/usr/lib \
+	--enable-silent-rules \
+	--disable-gmp --enable-openssl \
+	--enable-acert --enable-agent \
+	--enable-md4 \
+	--enable-eap-identity --enable-eap-md5 --enable-eap-mschapv2 --enable-eap-tls --enable-eap-peap \
+	--enable-cmd --enable-libipsec \
+	--enable-shared --disable-static \
+	--with-ipsecdir=/usr/lib/ipsec \
+	--with-strongswan-conf=/etc/strongswan.conf \
+	--with-user=admin \
+	CFLAGS="-O2 -Wall -Wno-format -Wno-format-security -Wno-pointer-sign -I$(STAGEDIR)/usr/include $(EXTRACFLAGS) \
+		$(if $(RTCONFIG_HND_ROUTER),-DHND_ROUTER,)" \
+	LDFLAGS="-L$(STAGEDIR)/usr/lib $(EXTRALDFLAGS)" \
+	LIBS="-lssl -lcrypto -lpthread -ldl -lm"
+
+strongswan: openssl strongswan/Makefile
 	@$(SEP)
-	@$(MAKE) -C strongswan-5.2.1 install DESTDIR=$(INSTALLDIR)/strongswan-5.2.1/ ; chmod 755 $(INSTALLDIR)/strongswan-5.2.1/usr/lib
-	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/usr/etc
-	mv $(INSTALLDIR)/strongswan-5.2.1/etc $(INSTALLDIR)/strongswan-5.2.1/usr/
+	$(MAKE) -j 8 -C strongswan
 
-strongswan-5.2.1-clean:
-	-@$(MAKE) -C strongswan-5.2.1 clean
-	@rm -f strongswan-5.2.1/stamp-h1
-	@rm -rf $(INSTALLDIR)/strongswan-5.2.1/
-	@rm -rf $(TARGETDIR)/usr/sbin/strongswan-5.2.1/*
-	@rm -rf $(TARGETDIR)/usr/lib/strongswan-5.2.1/*
+strongswan-install: strongswan
+	@$(SEP)
+	$(MAKE) -C strongswan install-strip DESTDIR=$(INSTALLDIR)/strongswan/ ; chmod 755 $(INSTALLDIR)/strongswan/usr/lib
+	rm -rf $(INSTALLDIR)/strongswan/usr/etc
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.a
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/*.la
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.a
+	rm -rf $(INSTALLDIR)/strongswan/usr/lib/ipsec/plugins/*.la
+	rm -rf $(INSTALLDIR)/strongswan/usr/share/man
+	mv $(INSTALLDIR)/strongswan/etc $(INSTALLDIR)/strongswan/usr/
+
+strongswan-clean:
+	[ ! -f strongswan/Makefile ] || $(MAKE) -C strongswan distclean
+	@rm -f strongswan/Makefile
 
 sw-hw-auth:
 	cd sw-hw-auth && \
@@ -5540,7 +5551,7 @@ sw-hw-auth-clean:
 
 #add by alan
 #add install neon
-neon/stamp-h1 neon/config.h:
+neon/Makefile neon/config.h:
 	cd neon && \
 	$(CONFIGURE) CC=$(CC) \
 		--prefix=/usr \
@@ -5555,18 +5566,18 @@ neon/stamp-h1 neon/config.h:
 	cp -f neon/config.h neon/src/config.h
 	touch $@
 
-neon: libxml2 openssl neon/stamp-h1 neon/config.h
+neon: libxml2 openssl neon/Makefile neon/config.h
 	$(MAKE) -C neon && $(MAKE) $@-stage
 
 neon-install: neon
 	@$(SEP)
-	install -D neon/src/.libs/libneon.so.27.2.6 $(INSTALLDIR)/neon/usr/lib/libneon.so.27.2.6
-	$(STRIP) $(INSTALLDIR)/neon/usr/lib/libneon.so.27.2.6
-	cd $(INSTALLDIR)/neon/usr/lib && ln -sf libneon.so.27.2.6 libneon.so && ln -sf libneon.so.27.2.6 libneon.so.27
+	install -D neon/src/.libs/libneon.so.27.3.2 $(INSTALLDIR)/neon/usr/lib/libneon.so.27.3.2
+	$(STRIP) $(INSTALLDIR)/neon/usr/lib/libneon.so.27.3.2
+	cd $(INSTALLDIR)/neon/usr/lib && ln -sf libneon.so.27.3.2 libneon.so && ln -sf libneon.so.27.3.2 libneon.so.27
 
 neon-clean:
-	-@$(MAKE) -C neon clean
-	@rm -f neon/stamp-h1
+	[ ! -f neon/Makefile ] || $(MAKE) -C neon distclean
+	@rm -f neon/Makefile
 
 neon-stage:
 	@$(MAKE) -C neon install DESTDIR=$(STAGEDIR)
@@ -5795,7 +5806,7 @@ db-4.8.30/build_unix/stamp-h1:
 	cd $(TOP)/db-4.8.30/build_unix && \
 	../dist/$(CONFIGURE) \
 	--prefix=/usr \
-	--enable-cxx CFLAGS="-Os" \
+	--enable-cxx CFLAGS="-Os $(if $(QCA),$(EXTRACFLAGS))" \
 	--disable-cryptography \
 	--disable-hash \
 	--disable-queue \
@@ -5925,6 +5936,47 @@ expat-2.0.1-install: expat-2.0.1
 expat-2.0.1-clean:
 	-@$(MAKE) -C expat-2.0.1 clean
 	@rm -f expat-2.0.1/stamp-h1
+
+avahi: expat-2.0.1 libdaemon avahi/Makefile
+	@$(SEP)
+	@$(MAKE) $(PARALLEL_BUILD) -C $@
+
+avahi/Makefile: avahi/configure
+	cd avahi && $(CONFIGURE) \
+		LDFLAGS="$(LDFLAGS) -L$(STAGEDIR)/usr/lib -ldl -lpthread $(EXTRA_LDFLAGS)" \
+		CFLAGS="-Os $(CFLAGS) -I$(STAGEDIR)/usr/include" \
+		--prefix=/usr --sysconfdir=/tmp localstatedir=/var --with-distro=none \
+		--disable-nls --disable-glib --disable-gobject \
+		--enable-introspection=no \
+		--disable-qt3 --disable-qt4 --disable-gtk --disable-gtk3 \
+		--disable-dbus \
+		--disable-gdbm \
+		--disable-python --disable-pygtk --disable-python-dbus \
+		--disable-mono --disable-monodoc \
+		--disable-autoipd \
+		--disable-doxygen-doc --disable-manpages --disable-xmltoman \
+		--with-xml=expat \
+		--with-avahi-user="admin" --with-avahi-group="root" \
+		--disable-dependency-tracking \
+		--disable-stack-protector \
+		avahi_runtime_dir=/var/run \
+		servicedir=/tmp/avahi/services \
+		LIBDAEMON_LIBS="-L$(STAGEDIR)/usr/lib -ldaemon" \
+		LIBDAEMON_CFLAGS="-I$(STAGEDIR)/usr/include"
+
+avahi-install: avahi
+	install -D avahi/avahi-daemon/.libs/avahi-daemon $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
+	install -D avahi/avahi-common/.libs/libavahi-common.so.3.5.3 $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.3
+	install -D avahi/avahi-core/.libs/libavahi-core.so.7.0.2 $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.0.2
+	$(STRIP) $(INSTALLDIR)/avahi/usr/sbin/avahi-daemon
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-common.so.3.5.3
+	$(STRIP) $(INSTALLDIR)/avahi/usr/lib/libavahi-core.so.7.0.2
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-common.so.3.5.3 libavahi-common.so.3
+	cd $(INSTALLDIR)/avahi/usr/lib && ln -sf libavahi-core.so.7.0.2 libavahi-core.so.7
+
+avahi-clean:
+	[ ! -f avahi/Makefile ] || $(MAKE) -C avahi distclean
+	@rm -f avahi/Makefile
 
 #avahi-0.6.31
 avahi-0.6.31: shared nvram$(BCMEX)$(EX7) expat-2.0.1 libdaemon avahi-0.6.31/Makefile

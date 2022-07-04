@@ -1742,6 +1742,7 @@ extern int mdio_phy_speed(char *ifname);
 
 /* misc.c */
 extern char *get_productid(void);
+extern char *get_lan_hostname(void);
 extern void logmessage_normal(char *logheader, char *fmt, ...);
 extern char *get_logfile_path(void);
 extern char *get_syslog_fname(unsigned int idx);
@@ -1872,6 +1873,8 @@ extern void append_custom_config(char *config, FILE *fp);
 extern int isValidMacAddress(const char* mac);
 extern int isValidEnableOption(const char* option, int range);
 extern int isValid_digit_string(const char *string);
+extern int is_valid_hostname(const char *name);
+extern int is_valid_domainname(const char *name);
 
 /* mt7620.c */
 #if defined(RTCONFIG_RALINK_MT7620)
